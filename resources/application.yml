@@ -1,0 +1,23 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 564667447875-hojn19prqp9o62shjc5fejeefehfbfts.apps.googleusercontent.com
+            client-secret: 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
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile
+              - email
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  # 데이터소스 설정 추가
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
