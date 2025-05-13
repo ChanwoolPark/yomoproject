@@ -11,4 +11,7 @@ public class test {
     }
     
     //혜은이가 쓴 주석
+    public static void main(String[] args) {
+
+    }
 }
