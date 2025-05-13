@@ -16,4 +16,10 @@ public class test {
     public boolean equals(Object obj) {
         return super.equals(obj);
     }
+
+    //혜은이가 쓴 주석
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
