@@ -16,4 +16,5 @@ public class test {
     public boolean equals(Object obj) {
         return super.equals(obj);
     }
+    //뭐라도 해보는 주석
 }
