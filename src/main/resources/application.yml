@@ -1,0 +1,21 @@
+#spring.application.name=Yomozomo
+spring:
+  application:
+    name: Yomozomo
+
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:XE
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: system
+    password: 12345
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # create, update, none ? ?? ??
+    show-sql: true
+    database-platform: org.hibernate.dialect.OracleDialect
+
+# (??) ?? ?? ??
+# server:
+#   port: 8081
+
