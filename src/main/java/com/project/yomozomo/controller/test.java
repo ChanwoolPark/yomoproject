@@ -9,4 +9,6 @@ public class test {
     public int hashCode() {
         return super.hashCode();
     }
+    
+    //혜은이가 쓴 주석
 }
