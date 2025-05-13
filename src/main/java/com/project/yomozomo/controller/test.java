@@ -9,4 +9,11 @@ public class test {
     public int hashCode() {
         return super.hashCode();
     }
+
+
+    //윤동이가 쓴 주석
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 }
