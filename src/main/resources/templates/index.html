@@ -17,33 +17,13 @@
 </head>
 <body>
 
-<header style="display: flex; align-items: center;">
-    <div class="logo" onclick="location.href='/'">🥕당근</div>
-    <nav class="nav">
-        <a href="/category">카테고리</a>
-        <a href="/login" id="loginBtn">로그인</a>
-        <a href="/logout" id="logoutBtn" style="display: none;">로그아웃</a>
-        <a href="/my" id="myInfoBtn" style="display: none;">내정보</a>
-    </nav>
-</header>
+<div th:replace="fragments/header :: header"></div>
 
 <main>
     <section class="banner">배너</section>
 </main>
 
-<footer>
-    <div>
-        <p>(주) 당근마켓 대표 김용현, 황도연</p>
-        <p>서울특별시 구로구 디지털로 300</p>
-        <p>사업자등록번호 375-87-00088</p>
-    </div>
-    <div>
-        <p><a href="/chatbot">AI 챗봇</a></p>
-        <p><a href="/support">고객센터</a></p>
-        <p><a href="/explore">탐색</a></p>
-        <p><a href="/ads">광고문의</a></p>
-    </div>
-</footer>
+<div th:replace="fragments/footer :: footer"></div>
 
 <button id="topBtn" onclick="scrollToTop()">Top<br>버튼</button>
 
