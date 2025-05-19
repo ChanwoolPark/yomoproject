@@ -9,5 +9,5 @@ public class YomozomoApplication {
     public static void main(String[] args) {
         SpringApplication.run(YomozomoApplication.class, args);
     }
-
+    
 }
