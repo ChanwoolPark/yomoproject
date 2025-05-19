@@ -107,17 +107,11 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>2025-05-19</td>
-                <td>10,000P</td>
-                <td>카카오페이</td>
-                <td>완료</td>
-            </tr>
-            <tr>
-                <td>2025-05-10</td>
-                <td>5,000P</td>
-                <td>토스</td>
-                <td>완료</td>
+            <tr th:each="log : ${logs}">
+                <td th:text="${#dates.format(log.createdAt, 'yyyy-MM-dd')}"></td>
+                <td th:text="${log.amount} + 'P'"></td>
+                <td th:text="${log.method}"></td>
+                <td th:text="${log.type}"></td>
             </tr>
             </tbody>
         </table>
