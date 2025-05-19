@@ -59,4 +59,12 @@ public class HomeController {
     public String ads() {
         return "redirect:/ads.html";
     }
+
+    @GetMapping("/charge")
+    public String chargePage(Model model) {
+        // 임시 예시: 실제로는 로그인 유저의 포인트를 DB에서 가져와야 함
+        int userPoint = 12000; // 예시값
+        model.addAttribute("point", userPoint);
+        return "charge";
+    }
 }
