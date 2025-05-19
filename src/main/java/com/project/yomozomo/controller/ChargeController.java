@@ -19,7 +19,7 @@ public class ChargeController {
     private WalletService walletService;
 
     // 충전 폼/내역 출력
-    @GetMapping("/tcharge")
+    @GetMapping("/charge")
     public String chargePage(Model model, Principal principal) {
         // (예시) 로그인 사용자 정보로부터 user_wallet_id 조회 필요
         Long userWalletId = 1L; // 실제 로그인 세션에서 유저 지갑 ID 가져오기
