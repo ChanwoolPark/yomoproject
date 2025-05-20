@@ -100,7 +100,7 @@
                 throw new Error('서버 오류');
             }
 
-            const data = await response.json();
+            const data = await response.json(); // 서버에서 JSON 응답을 기대합니다.
             appendMessage(`챗봇: ${data.reply}`, 'bot');
 
         } catch (error) {

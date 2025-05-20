@@ -1,19 +1,22 @@
 package com.project.yomozomo.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 
-@Entity
-@Table(name = "chatbot_response") // 테이블 이름 명시
+@Entity // 이 클래스가 데이터베이스 테이블과 매핑되는 엔티티임을 나타냅니다.
 public class ChatbotResponse {
 
-    @Id
-    @Column(name = "keyword", length = 100) // keyword를 Primary Key로, 길이 명시
+    @Id // `keyword` 컬럼이 Primary Key임을 나타냅니다.
     private String keyword;
 
-    @Column(name = "response", length = 4000, nullable = false) // 컬럼 이름, 길이, NOT NULL 명시
+    @Column(columnDefinition = "CLOB") // `response` 컬럼의 데이터 타입을 CLOB으로 설정합니다.
     private String response;
 
-    // ✅ 꼭 필요한 getter & setter
+    // 기본 생성자 (JPA는 기본 생성자가 필요합니다.)
+    public ChatbotResponse() {
+    }
+
     public String getKeyword() {
         return keyword;
     }
@@ -29,6 +32,4 @@ public class ChatbotResponse {
     public void setResponse(String response) {
         this.response = response;
     }
-
-    // id 필드는 Primary Key가 keyword이므로 더 이상 필요하지 않습니다.
 }

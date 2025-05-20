@@ -37,9 +37,9 @@ public class HomeController {
         return "redirect:/chatbot.html";
     }
 
-    @GetMapping("/support")
+    @GetMapping("/report")
     public String support() {
-        return "redirect:/support.html";
+        return "redirect:/report.html";
     }
 
     @GetMapping("/explore")

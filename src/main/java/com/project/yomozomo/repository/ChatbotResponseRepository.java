@@ -4,9 +4,10 @@ import com.project.yomozomo.entity.ChatbotResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ChatbotResponseRepository extends JpaRepository<ChatbotResponse, String> {
-    // JpaRepository는 기본적인 CRUD (Create, Read, Update, Delete) 기능을 제공합니다.
-    // Primary Key의 데이터 타입이 String (keyword)이므로 <ChatbotResponse, String>으로 지정합니다.
+    // JpaRepository<엔티티 타입, Primary Key 타입>
+    // Spring Data JPA가 이 인터페이스를 기반으로 자동으로 데이터베이스 연동 코드를 생성해 줍니다.
+    // 별도의 Hibernate 코드를 직접 작성할 필요가 없습니다.
 
-    // 필요하다면 특정 키워드를 포함하는 응답을 찾는 메서드 등을 추가할 수 있습니다.
-    // 예: List<ChatbotResponse> findByKeywordContaining(String keyword);
+    // 필요한 경우, 특정 조건에 맞는 데이터를 조회하는 메서드를 추가할 수 있습니다.
+    // 예: List<ChatbotResponse> findByResponseContaining(String text);
 }

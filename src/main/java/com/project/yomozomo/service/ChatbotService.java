@@ -17,37 +17,30 @@ public class ChatbotService {
         this.chatbotResponseRepository = chatbotResponseRepository;
     }
 
-    // 새로운 자동 응답 메시지 추가
+    public Optional<ChatbotResponse> getChatbotResponse(String keyword) {
+        return chatbotResponseRepository.findById(keyword); // Primary Key로 데이터 조회
+    }
+
+    public Iterable<ChatbotResponse> getAllChatbotResponses() {
+        return chatbotResponseRepository.findAll(); // 모든 데이터 조회
+    }
+
     public void addChatbotResponse(String keyword, String response) {
         ChatbotResponse newResponse = new ChatbotResponse();
         newResponse.setKeyword(keyword);
         newResponse.setResponse(response);
-        chatbotResponseRepository.save(newResponse);
+        chatbotResponseRepository.save(newResponse); // 데이터 저장 (Create & Update)
     }
 
-    // 특정 키워드에 대한 자동 응답 메시지 조회
-    public Optional<ChatbotResponse> getChatbotResponse(String keyword) {
-        return chatbotResponseRepository.findById(keyword);
-    }
-
-    // 모든 자동 응답 메시지 조회
-    public Iterable<ChatbotResponse> getAllChatbotResponses() {
-        return chatbotResponseRepository.findAll();
-    }
-
-    // 특정 키워드의 자동 응답 메시지 수정
     public void updateChatbotResponse(String keyword, String response) {
         Optional<ChatbotResponse> existingResponse = chatbotResponseRepository.findById(keyword);
-        existingResponse.ifPresent(responseEntity -> {
-            responseEntity.setResponse(response);
-            chatbotResponseRepository.save(responseEntity);
+        existingResponse.ifPresent(entity -> {
+            entity.setResponse(response);
+            chatbotResponseRepository.save(entity); // 데이터 저장 (Create & Update)
         });
     }
 
-    // 특정 키워드의 자동 응답 메시지 삭제
     public void deleteChatbotResponse(String keyword) {
-        chatbotResponseRepository.deleteById(keyword);
+        chatbotResponseRepository.deleteById(keyword); // Primary Key로 데이터 삭제
     }
-
-    // ... 기타 필요한 서비스 로직 ...
 }
