@@ -5,10 +5,13 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "USERS")
 @Getter @Setter @NoArgsConstructor
+
 public class User {
 
     @Id
