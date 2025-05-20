@@ -32,11 +32,13 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 로그인 여부에 따라 버튼 표시 (임시용)
-    const isLoggedIn = false; // 실제 로그인 여부 체크 로직으로 대체
-    document.getElementById("loginBtn").style.display = isLoggedIn ? "none" : "inline";
-    document.getElementById("logoutBtn").style.display = isLoggedIn ? "inline" : "none";
-    document.getElementById("myInfoBtn").style.display = isLoggedIn ? "inline" : "none";
+    document.addEventListener('DOMContentLoaded', function() {
+        // 로그인 여부에 따라 버튼 표시 (임시용)
+        const isLoggedIn = false; // 실제 로그인 여부 체크 로직으로 대체
+        document.getElementById("loginBtn").style.display = isLoggedIn ? "none" : "inline";
+        document.getElementById("logoutBtn").style.display = isLoggedIn ? "inline" : "none";
+        document.getElementById("myInfoBtn").style.display = isLoggedIn ? "inline" : "none";
+    });
 </script>
 
 </body>

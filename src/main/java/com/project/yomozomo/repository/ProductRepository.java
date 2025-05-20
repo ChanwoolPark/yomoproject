@@ -1,0 +1,10 @@
+package com.project.yomozomo.repository;
+
+import com.project.yomozomo.domain.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface ProductRepository extends JpaRepository<Product, Integer> {
+    List<Product> findBySubCategory_Category_CategoryId(int categoryId);
+}
