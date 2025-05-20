@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+</head>
+<body>
+<h1>회원가입</h1>
+<form th:action="@{/signup}" th:object="${signupForm}" method="post">
+    <div>
+        <label>아이디<sup style="color:red">*</sup>:</label>
+        <input type="text" th:field="*{username}" required/>
+    </div>
+    <div>
+        <label>닉네임<sup style="color:red">*</sup>:</label>
+        <input type="text" th:field="*{nickname}" required/>
+    </div>
+    <div>
+        <label>이메일<sup style="color:red">*</sup>:</label>
+        <input type="email"
+               th:field="*{email}"
+               required
+               th:readonly="${oauthSignup}"/>
+    </div>
+    <div>
+        <label>이름<sup style="color:red">*</sup>:</label>
+        <input type="text"
+               th:field="*{name}"
+               required
+               th:readonly="${oauthSignup}"/>
+    </div>
+    <div>
+        <label>비밀번호<sup style="color:red">*</sup>:</label>
+        <input type="password" th:field="*{password}" required/>
+    </div>
+    <div>
+        <label>성별<sup style="color:red">*</sup>:</label>
+        <select th:field="*{gender}" required>
+            <option value="M">남</option>
+            <option value="F">여</option>
+        </select>
+    </div>
+    <div>
+        <label>생년월일<sup style="color:red">*</sup>:</label>
+        <input type="date" th:field="*{birthdate}" required/>
+    </div>
+    <div>
+        <label>휴대폰<sup style="color:red">*</sup>:</label>
+        <input type="tel" th:field="*{phone}" required/>
+    </div>
+    <div>
+        <label>우편번호<sup style="color:red">*</sup>:</label>
+        <!-- id="zipNo"를 jusoCallBack에서 그대로 참조 -->
+        <input type="text" th:field="*{zipNo}" id="zipNo" readonly/>
+        <!-- 팝업 열기 함수 이름도 맞춰줍니다 -->
+        <button type="button" onclick="openAddressPopup()">주소찾기</button>
+    </div>
+
+    <div>
+        <label>주소<sup style="color:red">*</sup>:</label>
+        <!-- id="address"를 jusoCallBack에서 그대로 참조 -->
+        <input type="text" th:field="*{address}" id="address" readonly/>
+    </div>
+
+    <div>
+        <label>상세주소<sup style="color:red">*</sup>:</label>
+        <!-- id="addressDetail"를 jusoCallBack에서 그대로 참조 -->
+        <input type="text" th:field="*{addressDetail}" id="addressDetail"/>
+    </div>
+
+    <div>
+        <label>추천인:</label>
+        <input type="text" th:field="*{referral}"/>
+    </div>
+    <div>
+        <label>프로필이미지 URL:</label>
+        <input type="text"
+               th:field="*{profileImageUrl}"
+               th:readonly="${oauthSignup}"/>
+    </div>
+
+    <button type="submit">가입하기</button>
+</form>
+<script>
+    // 팝업 열기
+    function openAddressPopup() {
+        window.open(
+            '/address/popup',    // Controller @GetMapping 과 정확히 일치
+            'addrPopup',
+            'width=570,height=420,scrollbars=yes,resizable=yes'
+        );
+    }
+    // jusoCallBack 은 팝업측 스크립트에서 자동 호출됩니다.
+    // (여기에 message listener는 필요 없습니다.)
+</script>
+</body>
+</html>

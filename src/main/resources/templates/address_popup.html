@@ -1,0 +1,53 @@
+<!-- src/main/resources/templates/address_popup.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>주소검색</title>
+</head>
+<body onload="init();">
+
+<form id="jusoForm" method="post">
+    <!-- 승인된 서비스 키 -->
+    <input type="hidden" name="confmKey" id="confmKey"
+           th:value="${jusoKey}" />
+
+    <!-- 도로명+지번 모두 요청 -->
+    <input type="hidden" name="resultType" id="resultType"
+           value="4" />
+
+    <!-- **절대 URL** 로 채울 필드, 초기엔 비워둡니다 -->
+    <input type="hidden" name="returnUrl" id="returnUrl" />
+</form>
+
+<script>
+    function init(){
+        const form = document.getElementById('jusoForm');
+
+        // 1) 키와 파라미터 세팅
+        //    Thymeleaf 가 미리 넣어 준 값을 꺼내오거나
+        //    document.getElementById('confmKey').value = '여러분의 키';
+        //    로 직접 넣어도 됩니다.
+        form.confmKey.value   = form.confmKey.getAttribute('th:value');
+        form.resultType.value = '4';
+
+        // 2) **절대 returnUrl** 세팅
+        //    -> 반드시 등록된 주소(예: http://localhost:8080/address/popup) 여야 합니다.
+        form.returnUrl.value  = window.location.origin + '/address/popup';
+
+        // 3) Juso API 팝업 열기
+        form.action = 'https://www.juso.go.kr/addrlink/addrLinkUrl.do';
+        form.submit();
+    }
+
+    // Juso 에서 선택 후 바로 호출해 주는 JS 콜백
+    function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail,
+                          roadAddrPart2, engAddr, jibunAddr, zipNo) {
+        opener.document.getElementById('zipNo'       ).value = zipNo;
+        opener.document.getElementById('address'     ).value = roadAddrPart1;
+        opener.document.getElementById('addressDetail').focus();
+        window.close();
+    }
+</script>
+</body>
+</html>

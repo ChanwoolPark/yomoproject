@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>주소선택완료</title></head>
+<body>
+<script>
+  // 부모창 폼에 값 채우기
+  opener.document.getElementById('zipNo').value      = /*[[${zipNo}]]*/ '';
+  opener.document.getElementById('address').value    = /*[[${roadAddrPart1}]]*/ '';
+  opener.document.getElementById('addressDetail').focus();
+  window.close();
+</script>
+</body>
+</html>

@@ -1,52 +1,80 @@
-package com.project.yomozomo.Config;
+// src/main/java/com/project/yomozomo/config/SecurityConfig.java
+package com.project.yomozomo.config;
 
+import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final OAuth2LoginSuccessHandler successHandler;
+
+    public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
+        this.successHandler = successHandler;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1) 요청별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/login",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**",
-                                "/charge",
-                                "/oauth2/**"
-                        ).permitAll()    // 이 경로들은 누구나
-                        .anyRequest().authenticated()  // 나머진 로그인 필요
+                                "/", "/index.html", "/login",
+                                "/css/**", "/js/**", "/images/**",
+                                "/charge", "/oauth2/**", "/signup",
+                                "/address/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
-
-                // 2) 로그인 페이지 설정
                 .formLogin(form -> form
-                        .loginPage("/login")          // 내가 만든 로그인 폼 매핑
-                        .defaultSuccessUrl("/", true) // 로그인 성공 후 리다이렉트
-                        .permitAll()                  // 로그인 페이지는 모두 허용
-                )
-                .oauth2Login(oauth2 -> oauth2    // <-- 이 블록을 꼭 추가
                         .loginPage("/login")
                         .defaultSuccessUrl("/", true)
+                        .permitAll()
                 )
-                // 3) 로그아웃 설정
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        // --- 여기에 userInfoEndpoint 추가 ---
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(naverOAuth2UserService())
+                        )
+                        .successHandler(successHandler)
+                )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 )
-                // 4) 필요하다면 CSRF 비활성화
                 .csrf(csrf -> csrf.disable());
 
         return http.build();
+    }
+
+    /**
+     * 네이버가 반환하는 JSON 구조(response 안에 id, name, email 등 있음)를
+     * 언팩해서 DefaultOAuth2User를 만들어줍니다.
+     */
+    private OAuth2UserService<OAuth2UserRequest, OAuth2User> naverOAuth2UserService() {
+        DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+        return userRequest -> {
+            OAuth2User oauth2User = delegate.loadUser(userRequest);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> resp = oauth2User.getAttribute("response");
+            return new DefaultOAuth2User(
+                    oauth2User.getAuthorities(),
+                    resp,
+                    "id"    // 이제 이 “id”가 네이버 실제 사용자 ID
+            );
+        };
     }
 }
