@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>로그인</title>
+  <style>
+    /* 간단한 스타일링 */
+    .btn { padding: 10px 20px; margin: 10px; border: none; cursor: pointer; }
+    .google { background: #db4437; color: white; }
+    .kakao  { background: #fee500; color: #3c1e1e; }
+    .naver  { background: #03c75a; color: white; }
+  </style>
+</head>
+<body>
+<h1>소셜 로그인</h1>
+<button class="btn google" onclick="location.href='/oauth2/authorization/google'">
+  Google 로그인
+</button>
+<button class="btn kakao" onclick="location.href='/oauth2/authorization/kakao'">
+  Kakao 로그인
+</button>
+<button class="btn naver" onclick="location.href='/oauth2/authorization/naver'">
+  Naver 로그인
+</button>
+</body>
+</html>
