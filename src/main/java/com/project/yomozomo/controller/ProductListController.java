@@ -43,20 +43,32 @@ public class ProductListController {
         return "product/list";
     }
 
-    @GetMapping("/test-login")
-    public String testLogin(HttpServletRequest request) {
-        // Spring Security Context에 인증 객체 수동 삽입
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-                "testuser", null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-        SecurityContextHolder.getContext().setAuthentication(auth);
+    @GetMapping("/{categoryId}/subcategory/{subCategoryId}")
+    public String productListBySubCategory(
+            @PathVariable int categoryId,
+            @PathVariable int subCategoryId,
+            Model model,
+            HttpSession session
+    ) {
+        // 왼쪽: 카테고리의 서브카테고리 리스트
+        model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
 
-        // 세션에도 저장
-        request.getSession().setAttribute(
-                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                SecurityContextHolder.getContext()
-        );
-        return "redirect:/category/1"; // 로그인된 상태로 charge 페이지로 리다이렉트
+        // 중앙: 서브카테고리에 해당하는 상품 목록
+        model.addAttribute("products", productListService.getProductsBySubCategoryId(subCategoryId));
+
+        // 오른쪽: 찜 목록과 최근 본 상품 (로그인 여부에 따라)
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId != null) {
+            model.addAttribute("wishlist", productListService.getWishlist(userId));
+            model.addAttribute("recentlyViewed", productListService.getRecentlyViewed(userId));
+        } else {
+            model.addAttribute("wishlist", List.of());
+            model.addAttribute("recentlyViewed", List.of());
+        }
+
+        return "product/list";
     }
+
 
 }
 

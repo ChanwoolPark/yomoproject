@@ -17,7 +17,10 @@
     <div class="left">
         <h3>서브 카테고리</h3>
         <ul>
-            <li th:each="sub : ${subCategories}" th:text="${sub.name}"></li>
+            <li th:each="sub : ${subCategories}">
+                <a th:href="@{'/category/' + ${sub.category.categoryId} + '/subcategory/' + ${sub.subCategoryId}}"
+                   th:text="${sub.name}" style="text-decoration:none; color:black;"></a>
+            </li>
         </ul>
     </div>
 
@@ -37,13 +40,13 @@
             <h4>최근 본 상품</h4>
             <ul>
                 <li th:each="item : ${recentlyViewed}">
-                    <span th:if="${item.product != null}" th:text="${item.product.name}">상품명</span>
+                    <span th:if="${item.product != null}" th:text="${item.product.title}">상품명</span>
                 </li>
             </ul>
             <h4>찜한 상품</h4>
             <ul>
                 <li th:each="wish : ${wishlist}">
-                    <span th:if="${wish.product != null}" th:text="${wish.product.name}">상품명</span>
+                    <span th:if="${wish.product != null}" th:text="${wish.product.title}">상품명</span>
                 </li>
             </ul>
         </div>

@@ -35,6 +35,10 @@ public class ProductListService {
         return productRepo.findBySubCategory_Category_CategoryId(categoryId);
     }
 
+    public List<Product> getProductsBySubCategoryId(int subCategoryId) {
+        return productRepo.findBySubCategory_SubCategoryId(subCategoryId);
+    }
+
     public List<Wishlist> getWishlist(int userId) {
         return wishlistRepo.findByUserId(userId);
     }
