@@ -1,22 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
 <body>
-<footer>
-    <div>
-        <p>(주) 당근마켓 대표 김용현, 황도연</p>
-        <p>서울특별시 구로구 디지털로 300</p>
-        <p>사업자등록번호 375-87-00088</p>
-    </div>
-    <div>
-        <p><a href="/chatbot">AI 챗봇</a></p>
-        <p><a href="/support">고객센터</a></p>
-        <p><a href="/explore">탐색</a></p>
-        <p><a href="/ads">광고문의</a></p>
-    </div>
-</footer>
+<div th:fragment="footer">
+    <footer style="display: flex; justify-content: space-between; border-top: 1px solid #eee; font-size: 14px; line-height: 1.6; padding: 10px 20px;">
+        <div>
+            <p>(주) 당근마켓 대표 김용현, 황도연</p>
+            <p>서울특별시 구로구 디지털로 300</p>
+            <p>사업자등록번호 375-87-00088</p>
+        </div>
+        <div>
+            <p><a href="/chatbot">AI 챗봇</a></p>
+            <p><a href="/support">고객센터</a></p>
+            <p><a href="/explore">탐색</a></p>
+            <p><a href="/ads">광고문의</a></p>
+        </div>
+    </footer>
+</div>
 </body>
 </html>
