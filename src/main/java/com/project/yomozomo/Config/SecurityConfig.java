@@ -23,7 +23,10 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/charge",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/category",
+                                "/category/**",
+                                "/test-login"
                         ).permitAll()    // 이 경로들은 누구나
                         .anyRequest().authenticated()  // 나머진 로그인 필요
                 )

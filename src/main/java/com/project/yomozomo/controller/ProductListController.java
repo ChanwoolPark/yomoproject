@@ -1,0 +1,74 @@
+package com.project.yomozomo.controller;
+
+import com.project.yomozomo.service.ProductListService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
+
+@Controller
+@RequestMapping("/category")
+public class ProductListController {
+
+    private final ProductListService productListService;
+
+    public ProductListController(ProductListService productListService) {
+        this.productListService = productListService;
+    }
+
+    @GetMapping("/{categoryId}")
+    public String productList(@PathVariable int categoryId, Model model, HttpSession session) {
+        model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
+        model.addAttribute("products", productListService.getProductsByCategory(categoryId));
+
+        Integer userId = (Integer) session.getAttribute("userId"); // 로그인한 사용자 ID
+        if (userId != null) {
+            model.addAttribute("wishlist", productListService.getWishlist(userId));
+            model.addAttribute("recentlyViewed", productListService.getRecentlyViewed(userId));
+        } else {
+            model.addAttribute("wishlist", List.of());
+            model.addAttribute("recentlyViewed", List.of());
+        }
+
+        return "product/list";
+    }
+
+    @GetMapping("/{categoryId}/subcategory/{subCategoryId}")
+    public String productListBySubCategory(
+            @PathVariable int categoryId,
+            @PathVariable int subCategoryId,
+            Model model,
+            HttpSession session
+    ) {
+        // 왼쪽: 카테고리의 서브카테고리 리스트
+        model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
+
+        // 중앙: 서브카테고리에 해당하는 상품 목록
+        model.addAttribute("products", productListService.getProductsBySubCategoryId(subCategoryId));
+
+        // 오른쪽: 찜 목록과 최근 본 상품 (로그인 여부에 따라)
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId != null) {
+            model.addAttribute("wishlist", productListService.getWishlist(userId));
+            model.addAttribute("recentlyViewed", productListService.getRecentlyViewed(userId));
+        } else {
+            model.addAttribute("wishlist", List.of());
+            model.addAttribute("recentlyViewed", List.of());
+        }
+
+        return "product/list";
+    }
+
+
+}
+
