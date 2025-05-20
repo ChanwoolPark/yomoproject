@@ -21,15 +21,22 @@ public class SecurityConfig {
                                 "/login",
                                 "/css/**",
                                 "/js/**",
-                                "/images/**"
+                                "/images/**",
+                                "/charge",
+                                "/oauth2/**"
                         ).permitAll()    // 이 경로들은 누구나
                         .anyRequest().authenticated()  // 나머진 로그인 필요
                 )
+
                 // 2) 로그인 페이지 설정
                 .formLogin(form -> form
                         .loginPage("/login")          // 내가 만든 로그인 폼 매핑
                         .defaultSuccessUrl("/", true) // 로그인 성공 후 리다이렉트
                         .permitAll()                  // 로그인 페이지는 모두 허용
+                )
+                .oauth2Login(oauth2 -> oauth2    // <-- 이 블록을 꼭 추가
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/", true)
                 )
                 // 3) 로그아웃 설정
                 .logout(logout -> logout
