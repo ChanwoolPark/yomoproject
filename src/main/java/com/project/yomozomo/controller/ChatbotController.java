@@ -1,19 +1,16 @@
-// src/main/java/com/project/yomozomo/controller/ChatbotController.java
 package com.project.yomozomo.controller;
 
-import com.project.yomozomo.entity.ChatbotQuestion;
 import com.project.yomozomo.service.ChatbotService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+// import org.springframework.web.bind.annotation.RestController; // 이 줄을 주석 처리하거나 삭제
+import org.springframework.stereotype.Controller; // 이 줄로 변경합니다.
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PostMapping; // PostMapping 추가
-import org.springframework.web.bind.annotation.ResponseBody; // @ResponseBody 추가 (JSON 응답용)
+import org.springframework.web.bind.annotation.ResponseBody; // API 메서드에 개별적으로 추가
 
-import java.util.Optional;
+import java.util.Map;
 
-@Controller
+@Controller // @RestController 대신 @Controller를 사용합니다.
 public class ChatbotController {
 
     private final ChatbotService chatbotService;
@@ -23,35 +20,40 @@ public class ChatbotController {
         this.chatbotService = chatbotService;
     }
 
-    // 첫 챗봇 화면을 로드하는 메서드
-    @GetMapping("/chatbot")
-    public String startChatbot(Model model) {
-        Optional<ChatbotQuestion> initialQuestion = chatbotService.getInitialQuestion();
-        if (initialQuestion.isPresent()) {
-            // 이 초기 질문은 HTML에 고정된 초기 메시지 위에 표시될 수 있습니다.
-            // 또는, 초기 질문은 백엔드에서 받아와 동적으로 첫 메시지로 표시하는 방식으로 변경할 수 있습니다.
-            // 현재는 HTML에 고정 메시지가 있으므로, 이 부분은 필요에 따라 조정하세요.
-            // model.addAttribute("question", initialQuestion.get());
-        } else {
-            model.addAttribute("errorMessage", "초기 챗봇 질문을 찾을 수 없습니다.");
-        }
-        return "chatbot"; // "chatbot.html" 템플릿을 렌더링
+    // 챗봇 HTML 페이지를 보여주는 메서드
+    @GetMapping("/chatbot") // 이 매핑을 추가합니다.
+    public String showChatbotPageAlternative() {
+        return "chatbot"; // 동일하게 chatbot.html을 렌더링합니다.
     }
 
-    // (이전 옵션 선택 방식은 일단 주석 처리 또는 제거할 수 있습니다.
-    //  새로운 텍스트 입력 방식이 주가 되므로)
-    // @GetMapping("/chatbot/selectOption")
-    // public String selectOption(@RequestParam Long optionId, Model model) {
-    //     ChatbotService.ChatbotResponse response = chatbotService.processOptionSelection(optionId);
-    //     // ... 응답 처리
-    //     return "chatbot";
-    // }
-
-    // --- 새로운: 사용자 텍스트 입력을 처리하는 API 엔드포인트 ---
-    @PostMapping("/chatbot/sendMessage") // POST 요청으로 사용자 메시지 받기
-    @ResponseBody // JSON 형태로 응답 반환
-    public ChatbotService.ChatbotResponse sendMessage(@RequestParam("message") String userMessage) {
-        // 사용자 메시지를 서비스 계층으로 전달하여 답변을 찾습니다.
+    // Map으로 반환 - API 엔드포인트
+    @GetMapping("/chatbot/send")
+    @ResponseBody // 이 메서드는 HTML이 아닌 데이터를 반환함을 명시합니다.
+    public Map<String, Object> sendMessage(@RequestParam("message") String userMessage) {
         return chatbotService.processUserText(userMessage);
+    }
+
+    /*
+    @PostMapping("/chatbot/send")
+    @ResponseBody // 이 메서드는 HTML이 아닌 데이터를 반시합니다.
+    public Map<String, Object> sendMessage(@RequestBody String userMessage) {
+        return chatbotService.processUserText(userMessage);
+    }
+    */
+
+    // Map으로 반환 - API 엔드포인트
+    @GetMapping("/chatbot/init")
+    @ResponseBody // 이 메서드는 HTML이 아닌 데이터를 반환함을 명시합니다.
+    public Map<String, Object> getInitialMessage() {
+        // ERROR: cannot find symbol method getInitialQuestion()
+        // FIX: Change getInitialQuestion() to getInitialMessage()
+        return chatbotService.getInitialMessage(); // 변경된 부분
+    }
+
+    // Map으로 반환 - API 엔드포인트
+    @GetMapping("/chatbot/option")
+    @ResponseBody // 이 메서드는 HTML이 아닌 데이터를 반환함을 명시합니다.
+    public Map<String, Object> processOption(@RequestParam("optionId") Long optionId) {
+        return chatbotService.processOptionSelection(optionId);
     }
 }

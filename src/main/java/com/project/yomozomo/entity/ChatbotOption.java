@@ -18,7 +18,7 @@ public class ChatbotOption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = true, length = 255)
     private String text; // 옵션 텍스트 (예: "온라인 결제")
 
     @ManyToOne(fetch = FetchType.LAZY)
