@@ -9,6 +9,14 @@ spring:
     username: system
     password: 12345
 
+  devtools:
+    livereload:
+      enabled: true
+  freemarker:
+    cache: false
+  thymeleaf:
+    cache: false
+
   jpa:
     hibernate:
       ddl-auto: update  # create, update, none ? ?? ??
@@ -77,3 +85,11 @@ juso:
   serviceKey: "U01TX0FVVEgyMDI1MDUyMDE4MjgwMDExNTc2Mjg="
 
 
+api:
+  key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+
+
+
+logging:
+  level:
+    root: info

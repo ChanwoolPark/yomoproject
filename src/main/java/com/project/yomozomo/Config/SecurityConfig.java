@@ -1,5 +1,5 @@
 // src/main/java/com/project/yomozomo/config/SecurityConfig.java
-package com.project.yomozomo.config;
+package com.project.yomozomo.Config;
 
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
@@ -35,9 +35,11 @@ public class SecurityConfig {
                                 "/charge", "/oauth2/**", "/signup",
                                 "/address/**", "/category",
                                 "/category/**",
+                                "/checkout", "/confirm","/wedget",
+                                "/success", "/fail",
                                 "/test-login"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() //로그인 보안 비활성화 다시 보안 적용시 -> .authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="https://static.toss.im/icons/png/4x/icon-toss-logo.png" />
+  <link rel="stylesheet" type="text/css" href="/style.css" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>토스페이먼츠 샘플 프로젝트</title>
+  <!-- 토스페이먼츠 SDK 추가 -->
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+  <style>
+  :root {
+  --checkable-size: 20px;
+  --checkable-input-top: 3px;
+  --checkable-input-left: 5px;
+  --checkable-input-width: 14px;
+  --checkable-input-height: 10px;
+  --checkable-input-svg: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.343 4.574l4.243 4.243 7.07-7.071' fill='transparent' stroke-width='2' stroke='%23FFF' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --checkable-label-text-padding: 8px;
+  --indeterminate-checkable-input-top: 7px;
+  --indeterminate-checkable-input-left: 5px;
+  --indeterminate-checkable-input-width: 14px;
+  --grey700: #4e5968;
+  --white: #fff;
+  --greyOpacity50: rgba(0,23,51,.02);
+  --grey200: #e5e8eb;
+  --grey100: #f2f4f6;
+  --grey400: #b0b8c1;
+  }
+
+  body {
+  background-image: url('https://static.toss.im/ml-illust/img-back_005.jpg');
+  }
+
+  .p {
+  padding: 0;
+  margin: 0;
+  font-family: Toss Product Sans, -apple-system, BlinkMacSystemFont,
+  Bazier Square, Noto Sans KR, Segoe UI, Apple SD Gothic Neo, Roboto,
+  Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji,
+  Segoe UI Symbol, Noto Color Emoji;
+  color: var(--grey700);
+  word-break: keep-all;
+  word-wrap: break-word;
+  }
+
+  .h4 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333D4B;
+  }
+
+  .wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  }
+
+  .button {
+  color: #f9fafb;
+  background-color: #3182f6;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 18px;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  border: 0 solid transparent;
+  user-select: none;
+  transition: background 0.2s ease, color 0.1s ease;
+  text-decoration: none;
+  border-radius: 7px;
+  padding: 11px 16px;
+  }
+
+  .button:hover {
+  color: #fff;
+  background-color: #1b64da;
+  }
+
+  .title {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--grey700);
+  }
+
+  .result {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-wrap: balance;
+  }
+
+  .box_section {
+  background-color: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgb(0 0 0 / 1%), 0 6px 6px rgb(0 0 0 / 6%);
+  padding: 40px 30px 50px 30px;
+  margin-top: 30px;
+  margin-bottom: 50px;
+  color: #333D4B;
+  }
+
+  /* 체크박스 관련 */
+  .checkable {
+  position: relative;
+  display: flex;
+  }
+
+  .checkable+.checkable {
+  margin-top: 12px;
+  }
+
+  .checkable--inline {
+  display: inline-block;
+  }
+
+  .checkable--inline+.checkable--inline {
+  margin-top: 0;
+  margin-left: 18px;
+  }
+
+  .checkable__label {
+  display: inline-block;
+  max-width: 100%;
+  min-height: var(--checkable-size);
+  line-height: 1.6;
+  padding-left: var(--checkable-size);
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  color: var(--grey700);
+  cursor: pointer;
+  }
+
+  .checkable__input {
+  position: absolute;
+  margin: 0 0 0 calc(var(--checkable-size)*-1);
+  top: 4px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  }
+
+  .checkable__input:after, .checkable__input:before {
+  content: "";
+  position: absolute;
+  }
+
+  .checkable__input:before {
+  top: -4px;
+  left: 0;
+  width: var(--checkable-size);
+  height: var(--checkable-size);
+  border: 2px solid #d1d6db;
+  background-color: var(--white);
+  transition: border-color .1s ease, background-color .1s ease;
+  }
+
+  .checkable__input:after {
+  opacity: 0;
+  transition: opacity .1s ease;
+  top: var(--checkable-input-top);
+  left: var(--checkable-input-left);
+  width: var(--checkable-input-width);
+  height: var(--checkable-input-height);
+  background-image: var(--checkable-input-svg);
+  background-repeat: no-repeat;
+  }
+
+  .checkable__input[type=checkbox]:indeterminate:after {
+  top: var(--indeterminate-checkable-input-top);
+  left: var(--indeterminate-checkable-input-left);
+  width: var(--indeterminate-checkable-input-width);
+  height: 0;
+  border: 1px solid var(--white);
+  border-radius: 1px;
+  transform: rotate(0);
+  }
+
+  .checkable__input:focus {
+  outline: 0;
+  }
+
+  .checkable__input:focus:before, .checkable__input:hover:before {
+  background-color: #e8f3ff;
+  border-color: #3182f6;
+  }
+
+  .checkable__input:checked:before,
+  .checkable__input[type=checkbox]:indeterminate:before {
+  border-color: #3182f6;
+  background-color: #3182f6;
+  }
+
+  .checkable__input:checked:after,
+  .checkable__input[type=checkbox]:indeterminate:after {
+  opacity: 1;
+  }
+
+  .checkable__input:disabled:before {
+  background-color: var(--grey100);
+  border-color: var(--greyOpacity50);
+  }
+
+  .checkable__input:disabled:checked:before,
+  .checkable__input:disabled[type=checkbox]:indeterminate:before {
+  background-color: var(--grey200);
+  border-color: var(--grey200);
+  }
+
+  .checkable__input[type=checkbox]:before {
+  border-radius: 6px;
+  }
+
+  .checkable__input[type=radio]:before {
+  border-radius: 12px;
+  }
+
+  .checkable__label-text {
+  display: inline-block;
+  padding-left: 13px;
+  color: var(--grey700);
+  }
+
+  .checkable--disabled > .checkable__input {
+  cursor: not-allowed;
+  }
+
+  .checkable--disabled > .checkable__label {
+  color: var(--grey400);
+  cursor: not-allowed;
+  }
+
+  .checkable--read-only {
+  pointer-events: none;
+  }
+  </style>
+</head>
+
+<body>
+<!-- 주문서 영역 -->
+<div class="wrapper">
+  <div class="box_section" style="padding: 40px 30px 50px 30px; margin-top: 30px; margin-bottom: 50px">
+    <!-- 결제 UI -->
+    <div id="payment-method"></div>
+    <!-- 이용약관 UI -->
+    <div id="agreement"></div>
+    <!-- 쿠폰 체크박스 -->
+    <div style="padding-left: 25px">
+      <div class="checkable typography--p">
+        <label for="coupon-box" class="checkable__label typography--regular"
+        ><input id="coupon-box" class="checkable__input" type="checkbox" aria-checked="true" /><span class="checkable__label-text">5,000원 쿠폰 적용</span></label
+        >
+      </div>
+    </div>
+    <!-- 결제하기 버튼 -->
+    <div class="result wrapper">
+      <button class="button" id="payment-button" style="margin-top: 30px">
+        결제하기
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+  main();
+
+  async function main() {
+    const button = document.getElementById("payment-button");
+    const coupon = document.getElementById("coupon-box");
+    const amount = {
+      currency: "KRW",
+      value: 50000,
+    };
+    // ------  결제위젯 초기화 ------
+    // TODO: clientKey는 개발자센터의 결제위젯 연동 키 > 클라이언트 키로 바꾸세요.
+    // TODO: 구매자의 고유 아이디를 불러와서 customerKey로 설정하세요. 이메일・전화번호와 같이 유추가 가능한 값은 안전하지 않습니다.
+    // @docs https://docs.tosspayments.com/sdk/v2/js#토스페이먼츠-초기화
+    const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
+    const customerKey = generateRandomString();
+    const tossPayments = TossPayments(clientKey);
+    // 회원 결제
+    const widgets = tossPayments.widgets({
+      customerKey,
+    });
+    // 비회원 결제
+    // const widgets = tossPayments.widgets({customerKey: TossPayments.ANONYMOUS});
+
+    // ------  주문서의 결제 금액 설정 ------
+    // TODO: 위젯의 결제금액을 결제하려는 금액으로 초기화하세요.
+    // TODO: renderPaymentMethods, renderAgreement, requestPayment 보다 반드시 선행되어야 합니다.
+    await widgets.setAmount(amount);
+
+    // ------  결제 UI 렌더링 ------
+    // @docs https://docs.tosspayments.com/sdk/v2/js#widgetsrenderpaymentmethods
+    await widgets.renderPaymentMethods({
+      selector: "#payment-method",
+      // 렌더링하고 싶은 결제 UI의 variantKey
+      // 결제 수단 및 스타일이 다른 멀티 UI를 직접 만들고 싶다면 계약이 필요해요.
+      // @docs https://docs.tosspayments.com/guides/v2/payment-widget/admin#새로운-결제-ui-추가하기
+      variantKey: "DEFAULT",
+    });
+
+    // ------  이용약관 UI 렌더링 ------
+    // @docs https://docs.tosspayments.com/reference/widget-sdk#renderagreement선택자-옵션
+    await widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" });
+
+    // ------  주문서의 결제 금액이 변경되었을 경우 결제 금액 업데이트 ------
+    // @docs https://docs.tosspayments.com/sdk/v2/js#widgetssetamount
+    coupon.addEventListener("change", async function () {
+      if (coupon.checked) {
+        await widgets.setAmount({
+          currency: "KRW",
+          value: amount.value - 5000,
+        });
+
+        return;
+      }
+
+      await widgets.setAmount({
+        currency: "KRW",
+        value: amount,
+      });
+    });
+
+    // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
+    // @docs https://docs.tosspayments.com/sdk/v2/js#widgetsrequestpayment
+    button.addEventListener("click", async function () {
+      // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
+      // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
+      await widgets.requestPayment({
+        orderId: generateRandomString(),
+        orderName: "토스 티셔츠 외 2건",
+        successUrl: window.location.origin + "/success",
+        failUrl: window.location.origin + "/fail",
+        customerEmail: "customer123@gmail.com",
+        customerName: "김토스",
+        customerMobilePhone: "01012341234",
+      });
+    });
+  }
+
+  function generateRandomString() {
+    return window.btoa(Math.random()).slice(0, 20);
+  }
+</script>
+</body>
+</html>
