@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -38,5 +39,6 @@ public class SignupForm {
     private String zipNo;          // 우편번호
     private String referral;
     private String profileImageUrl;
+    private MultipartFile profileImageFile;
 
 }

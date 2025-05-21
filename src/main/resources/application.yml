@@ -72,8 +72,4 @@ spring:
 mybatis:
   mapper-locations: classpath*:com/project/yomozomo/mapper/*.xml
 
-juso:
-  confmKey: "U01TX0FVVEgyMDI1MDUyMDE4MjgwMDExNTc2Mjg="
-  serviceKey: "U01TX0FVVEgyMDI1MDUyMDE4MjgwMDExNTc2Mjg="
-
 

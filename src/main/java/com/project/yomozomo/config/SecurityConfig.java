@@ -1,11 +1,14 @@
 // src/main/java/com/project/yomozomo/config/SecurityConfig.java
 package com.project.yomozomo.config;
 
+import com.project.yomozomo.repository.UserRepository;
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
+import com.project.yomozomo.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -32,8 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/index.html", "/login",
                                 "/css/**", "/js/**", "/images/**",
-                                "/charge", "/oauth2/**", "/signup",
-                                "/address/**", "/category",
+                                "/charge", "/oauth2/**", "/signup", "/category",
                                 "/category/**",
                                 "/test-login"
                         ).permitAll()
@@ -78,5 +80,9 @@ public class SecurityConfig {
                     "id"    // 이제 이 “id”가 네이버 실제 사용자 ID
             );
         };
+    }
+    @Bean
+    public UserDetailsService userDetailsService(UserRepository userRepository) {
+        return new CustomUserDetailsService(userRepository);
     }
 }

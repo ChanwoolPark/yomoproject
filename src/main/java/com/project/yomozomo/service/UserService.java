@@ -4,6 +4,11 @@ import com.project.yomozomo.domain.User;
 import com.project.yomozomo.dto.SignupForm;
 import com.project.yomozomo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +17,18 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final UserDetailsService userDetailsService;
+
+    public boolean existsByUsername(String username) {
+        return userRepo.existsByUsername(username);
+    }
 
     public boolean existsByEmail(String email) {
-        return userRepo.findByEmail(email).isPresent();
+        return userRepo.existsByEmail(email);
+    }
+
+    public boolean existsByPhone(String phone) {
+        return userRepo.existsByPhone(phone);
     }
 
     public User registerNewUser(SignupForm form) {
@@ -38,6 +52,13 @@ public class UserService {
         u.setReferral(form.getReferral());
         u.setProfileImageUrl(form.getProfileImageUrl());
 
-        return userRepo.save(u);
+        userRepo.save(u);
+
+        // --- 여기서 바로 로그인 처리 추가 ---
+        UserDetails userDetails = userDetailsService.loadUserByUsername(u.getUsername());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return u;
     }
 }

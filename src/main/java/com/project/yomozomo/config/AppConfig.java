@@ -1,4 +1,4 @@
-package com.project.yomozomo.Config;
+package com.project.yomozomo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

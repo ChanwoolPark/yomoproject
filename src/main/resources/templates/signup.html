@@ -3,35 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>회원가입</title>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
 <h1>회원가입</h1>
-<form th:action="@{/signup}" th:object="${signupForm}" method="post">
+<form th:action="@{/signup}" th:object="${signupForm}" method="post" enctype="multipart/form-data">
     <div>
         <label>아이디<sup style="color:red">*</sup>:</label>
-        <input type="text" th:field="*{username}" required/>
+        <input type="text" th:field="*{username}" id="username" required/>
+        <button type="button" id="btnUsernameCheck">중복확인</button>
+        <span id="usernameMsg" style="color:red"></span>
     </div>
     <div>
         <label>닉네임<sup style="color:red">*</sup>:</label>
-        <input type="text" th:field="*{nickname}" required/>
+        <input type="text" th:field="*{nickname}" id="nickname" required/>
+        <span id="nicknameMsg" style="color:red"></span>
     </div>
     <div>
         <label>이메일<sup style="color:red">*</sup>:</label>
-        <input type="email"
-               th:field="*{email}"
-               required
-               th:readonly="${oauthSignup}"/>
+        <input type="text" th:field="*{email}" id="email" required th:attr="readonly=${oauthSignup} ? 'readonly' : null"/>
+        <span id="emailMsg" style="color:red"></span>
     </div>
     <div>
         <label>이름<sup style="color:red">*</sup>:</label>
-        <input type="text"
-               th:field="*{name}"
-               required
-               th:readonly="${oauthSignup}"/>
+        <input type="text" th:field="*{name}" id="name" required th:attr="readonly=${oauthSignup} ? 'readonly'"/>
     </div>
     <div>
         <label>비밀번호<sup style="color:red">*</sup>:</label>
-        <input type="password" th:field="*{password}" required/>
+        <input type="password" th:field="*{password}" id="password" required/>
+        <span id="passwordMsg" style="color:red"></span>
+    </div>
+    <div>
+        <label>비밀번호 확인<sup style="color:red">*</sup>:</label>
+        <input type="password" id="passwordCheck" required/>
+        <span id="passwordCheckMsg" style="color:red"></span>
     </div>
     <div>
         <label>성별<sup style="color:red">*</sup>:</label>
@@ -45,53 +50,51 @@
         <input type="date" th:field="*{birthdate}" required/>
     </div>
     <div>
-        <label>휴대폰<sup style="color:red">*</sup>:</label>
-        <input type="tel" th:field="*{phone}" required/>
+        <label>휴대폰</label>
+        <input type="tel" id="phone" name="phone" required>
+        <span id="phoneMsg"></span>
     </div>
     <div>
-        <label>우편번호<sup style="color:red">*</sup>:</label>
-        <!-- id="zipNo"를 jusoCallBack에서 그대로 참조 -->
-        <input type="text" th:field="*{zipNo}" id="zipNo" readonly/>
-        <!-- 팝업 열기 함수 이름도 맞춰줍니다 -->
-        <button type="button" onclick="openAddressPopup()">주소찾기</button>
+        <label>우편번호<sup>*</sup>:</label>
+        <input type="text" id="zipNo" th:field="*{zipNo}" readonly />
+        <button type="button" id="btnPostcode">주소찾기</button>
     </div>
 
+    <!-- 도로명 주소 -->
     <div>
-        <label>주소<sup style="color:red">*</sup>:</label>
-        <!-- id="address"를 jusoCallBack에서 그대로 참조 -->
-        <input type="text" th:field="*{address}" id="address" readonly/>
+        <label>주소<sup>*</sup>:</label>
+        <input type="text" id="address" th:field="*{address}" readonly />
     </div>
 
+    <!-- 상세주소 -->
     <div>
-        <label>상세주소<sup style="color:red">*</sup>:</label>
-        <!-- id="addressDetail"를 jusoCallBack에서 그대로 참조 -->
-        <input type="text" th:field="*{addressDetail}" id="addressDetail"/>
+        <label>상세주소<sup>*</sup>:</label>
+        <input type="text" id="addressDetail" th:field="*{addressDetail}" />
     </div>
-
     <div>
         <label>추천인:</label>
         <input type="text" th:field="*{referral}"/>
     </div>
-    <div>
-        <label>프로필이미지 URL:</label>
-        <input type="text"
-               th:field="*{profileImageUrl}"
-               th:readonly="${oauthSignup}"/>
-    </div>
+
+    <input type="file" id="profileImage" name="profileImage" accept="image/*" />
+    <img id="preview" src="#" alt="미리보기" style="display:none; max-width:200px;"/>
 
     <button type="submit">가입하기</button>
 </form>
 <script>
-    // 팝업 열기
-    function openAddressPopup() {
-        window.open(
-            '/address/popup',    // Controller @GetMapping 과 정확히 일치
-            'addrPopup',
-            'width=570,height=420,scrollbars=yes,resizable=yes'
-        );
-    }
-    // jusoCallBack 은 팝업측 스크립트에서 자동 호출됩니다.
-    // (여기에 message listener는 필요 없습니다.)
+    document.getElementById('btnPostcode')
+        .addEventListener('click', function() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    // 선택 시 호출되는 콜백
+                    document.getElementById('zipNo').value      = data.zonecode;
+                    document.getElementById('address').value    = data.roadAddress;
+                    document.getElementById('addressDetail').focus();
+                }
+            }).open();
+        });
 </script>
+<script src="/js/signup.js"></script>
+
 </body>
 </html>
