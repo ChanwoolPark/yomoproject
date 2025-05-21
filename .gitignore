@@ -72,3 +72,15 @@ out/
 **/*.rvi
 **/.#*
 **/CVS/**
+# Java Project
+/target/
+/.idea/
+.DS_Store
+*.log
+/build/
+
+# Configuration files - 중요!
+application.yml
+application-*.yml
+config.yml
+*.properties
