@@ -37,7 +37,7 @@ public class SecurityConfig {
                                 "/category/**",
                                 "/test-login"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
