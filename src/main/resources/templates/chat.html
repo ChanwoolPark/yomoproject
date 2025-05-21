@@ -266,10 +266,9 @@
 
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
-
             // 서버에서 "/topic/messages"로 전송하는 메시지를 구독
             // 이 콜백 함수는 메시지를 받으면 실행됩니다.
-            stompClient.subscribe('/topic/messages', function (messageOutput) {
+            stompClient.subscribe('/topic/public', function (messageOutput) {
                 const message = JSON.parse(messageOutput.body);
                 // 받은 메시지를 채팅창에 추가
                 // 여기서는 'user-a'로 표시. 실제로는 sender에 따라 'user-a' 또는 'user-b'를 동적으로 결정.
@@ -290,7 +289,7 @@
 
         if (messageText && stompClient && stompClient.connected) {
             // "/app/sendMessage"로 메시지 전송 (InputMessage DTO 형태에 맞게)
-            stompClient.send("/app/sendMessage", {}, JSON.stringify({'content': messageText, 'sender': senderName}));
+            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({'content': messageText, 'sender': senderName,'type': 'CHAT'}));
             messageInput.value = ''; // 입력창 비우기
             // 내가 보낸 메시지는 즉시 화면에 표시
             addChatMessage(messageText, 'user-b');

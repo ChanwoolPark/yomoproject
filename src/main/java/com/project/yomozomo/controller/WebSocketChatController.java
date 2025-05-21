@@ -8,12 +8,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.ui.Model; // Model 객체를 사용하기 위해 임포트
 import org.springframework.beans.factory.annotation.Value; // @Value 어노테이션을 사용하기 위해 임포트
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 // 예시 메시지 DTO (필요에 따라 만드세요)
 class ChatMessage {
     private String sender;
     private String content;
     private String type; // "CHAT", "JOIN", "LEAVE" 등
+    private String time; // <-- 이 필드를 추가합니다!!
 
     // Getters and Setters
     public String getSender() { return sender; }
@@ -22,6 +24,8 @@ class ChatMessage {
     public void setContent(String content) { this.content = content; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
+    public String getTime() { return time; } // <-- getTime() 추가
+    public void setTime(String time) { this.time = time; } // <-- setTime() 추가
 }
 
 
@@ -59,7 +63,7 @@ public class WebSocketChatController {
     @SendTo("/topic/public") // 이 메서드의 결과는 이 목적지로 브로드캐스트 됩니다.
     public ChatMessage sendMessage(@Payload ChatMessage chatMessage) {
         // 메시지를 받았을 때 필요한 로직 (예: DB 저장, 로그 등)
-        System.out.println("Received message: " + chatMessage.getContent() + " from " + chatMessage.getSender());
+        chatMessage.setTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
         return chatMessage; // 받은 메시지를 그대로 다시 클라이언트에게 브로드캐스트
     }
 
@@ -68,7 +72,8 @@ public class WebSocketChatController {
     @MessageMapping("/chat.addUser")
     public void addUser(@Payload ChatMessage chatMessage) {
         chatMessage.setType("JOIN"); // 메시지 타입을 "JOIN"으로 설정 (예시)
-        System.out.println("User joined: " + chatMessage.getSender());
+        // 사용자 입장 시간 설정: 이 줄을 추가해야 합니다!
+        chatMessage.setTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
 
         // 특정 목적지로 메시지를 전송 (이 경우에는 /topic/public을 구독하는 모든 사용자)
         messagingTemplate.convertAndSend("/topic/public", chatMessage);
