@@ -121,34 +121,6 @@
         }
 
 
-        /* 옵션 버튼 스타일 (사용자 직접 입력 모드에서는 사라지거나 다른 역할) */
-        .options-container {
-            display: flex;
-            flex-wrap: wrap; /* 여러 줄로 감싸기 */
-            justify-content: flex-start;
-            padding: 10px 15px;
-            border-top: 1px solid #eee;
-            background-color: #fff;
-            flex-shrink: 0; /* 고정 */
-        }
-        .options-container button {
-            /* 토스 UI의 하단 선택지 버튼 스타일 */
-            background-color: #f0f0f0;
-            color: #333;
-            border: 1px solid #ddd;
-            border-radius: 20px; /* 둥근 버튼 */
-            padding: 8px 15px;
-            margin: 5px; /* 버튼 간 간격 */
-            cursor: pointer;
-            font-size: 14px;
-            white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 */
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-        .options-container button:hover {
-            background-color: #e0e0e0;
-            border-color: #ccc;
-        }
-
         /* 하단 고정 입력 필드 */
         .input-area {
             display: flex;
@@ -193,10 +165,10 @@
         <p th:text="${errorMessage}"></p>
     </div>
 
-    <div class="chat-body">
+    <div class="chat-body" id="chatBody">
         <div class="message-row bot">
             <div class="message-bubble bot">
-                <p>안녕하세요 yomozomo 챗봇 상담이에요.</p>
+                <p>안녕하세요! Yomozomo 챗봇 상담이에요.</p>
                 <p>무엇을 도와드릴까요?</p>
             </div>
         </div>
@@ -204,8 +176,8 @@
     </div>
 
     <div class="input-area">
-        <input type="text" placeholder="궁금한 내용을 입력해주세요">
-        <button type="submit">
+        <input type="text" id="messageInput" placeholder="궁금한 내용을 입력해주세요">
+        <button id="sendMessageButton" type="submit">
             <svg viewBox="0 0 24 24">
                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
             </svg>
@@ -213,5 +185,98 @@
     </div>
 
 </div>
+
+<script th:inline="javascript">
+    const messageInput = document.getElementById('messageInput');
+    const sendMessageButton = document.getElementById('sendMessageButton');
+    const chatBody = document.getElementById('chatBody');
+
+    // 메시지 버블을 생성하여 채팅창에 추가하는 함수
+    function addMessage(text, senderType) { // senderType: 'user' 또는 'bot'
+        const messageRow = document.createElement('div');
+        messageRow.classList.add('message-row', senderType);
+
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('message-bubble', senderType);
+        messageBubble.innerHTML = `<p>${text}</p>`; // HTML 태그도 포함할 수 있도록 innerHTML 사용
+
+        // 현재 시간 추가 (선택 사항)
+        // const now = new Date();
+        // const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        // const messageTime = document.createElement('span');
+        // messageTime.classList.add('message-time');
+        // messageTime.textContent = timeString;
+
+        messageRow.appendChild(messageBubble);
+        // messageRow.appendChild(messageTime); // 시간 추가 시
+
+        chatBody.appendChild(messageRow);
+        chatBody.scrollTop = chatBody.scrollHeight; // 스크롤을 항상 최하단으로
+    }
+
+    // 메시지 전송 로직
+    async function sendMessage() {
+        const userMessage = messageInput.value.trim();
+        if (userMessage === '') {
+            return; // 빈 메시지는 전송하지 않음
+        }
+
+        addMessage(userMessage, 'user'); // 사용자 메시지를 채팅창에 추가
+        messageInput.value = ''; // 입력 필드 초기화
+
+        try {
+            // Spring Boot 백엔드로 메시지 전송 (AJAX 사용)
+            const response = await fetch('/chatbot/sendMessage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded', // @RequestParam을 사용하므로 이 형식으로 보냄
+                    // 'Content-Type': 'application/json', // JSON으로 보내려면 이 주석 해제하고 body를 JSON.stringify() 해야 함
+                },
+                body: `message=${encodeURIComponent(userMessage)}` // URL 인코딩 필수
+                // body: JSON.stringify({ message: userMessage }), // JSON으로 보내려면 이 형식으로
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json(); // 백엔드에서 JSON 응답을 기대
+
+            // 백엔드 응답에 따라 챗봇 메시지를 채팅창에 추가
+            if (data.type === 'ANSWER' && data.answer && data.answer.content) {
+                addMessage(data.answer.content, 'bot');
+            } else if (data.type === 'QUESTION' && data.question && data.question.content) {
+                // 만약 다음 질문이 있다면, 해당 질문 내용을 표시
+                addMessage(data.question.content, 'bot');
+                // 여기에서 다음 질문에 대한 옵션 버튼을 동적으로 생성할 수도 있습니다.
+                // 그러나 현재는 텍스트 기반이므로 옵션은 표시하지 않는 것이 일반적입니다.
+            } else if (data.type === 'ERROR' && data.errorMessage) {
+                addMessage(`오류: ${data.errorMessage}`, 'bot');
+            } else {
+                addMessage("죄송합니다. 처리 중 오류가 발생했습니다.", 'bot');
+            }
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            addMessage("메시지 전송 중 오류가 발생했습니다.", 'bot');
+        }
+    }
+
+    // 엔터 키 입력 시 메시지 전송
+    messageInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // 전송 버튼 클릭 시 메시지 전송
+    sendMessageButton.addEventListener('click', sendMessage);
+
+    // 초기 로드 시 챗봇 메시지를 아래로 정렬
+    window.onload = function() {
+        chatBody.scrollTop = chatBody.scrollHeight;
+    };
+
+</script>
 </body>
 </html>

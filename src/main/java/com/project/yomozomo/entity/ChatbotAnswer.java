@@ -19,5 +19,9 @@ public class ChatbotAnswer {
     private Long id;
 
     @Column(nullable = false, length = 1000)
-    private String content; // 최종 답변 내용 (예: "환불은 마이페이지에서 신청하실 수 있습니다.")
+    private String content; // 답변 내용 (예: "로그인 문제는 다음과 같이 해결할 수 있습니다...")
+
+    @Column(length = 255)
+    private String relatedKeywords; // 이 답변과 연관된 키워드 (콤마로 구분)
+    // 예: "로그인, 오류, 비밀번호, 계정"
 }
