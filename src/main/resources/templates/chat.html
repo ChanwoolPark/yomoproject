@@ -175,7 +175,10 @@
         }
     </style>
 
-    <script type="text/javascript" th:src="@{${'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + naverMapsClientId + '&submodules=geocoder'}}"></script>
+    <script type="text/javascript" th:src="@{${'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + naverMapsClientId + '&submodules=geocoder&callback=initMap'}}" defer></script>
+
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 
 </head>
 <body>
@@ -221,7 +224,6 @@
 
 <script th:inline="javascript">
     // Thymeleaf를 통해 Client ID를 JavaScript 변수로 가져오기
-    // 컨트롤러에서 `model.addAttribute("naverMapsClientId", yourClientIdValue);`로 전달된 값
     const naverMapsClientId = /*[[${naverMapsClientId}]]*/ 'YOUR_FALLBACK_CLIENT_ID'; // 대체 Client ID (개발/테스트용)
 
     // DOM 요소 변수 선언 (초기 null 할당)
@@ -238,6 +240,71 @@
 
     let naverMapInstance = null; // 지도 객체를 저장할 변수
     let selectedMapMarker = null; // 지도에 표시될 마커 객체
+
+    let stompClient = null; // STOMP 웹소켓 클라이언트 객체
+
+    // Naver Map API가 로드된 후 호출될 전역 콜백 함수
+    // 이 함수는 `callback=initMap` 파라미터에 의해 네이버 API 스크립트 로드 완료 시 자동으로 호출됩니다.
+    function initMap() {
+        console.log("Naver Map API ready. Global 'naver' object is available.");
+
+        // 여기에서 네이버 지도 API의 'init' 이벤트를 기다립니다.
+        // 이 이벤트는 naver.maps 객체와 모든 하위 모듈이 완전히 준비되었을 때 발생합니다.
+        naver.maps.Event.once(naver, 'init', function() {
+            console.log("Naver Map fully loaded and ready for use!");
+            // 이제 naver.maps.ControlPosition 등을 안전하게 사용할 수 있습니다.
+            // 이 시점 이후에 naver.maps 객체를 사용하면 됩니다.
+            // 지도 초기화는 버튼 클릭 시점에 하므로, 여기서는 별도의 로직을 추가하지 않아도 됩니다.
+        });
+    }
+
+    // 웹소켓 연결 함수
+    function connect() {
+        // Spring Boot에서 등록한 웹소켓 엔드포인트 "/ws"에 연결
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            // 서버에서 "/topic/messages"로 전송하는 메시지를 구독
+            // 이 콜백 함수는 메시지를 받으면 실행됩니다.
+            stompClient.subscribe('/topic/messages', function (messageOutput) {
+                const message = JSON.parse(messageOutput.body);
+                // 받은 메시지를 채팅창에 추가
+                // 여기서는 'user-a'로 표시. 실제로는 sender에 따라 'user-a' 또는 'user-b'를 동적으로 결정.
+                addChatMessage(`${message.sender} (${message.time}): ${message.content}`, 'user-a');
+            });
+        }, function(error) {
+            // 연결 에러 처리
+            console.error('STOMP Error:', error);
+            // 에러 발생 시 재연결 시도 (예: 5초 후)
+            // setTimeout(connect, 5000); // 실제 배포 환경에서는 재연결 로직 고려
+        });
+    }
+
+    // 메시지 전송 함수 (웹소켓을 통해)
+    function sendMessageViaWebSocket() {
+        const messageText = messageInput.value.trim();
+        const senderName = "사용자 B"; // 현재 사용자의 이름을 설정 (실제 앱에서는 로그인 정보 활용)
+
+        if (messageText && stompClient && stompClient.connected) {
+            // "/app/sendMessage"로 메시지 전송 (InputMessage DTO 형태에 맞게)
+            stompClient.send("/app/sendMessage", {}, JSON.stringify({'content': messageText, 'sender': senderName}));
+            messageInput.value = ''; // 입력창 비우기
+            // 내가 보낸 메시지는 즉시 화면에 표시
+            addChatMessage(messageText, 'user-b');
+        } else {
+            console.warn("웹소켓 연결이 없거나 메시지가 비어 있습니다.");
+            // 웹소켓 연결이 안 된 경우 일반 메시지 전송으로 대체
+            if (messageText) {
+                addChatMessage(messageText, 'user-b');
+                messageInput.value = '';
+            }
+        }
+        hideMapContainer(); // 지도가 표시되어 있다면 숨김
+    }
+
 
     document.addEventListener('DOMContentLoaded', () => {
         // DOM 요소들을 가져와 할당
@@ -261,19 +328,11 @@
         if (!closeMapButton) { console.error("Error: Element with ID 'closeMapButton' not found."); return; }
 
 
-        // 메시지 전송 로직
-        sendMessageButton.addEventListener('click', () => {
-            const messageText = messageInput.value.trim();
-            if (messageText) {
-                // 이 부분에서 실제 메시지를 서버로 전송하는 로직이 들어갑니다.
-                // 현재는 임시로 메시지를 화면에 추가하는 예시
-                addChatMessage(messageText, 'user-b'); // 내 메시지
-                messageInput.value = ''; // 입력창 비우기
+        // 웹소켓 연결 시작
+        connect();
 
-                // 지도가 표시되어 있다면 다시 숨김
-                hideMapContainer();
-            }
-        });
+        // 메시지 전송 버튼 클릭 이벤트: 웹소켓을 통해 메시지 전송
+        sendMessageButton.addEventListener('click', sendMessageViaWebSocket);
 
         // 이미지 첨부 로직
         attachImageButton.addEventListener('click', () => {
@@ -304,8 +363,6 @@
             // 지도 API 로드 확인 및 초기화
             if (typeof naver === 'undefined' || typeof naver.maps === 'undefined') {
                 console.error("Naver Maps API not loaded. Check network and Client ID.");
-                // 이 경우 스크립트 태그가 제대로 로드되지 않은 것이므로,
-                // 스크립트 태그의 src가 올바른지, Client ID가 유효한지 확인해야 합니다.
                 alert("네이버 지도 API 로드에 실패했습니다. Client ID 또는 네트워크 상태를 확인해주세요.");
                 hideMapContainer(); // 실패 시 지도 컨테이너 다시 숨김
                 return;
@@ -408,7 +465,7 @@
         // 메시지 입력창에서 Enter 키로 전송
         messageInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
-                sendMessageButton.click();
+                sendMessageViaWebSocket(); // 웹소켓 메시지 전송 함수 호출
             }
         });
     });
