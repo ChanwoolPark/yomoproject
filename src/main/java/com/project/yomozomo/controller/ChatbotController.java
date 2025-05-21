@@ -1,17 +1,18 @@
+// src/main/java/com/project/yomozomo/controller/ChatbotController.java
 package com.project.yomozomo.controller;
 
-import com.project.yomozomo.entity.ChatbotResponse;
+import com.project.yomozomo.entity.ChatbotQuestion;
 import com.project.yomozomo.service.ChatbotService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
-@RestController
-@RequestMapping(value = "/chat", produces = "application/json")
+@Controller
 public class ChatbotController {
 
     private final ChatbotService chatbotService;
@@ -21,40 +22,23 @@ public class ChatbotController {
         this.chatbotService = chatbotService;
     }
 
-    @PostMapping(consumes = "application/json")
-    public ResponseEntity<?> getReply(@RequestBody Map<String, String> payload) {
-        String userMessage = payload.get("message");
-        Optional<ChatbotResponse> responseOptional = chatbotService.getChatbotResponse(userMessage);
-
-        Map<String, String> responseBody = new HashMap<>();
-        if (responseOptional.isPresent()) {
-            responseBody.put("reply", responseOptional.get().getResponse());
+    // This method handles the initial chatbot page
+    // Renamed the mapping from "/chatbot" to "/chatbot-page" or similar
+    @GetMapping("/chatbot-page") // <--- Changed mapping here
+    public String startChatbot(Model model) {
+        Optional<ChatbotQuestion> initialQuestion = chatbotService.getInitialQuestion();
+        if (initialQuestion.isPresent()) {
+            model.addAttribute("question", initialQuestion.get());
         } else {
-            responseBody.put("reply", "해당하는 답변을 찾을 수 없습니다.");
+            model.addAttribute("error", "초기 챗봇 질문을 찾을 수 없습니다.");
         }
-        return ResponseEntity.ok(responseBody);
+        return "chatbot"; // Assuming "chatbot.html" is your Thymeleaf template
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<Iterable<ChatbotResponse>> getAllResponses() {
-        return ResponseEntity.ok(chatbotService.getAllChatbotResponses());
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<String> addResponse(@RequestParam String keyword, @RequestParam String response) {
-        chatbotService.addChatbotResponse(keyword, response);
-        return ResponseEntity.ok("자동 응답 메시지가 추가되었습니다.");
-    }
-
-    @PutMapping("/update/{keyword}")
-    public ResponseEntity<String> updateResponse(@PathVariable String keyword, @RequestParam String response) {
-        chatbotService.updateChatbotResponse(keyword, response);
-        return ResponseEntity.ok("자동 응답 메시지가 수정되었습니다.");
-    }
-
-    @DeleteMapping("/delete/{keyword}")
-    public ResponseEntity<String> deleteResponse(@PathVariable String keyword) {
-        chatbotService.deleteChatbotResponse(keyword);
-        return ResponseEntity.ok("자동 응답 메시지가 삭제되었습니다.");
+    // This method handles subsequent option selections (API endpoint)
+    @GetMapping("/api/chatbot/selectOption") // This path is likely for AJAX calls
+    @ResponseBody
+    public ChatbotService.ChatbotResponse selectOption(@RequestParam Long optionId) {
+        return chatbotService.processOptionSelection(optionId);
     }
 }
