@@ -2,6 +2,7 @@ package com.project.yomozomo.service;
 
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.ProductImage;
+import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,17 +17,19 @@ public class ProductDetailService {
     private final UserRepository userRepo;
     private final WishlistRepository wishlistRepo;
     private final ChatRoomRepository chatRoomRepo;
+    private final RentalRepository rentalRepo;
 
     public ProductDetailService(ProductRepository productRepo,
                                 ProductImageRepository productImageRepo,
                                 UserRepository userRepo,
                                 WishlistRepository wishlistRepo,
-                                ChatRoomRepository chatRoomRepo) {
+                                ChatRoomRepository chatRoomRepo, RentalRepository rentalRepo) {
         this.productRepo = productRepo;
         this.productImageRepo = productImageRepo;
         this.userRepo = userRepo;
         this.wishlistRepo = wishlistRepo;
         this.chatRoomRepo = chatRoomRepo;
+        this.rentalRepo = rentalRepo;
     }
 
     @Transactional(readOnly = true)
@@ -45,10 +48,10 @@ public class ProductDetailService {
         return wishlistRepo.existsByProduct_ProductIdAndUser_Id(productId, userId);
     }
 
+
     @Transactional(readOnly = true)
-    public boolean existsChatRoomBetweenUsers(Long sellerId, Long buyerId) {
-        return chatRoomRepo.existsByBuyer_IdAndSeller_IdOrBuyer_IdAndSeller_Id(
-                buyerId, sellerId, sellerId, buyerId
-        );
+    public List<Rental> getReservedDates(int productId) {
+        List<String> statusList = List.of("예약", "대여중");
+        return rentalRepo.findByProduct_ProductIdAndStatusIn(productId, statusList);
     }
 }

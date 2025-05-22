@@ -52,7 +52,6 @@ public class ProductController {
 
         if (userId != null) {
             isWished = productDetailService.isProductWishedByUser(productId, userId);
-            chatExists = productDetailService.existsChatRoomBetweenUsers(seller.getId(), userId);
         }
 
         // 모델 전달
@@ -61,7 +60,6 @@ public class ProductController {
         model.addAttribute("seller", seller);
         model.addAttribute("createdAt", formattedDate);
         model.addAttribute("wished", isWished);
-        model.addAttribute("chatExists", chatExists);
 
         return "product/detail"; // detail.html 또는 detail.jsp
     }
