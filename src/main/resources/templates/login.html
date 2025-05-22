@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -35,9 +36,7 @@
 <h1>로그인</h1>
 
 <!-- 일반 로그인 버튼 -->
-<button class="btn login" onclick="location.href='/login/form'">
-  일반 로그인
-</button>
+<a href="/login/form" class="btn login">일반 로그인</a>
 
 <!-- 소셜 로그인 버튼들 -->
 <button class="btn google" onclick="location.href='/oauth2/authorization/google'">

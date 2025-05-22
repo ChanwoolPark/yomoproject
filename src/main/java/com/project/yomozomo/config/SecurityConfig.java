@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -22,6 +24,8 @@ import java.util.Map;
 @EnableWebSecurity
 public class SecurityConfig {
 
+
+
     private final OAuth2LoginSuccessHandler successHandler;
 
     public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
@@ -30,24 +34,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        System.out.println("★ SecurityConfig 로드됨");
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/", "/index.html", "/login/form",
+                                "/", "/index.html", "/login", "/login/form", "/login/**",
                                 "/css/**", "/js/**", "/images/**",
                                 "/charge", "/oauth2/**", "/signup", "/category",
-                                "/category/**",
+                                "/category/**","/api/**", "/find-id.html", "/find-password",
+                                "/find-id","/find-password.html",
                                 "/test-login"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login/form")           // ← 일반 로그인 폼 페이지 지정
-                        .loginProcessingUrl("/login")       // ← 로그인 submit action (POST) 경로
+                        .loginPage("/login")  // ★★★ 로그인 진입 선택화면 ("/login")으로 지정
+                        .loginProcessingUrl("/login/form") // 실제 로그인 submit POST action
                         .defaultSuccessUrl("/", true)
+                        .failureUrl("/login/form?error=true")
                         .permitAll()
                 )
-
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         // --- 여기에 userInfoEndpoint 추가 ---
@@ -58,7 +64,7 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
+                        .logoutSuccessUrl("/")
                         .permitAll()
                 )
                 .csrf(csrf -> csrf.disable());
@@ -83,8 +89,5 @@ public class SecurityConfig {
             );
         };
     }
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return new CustomUserDetailsService(userRepository);
-    }
+
 }

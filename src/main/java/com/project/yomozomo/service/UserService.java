@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -30,6 +32,25 @@ public class UserService {
     public boolean existsByPhone(String phone) {
         return userRepo.existsByPhone(phone);
     }
+
+    // 아이디 찾기 (이름+이메일)
+    public Optional<String> findUsernameByNameAndEmail(String name, String email) {
+        return userRepo.findByNameAndEmail(name, email)
+                .map(User::getUsername);
+    }
+
+    // 비밀번호 찾기 (아이디+이메일)
+    public boolean existsByUsernameAndEmail(String username, String email) {
+        return userRepo.existsByUsernameAndEmail(username, email);
+    }
+
+    public void updatePassword(String username, String newPassword) {
+        userRepo.findByUsername(username).ifPresent(user -> {
+            user.setPassword(passwordEncoder.encode(newPassword)); // 반드시 암호화!
+            userRepo.save(user);
+        });
+    }
+
 
     public User registerNewUser(SignupForm form) {
         User u = new User();
