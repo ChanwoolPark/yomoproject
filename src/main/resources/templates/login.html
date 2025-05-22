@@ -1,18 +1,44 @@
 <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>로그인</title>
   <style>
-    /* 간단한 스타일링 */
     .btn { padding: 10px 20px; margin: 10px; border: none; cursor: pointer; }
     .google { background: #db4437; color: white; }
     .kakao  { background: #fee500; color: #3c1e1e; }
     .naver  { background: #03c75a; color: white; }
+    .login  { background: #555; color: white; }
+    .link-group {
+      margin-top: 20px;
+      font-size: 14px;
+      display: flex;
+      gap: 15px;
+    }
+    .link-group a {
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .signup-section {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .signup-section a {
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-<h1>소셜 로그인</h1>
+<h1>로그인</h1>
+
+<!-- 일반 로그인 버튼 -->
+<a href="/login/form" class="btn login">일반 로그인</a>
+
+<!-- 소셜 로그인 버튼들 -->
 <button class="btn google" onclick="location.href='/oauth2/authorization/google'">
   Google 로그인
 </button>
@@ -22,5 +48,10 @@
 <button class="btn naver" onclick="location.href='/oauth2/authorization/naver'">
   Naver 로그인
 </button>
+
+<!-- 회원가입 링크 -->
+<div class="signup-section">
+  아이디나 비밀번호가 없으신가요? <a href="/signup">회원가입</a>
+</div>
 </body>
 </html>

@@ -20,9 +20,9 @@ public class HeaderController {
     // 모든 뷰에 header 데이터로 카테고리 리스트를 넣고 싶다면 @ModelAttribute 활용
     @ModelAttribute("categories")
     public List<Category> getAllCategories() {
-        System.out.println("카테고리 불러오기");
+        /*System.out.println("카테고리 불러오기");*/
         for(Category c : categoryService.getAllCategories()){
-            System.out.println(c.getName());
+            /*System.out.println(c.getName());*/
         }
         return categoryService.getAllCategories(); // 여기가 null 리턴하면 안 됨
     }

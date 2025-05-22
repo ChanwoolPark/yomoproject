@@ -4,6 +4,7 @@ import com.project.yomozomo.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -17,7 +18,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserService userService;
 
-    public OAuth2LoginSuccessHandler(UserService userService) {
+    public OAuth2LoginSuccessHandler(@Lazy UserService userService) {
         this.userService = userService;
     }
 
