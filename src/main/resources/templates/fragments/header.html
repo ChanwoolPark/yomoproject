@@ -11,7 +11,7 @@
             </nav>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
-            <a href="/login" id="loginBtn"
+            <a href="/login-page" id="loginBtn"
                th:if="${not #authorization.expression('isAuthenticated()')}">로그인</a>
             <a href="/logout" id="logoutBtn"
                th:if="${#authorization.expression('isAuthenticated()')}">로그아웃</a>

@@ -33,7 +33,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/", "/index.html", "/login",
+                                "/", "/index.html", "/login/form",
                                 "/css/**", "/js/**", "/images/**",
                                 "/charge", "/oauth2/**", "/signup", "/category",
                                 "/category/**",
@@ -42,10 +42,12 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("/login/form")           // ← 일반 로그인 폼 페이지 지정
+                        .loginProcessingUrl("/login")       // ← 로그인 submit action (POST) 경로
                         .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
+
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         // --- 여기에 userInfoEndpoint 추가 ---

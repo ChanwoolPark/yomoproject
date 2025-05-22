@@ -24,11 +24,6 @@ public class HomeController {
         return "redirect:/category.html"; // 해당 html이 static에 존재할 경우
     }
 
-    @GetMapping("/login")
-    public String login() {
-        return "login.html";
-    }
-
     @GetMapping("/logout")
     public String logout() {
         // 세션 만료 등 처리
