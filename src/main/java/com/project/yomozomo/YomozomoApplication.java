@@ -10,4 +10,5 @@ public class YomozomoApplication {
         SpringApplication.run(YomozomoApplication.class, args);
     }
 
+
 }

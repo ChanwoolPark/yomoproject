@@ -35,10 +35,10 @@ public class HomeController {
         return "redirect:/my.html";
     }
 
-    @GetMapping("/chatbot")
-    public String chatbot() {
-        return "redirect:/chatbot.html";
-    }
+//    @GetMapping("/chatbot")
+//    public String chatbot() {
+//        return "redirect:/chatbot.html";
+//    }
 
     @GetMapping("/support")
     public String support() {
