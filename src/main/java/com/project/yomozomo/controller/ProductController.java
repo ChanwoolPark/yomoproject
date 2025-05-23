@@ -32,6 +32,9 @@ public class ProductController {
         // 현재 로그인 유저 ID (세션에서 꺼내기 - 예시)
         Long userId = (Long) session.getAttribute("userId");
 
+        productDetailService.incrementViewCount(productId);
+
+
         Product product = productDetailService.getProductById(productId);
         List<ProductImage> imageList = productDetailService.getProductImages(productId);
 

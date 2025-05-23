@@ -48,6 +48,13 @@ public class ProductDetailService {
         return wishlistRepo.existsByProduct_ProductIdAndUser_Id(productId, userId);
     }
 
+    @Transactional
+    public void incrementViewCount(int productId) {
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+        product.setCount(product.getCount() + 1);
+    }
+
 
     @Transactional(readOnly = true)
     public List<Rental> getReservedDates(int productId) {

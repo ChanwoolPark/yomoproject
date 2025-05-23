@@ -65,9 +65,13 @@ public class RentalApiController {
     public ResponseEntity<?> createRental(@RequestBody RentalRequestDto requestDto,
                                           HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
+        /* 로그인 실험용
         if (userId == null) {
             userId = 1L;
             session.setAttribute("userId", userId);
+        } */
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
 
         try {
