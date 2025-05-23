@@ -115,7 +115,9 @@ public class SecurityConfig {
 
             // 카카오는 "kakao_account" 안에 email, profile 등이 들어있음
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount
+
+                    .get("profile");
 
             String email = (String) kakaoAccount.get("email");
             String nickname = (String) profile.get("nickname");
