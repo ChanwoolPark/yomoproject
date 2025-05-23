@@ -13,61 +13,20 @@
             background: #fafbff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
-        .charge-container h2 {
-            margin-bottom: 1.2rem;
-            text-align: center;
-        }
-        .user-point {
-            margin-bottom: 1.6rem;
-            text-align: right;
-            font-size: 1.08rem;
-            color: #222;
-            font-weight: bold;
-        }
-        .charge-container label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        .charge-container input[type="number"],
-        .charge-container select {
-            width: 100%;
-            padding: 0.7rem;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            margin-bottom: 1.2rem;
+        .charge-container h2 { margin-bottom: 1.2rem; text-align: center; }
+        .user-point { margin-bottom: 1.6rem; text-align: right; font-size: 1.08rem; color: #222; font-weight: bold; }
+        .charge-container label { font-weight: bold; display: block; margin-bottom: 0.5rem; }
+        .charge-container input[type="number"] {
+            width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 1.2rem;
         }
         .charge-container button {
-            width: 100%;
-            padding: 0.8rem;
-            background: #4477ee;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-bottom: 1rem;
+            width: 100%; padding: 0.8rem; background: #4477ee; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-bottom: 1rem;
         }
-        .charge-history {
-            margin-top: 2rem;
-        }
-        .charge-history h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-        .charge-history table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95rem;
-        }
-        .charge-history th, .charge-history td {
-            border: 1px solid #ddd;
-            padding: 0.5rem 0.4rem;
-            text-align: center;
-        }
-        .charge-history th {
-            background: #f3f6fc;
-        }
+        .charge-history { margin-top: 2rem; }
+        .charge-history h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .charge-history table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .charge-history th, .charge-history td { border: 1px solid #ddd; padding: 0.5rem 0.4rem; text-align: center; }
+        .charge-history th { background: #f3f6fc; }
     </style>
 </head>
 <body>
@@ -76,23 +35,15 @@
 
 <div class="charge-container">
     <h2>포인트 충전</h2>
-    <!-- 유저 포인트 표시 (백엔드에서 point 값 내려주면 th:text로 출력) -->
+    <!-- 유저 포인트 표시 (DB 연동: 컨트롤러에서 모델로 넘겨준 point 값) -->
     <div class="user-point">
-        내 포인트: <span th:text="${point}">12,000</span> P
+        내 포인트: <span th:text="${point}">12,000</span> P <!-- (DB연동: 실제 포인트로 출력) -->
     </div>
-    <form action="#" method="post">
+    <!-- 충전하기: /widget 으로 post 전송 -->
+    <form action="/widget" method="post">
         <label for="chargeAmount">충전 금액</label>
         <input type="number" id="chargeAmount" name="chargeAmount" placeholder="충전할 금액 입력" min="1000" step="1000" required>
-
-        <label for="payMethod">결제 수단</label>
-        <select id="payMethod" name="payMethod" required>
-            <option value="" disabled selected>결제 수단 선택</option>
-            <option value="kakaopay">카카오페이</option>
-            <option value="toss">토스</option>
-            <option value="credit">신용/체크카드</option>
-            <option value="bank">계좌이체</option>
-        </select>
-
+        <!-- 결제 수단 select 삭제 -->
         <button type="submit">충전하기</button>
     </form>
     <div class="charge-history">
@@ -107,11 +58,12 @@
             </tr>
             </thead>
             <tbody>
+            <!-- DB에서 logs 리스트 받아서 출력 -->
             <tr th:each="log : ${logs}">
-                <td th:text="${#dates.format(log.createdAt, 'yyyy-MM-dd')}"></td>
-                <td th:text="${log.amount} + 'P'"></td>
-                <td th:text="${log.method}"></td>
-                <td th:text="${log.type}"></td>
+                <td th:text="${#dates.format(log.createdAt, 'yyyy-MM-dd')}"><!-- DB: 충전일자 --></td>
+                <td th:text="${log.amount} + 'P'"><!-- DB: 충전금액 --></td>
+                <td th:text="${log.method}"><!-- DB: 결제수단 --></td>
+                <td th:text="${log.type}"><!-- DB: 상태 --></td>
             </tr>
             </tbody>
         </table>

@@ -9,6 +9,14 @@ spring:
     username: Yomo
     password: 12345
 
+  devtools:
+    livereload:
+      enabled: true
+  freemarker:
+    cache: false
+  thymeleaf:
+    cache: false
+
   jpa:
     hibernate:
       ddl-auto: none  # create, update, none ? ?? ??
@@ -85,3 +93,11 @@ mybatis:
   mapper-locations: classpath*:com/project/yomozomo/mapper/*.xml
 
 
+api:
+  key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+
+
+
+logging:
+  level:
+    root: info
