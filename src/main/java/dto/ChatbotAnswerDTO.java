@@ -1,5 +1,5 @@
 // src/main/java/com/project/yomozomo/dto/ChatbotAnswerDTO.java (예시 경로)
-package com.project.yomozomo.dto;
+package dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

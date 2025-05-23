@@ -1,83 +1,65 @@
-// src/main/java/com/chat/controller/WebSocketChatController.java
 package com.project.yomozomo.controller;
 
-import com.project.yomozomo.entity.Chat;
-import com.project.yomozomo.service.ChatService;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping; // 테스트를 위한 일반 HTTP GET 매핑
 
-import java.time.LocalDateTime;
+// 예시 메시지 DTO (필요에 따라 만드세요)
+class ChatMessage {
+    private String sender;
+    private String content;
+    private String type; // "CHAT", "JOIN", "LEAVE" 등
+
+    // Getters and Setters
+    public String getSender() { return sender; }
+    public void setSender(String sender) { this.sender = sender; }
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+}
+
 
 @Controller
 public class WebSocketChatController {
 
-    private final SimpMessageSendingOperations messagingTemplate; // 메시지 전송용
-    private final ChatService chatService;
+    // SimpMessageSendingOperations를 통해 특정 클라이언트 또는 특정 구독자에게 메시지를 보낼 수 있습니다.
+    private final SimpMessageSendingOperations messagingTemplate;
 
-    @Autowired
-    public WebSocketChatController(SimpMessageSendingOperations messagingTemplate, ChatService chatService) {
+    // 생성자 주입으로 SimpMessageSendingOperations 인스턴스를 주입받습니다.
+    public WebSocketChatController(SimpMessageSendingOperations messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
-        this.chatService = chatService;
     }
 
-    // 클라이언트가 /app/chat.sendMessage 로 메시지를 보낼 때 호출
+    // HTTP 요청으로 채팅 페이지를 보여주는 메서드 (선택 사항)
+    @GetMapping("/chat")
+    public String chatPage() {
+        return "chat"; // src/main/resources/templates/chat.html 파일을 렌더링
+    }
+
+
+    // 클라이언트가 "/app/chat.sendMessage" 경로로 메시지를 보낼 때 이 메서드가 호출됩니다.
+    // @Payload: 메시지 본문을 ChatMessage 객체로 바인딩
+    // @SendTo("/topic/public"): 이 메서드의 반환 값을 "/topic/public"을 구독하는 모든 클라이언트에게 보냅니다.
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
-        // TODO: 실제 유저 ID와 룸 ID를 세션에서 가져오거나, 메시지에 포함하여 사용
-        // 현재는 예시용으로 고정 값 사용
-        Long roomId = chatMessage.getRoomId();
-        Long userId = chatMessage.getUserId(); // 메시지에 userId 포함 가정
-
-        // 데이터베이스에 메시지 저장
-        Chat savedChat = chatService.saveChatMessage(
-                roomId,
-                userId,
-                chatMessage.getContent(),
-                chatMessage.getImgUrl(),
-                chatMessage.getType()
-        );
-
-        // 메시지 저장 후, 해당 채팅방을 구독하고 있는 클라이언트들에게 메시지 전송
-        // /topic/public (전체 채팅) 또는 /topic/chat/{roomId} (특정 방 채팅)
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId, savedChat);
+    @SendTo("/topic/public") // 이 메서드의 결과는 이 목적지로 브로드캐스트 됩니다.
+    public ChatMessage sendMessage(@Payload ChatMessage chatMessage) {
+        // 메시지를 받았을 때 필요한 로직 (예: DB 저장, 로그 등)
+        System.out.println("Received message: " + chatMessage.getContent() + " from " + chatMessage.getSender());
+        return chatMessage; // 받은 메시지를 그대로 다시 클라이언트에게 브로드캐스트
     }
 
-    // 클라이언트가 /app/chat.addUser 로 메시지를 보낼 때 호출 (사용자 입장 알림 등)
+    // 클라이언트가 "/app/chat.addUser" 경로로 메시지를 보낼 때 호출됩니다.
+    // 이 메서드는 @SendTo를 사용하지 않고, messagingTemplate을 사용하여 직접 메시지를 보냅니다.
     @MessageMapping("/chat.addUser")
-    public void addUser(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
-        // WebSocket 세션에 사용자 이름 저장 (선택 사항)
-        // headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
+    public void addUser(@Payload ChatMessage chatMessage) {
+        chatMessage.setType("JOIN"); // 메시지 타입을 "JOIN"으로 설정 (예시)
+        System.out.println("User joined: " + chatMessage.getSender());
 
-        // 사용자 입장 메시지를 해당 채팅방에 전송
-        Long roomId = chatMessage.getRoomId();
-        String systemMessage = chatMessage.getSender() + "님이 입장했습니다.";
-        // 시스템 메시지 저장 (sender: -1 or system user)
-        Chat savedChat = chatService.saveChatMessage(
-                roomId,
-                chatMessage.getUserId(), // 입장하는 유저의 ID
-                systemMessage,
-                null,
-                "SYSTEM"
-        );
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId, savedChat);
-    }
-
-    // 웹소켓을 통해 클라이언트에서 받는 메시지 DTO
-    @Getter
-    @Setter
-    public static class ChatMessage {
-        private String type; // TEXT, IMAGE, SYSTEM, MAP 등
-        private Long roomId;
-        private Long userId; // 메시지를 보낸 사용자 ID
-        private String sender; // 메시지를 보낸 사용자 이름 (프론트엔드 표기용)
-        private String content; // 메시지 내용 (텍스트)
-        private String imgUrl; // 이미지 메시지인 경우 이미지 URL
-        // TODO: 지도 정보 등 추가 필드
+        // 특정 목적지로 메시지를 전송 (이 경우에는 /topic/public을 구독하는 모든 사용자)
+        messagingTemplate.convertAndSend("/topic/public", chatMessage);
     }
 }
