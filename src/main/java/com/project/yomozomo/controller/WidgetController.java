@@ -24,6 +24,19 @@ public class WidgetController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @RequestMapping(value = "/widget", method = RequestMethod.POST)
+    public String widgetCharge(HttpServletRequest request, Model model) throws Exception {
+        // 폼에서 받은 값 처리 (예: chargeAmount)
+        String chargeAmount = request.getParameter("chargeAmount");
+        // TODO: 금액에 대한 결제/DB저장/비즈니스 로직 추가
+
+        // 예시: 금액을 모델에 다시 담아서 /charge로 리다이렉트
+        // model.addAttribute("point", ...);
+        // model.addAttribute("logs", ...);
+
+        // 충전 후 포인트 페이지로 이동
+        return  "checkout";
+    }
     @RequestMapping(value = "/confirm")
     public ResponseEntity<JSONObject> confirmPayment(@RequestBody String jsonBody) throws Exception {
 
