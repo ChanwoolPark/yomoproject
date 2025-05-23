@@ -4,14 +4,14 @@ spring:
     name: Yomozomo
 
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521:XE
+    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
     driver-class-name: oracle.jdbc.OracleDriver
-    username: system
+    username: Yomo
     password: 12345
 
   jpa:
     hibernate:
-      ddl-auto: update  # create, update, none ? ?? ??
+      ddl-auto: none  # create, update, none ? ?? ??
     show-sql: true
     database-platform: org.hibernate.dialect.OracleDialect
   security:
@@ -37,6 +37,7 @@ spring:
             scope:
               - profile_nickname
               - profile_image
+              - account_email
             client-name: Kakao
             provider: kakao
 

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -31,11 +32,17 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         OAuth2User oauthUser = ((OAuth2AuthenticationToken) authentication).getPrincipal();
         String email = oauthUser.getAttribute("email");
-        if (!userService.existsByEmail(email)) {
-            // 신규 가입 흐름
+
+        boolean isNew = !userService.existsByEmail(email);
+
+        if (isNew) {
+            // 👇 세션에 OAuth2 유저 정보 저장
+            request.getSession().setAttribute("oauthUser", oauthUser);
             response.sendRedirect("/signup");
         } else {
             response.sendRedirect("/");
         }
     }
+
+
 }

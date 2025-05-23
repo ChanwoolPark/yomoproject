@@ -1,6 +1,8 @@
 package com.project.yomozomo.controller;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,14 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
-    // 메인 페이지 (템플릿 엔진으로 렌더링)
     @GetMapping("/")
     public String home(Model model, @AuthenticationPrincipal User user) {
-        // 필요한 데이터 모델에 담기...
-        // model.addAttribute("user", user);
-        // ...
-        return "index";       // → src/main/resources/templates/index.html
+        return "index";
     }
+
+
 
 
     @GetMapping("/category")

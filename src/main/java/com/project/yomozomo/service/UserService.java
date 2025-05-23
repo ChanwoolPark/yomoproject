@@ -51,6 +51,9 @@ public class UserService {
         });
     }
 
+    public boolean existsByNickname(String nickname) {
+        return userRepo.existsByNickname(nickname);
+    }
 
     public User registerNewUser(SignupForm form) {
         User u = new User();

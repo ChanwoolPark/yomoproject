@@ -28,22 +28,5 @@
 
 <button id="topBtn" onclick="scrollToTop()">Top<br>버튼</button>
 
-<script>
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const loginBtn = document.getElementById("loginBtn");
-        const logoutBtn = document.getElementById("logoutBtn");
-        const myInfoBtn = document.getElementById("myInfoBtn");
-        // 로그인 여부에 따라 버튼 표시 (임시용)
-        const isLoggedIn = false; // 실제 로그인 여부 체크 로직으로 대체
-        if (loginBtn) loginBtn.style.display = isLoggedIn ? "none" : "inline";
-        if (logoutBtn) logoutBtn.style.display = isLoggedIn ? "inline" : "none";
-        if (myInfoBtn) myInfoBtn.style.display = isLoggedIn ? "inline" : "none";
-    });
-</script>
-
 </body>
 </html>

@@ -50,12 +50,26 @@ document.getElementById('passwordCheck').addEventListener('input', function() {
 
 // 닉네임 유효성
 document.getElementById('nickname').addEventListener('blur', function() {
-    if (!/^[a-zA-Z0-9가-힣]{2,20}$/.test(this.value)) {
-        document.getElementById('nicknameMsg').innerText = "특수문자 없이 2~20자";
-    } else {
-        document.getElementById('nicknameMsg').innerText = "";
+    const val = this.value;
+    const msg = document.getElementById('nicknameMsg');
+
+    if (!/^[a-zA-Z0-9가-힣]{2,20}$/.test(val)) {
+        msg.innerText = "특수문자 없이 2~20자";
+        return;
     }
+
+    // 중복 체크
+    fetch(`/api/user/check-nickname?nickname=${encodeURIComponent(val)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data) {
+                msg.innerText = "이미 존재하는 닉네임입니다.";
+            } else {
+                msg.innerText = ""; // 중복 없음
+            }
+        });
 });
+
 
 // 이메일 중복확인 (입력 변경시 자동)
 document.getElementById('email').addEventListener('blur', function() {

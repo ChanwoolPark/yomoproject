@@ -30,6 +30,11 @@ public class UserCheckController {
         return userService.findUsernameByNameAndEmail(name, email)
                 .orElse("일치하는 회원 정보가 없습니다.");
     }
+    @GetMapping("/check-nickname")
+    @ResponseBody
+    public boolean checkNickname(@RequestParam String nickname) {
+        return userService.existsByNickname(nickname);
+    }
 
     // 1. 인증번호 발송 (POST)
     @PostMapping("/send-verify-code")
