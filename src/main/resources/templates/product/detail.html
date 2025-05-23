@@ -46,7 +46,9 @@
           <span th:text="${seller.grade}">등급</span>
         </div>
       </div>
-      <div class="map-placeholder">[판매자 주소 표시 영역]</div>
+      <div class="map-placeholder">
+        <div id="map" style="width:100%; height:300px;"></div>
+      </div>
     </div>
   </div>
 
@@ -96,6 +98,37 @@
 
 <!-- 오버레이 -->
 <div id="overlay" onclick="closeReservationModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
+
+<!-- 지도 API KEY -->
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&libraries=services"></script>
+
+<!-- 지도 이벤트 -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const sellerAddress = "${seller.address}";
+
+    const mapContainer = document.getElementById('map');
+    const mapOption = {
+      center: new kakao.maps.LatLng(37.5665, 126.9780),
+      level: 3
+    };
+
+    const map = new kakao.maps.Map(mapContainer, mapOption);
+    const geocoder = new kakao.maps.services.Geocoder();
+
+    geocoder.addressSearch(sellerAddress, function(result, status) {
+      if (status === kakao.maps.services.Status.OK) {
+        const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+        const marker = new kakao.maps.Marker({
+          map: map,
+          position: coords
+        });
+        map.setCenter(coords);
+      }
+    });
+  });
+</script>
+
 
 <!-- 예약 부분 캘린더 JS 코드 -->
 <script th:inline="javascript">
@@ -252,6 +285,7 @@
             .catch(err => alert(err.message));
   }
 </script>
+
 
 
 </body>
