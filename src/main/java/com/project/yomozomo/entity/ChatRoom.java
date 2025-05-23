@@ -1,6 +1,8 @@
 // src/main/java/com/chat/entity/ChatRoom.java
 package com.project.yomozomo.entity;
 
+import com.project.yomozomo.domain.Rental;
+import com.project.yomozomo.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,16 +14,28 @@ import java.time.LocalDateTime;
 @Setter
 public class ChatRoom {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "chat_room_seq") // 시퀀스 사용 예시
-    @SequenceGenerator(name = "chat_room_seq", sequenceName = "CHAT_ROOM_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_chat_room") // 시퀀스 사용 예시
+    @SequenceGenerator(name = "seq_chat_room", sequenceName = "seq_chat_room", allocationSize = 1)
     @Column(name = "ROOM_ID")
     private Long roomId;
 
-    @Column(name = "ROOM_NAME", nullable = false)
+    @Column(name = "ROOM_NAME",length = 500, nullable = false)
     private String roomName;
 
     @Column(name = "CREATED_AT", columnDefinition = "TIMESTAMP DEFAULT SYSTIMESTAMP")
     private LocalDateTime createdAt; // Oracle의 SYSTIMESTAMP와 매핑
+
+    @ManyToOne
+    @JoinColumn(name = "rental_id", nullable = false)
+    private Rental rental;
+
+    @ManyToOne
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
+
+    @ManyToOne
+    @JoinColumn(name = "buyer_id", nullable = false)
+    private User buyer;
 
     // 양방향 매핑 (선택 사항) - ChatRoom에 속한 Chat 메시지들을 가져올 때 유용
     // @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
