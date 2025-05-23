@@ -52,12 +52,12 @@ public class ProductListService {
     }
 
     @Transactional(readOnly = true)
-    public List<Wishlist> getWishlist(int userId) {
+    public List<Wishlist> getWishlist(Long userId) {
         return wishlistRepo.findByUserId(userId);
     }
 
     @Transactional(readOnly = true)
-    public List<ViewedProduct> getRecentlyViewed(int userId) {
+    public List<ViewedProduct> getRecentlyViewed(Long userId) {
         return viewedRepo.findTop5ByUserIdOrderByViewedAtDesc(userId);
     }
 

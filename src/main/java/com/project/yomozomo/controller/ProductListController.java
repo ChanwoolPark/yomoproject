@@ -50,7 +50,7 @@ public class ProductListController {
 
     // 중복 제거: 로그인 사용자 관련 속성 처리
     private void addUserRelatedAttributes(Model model, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+        Long userId = (Long) session.getAttribute("userId");
         if (userId != null) {
             model.addAttribute("wishlist", productListService.getWishlist(userId));
             model.addAttribute("recentlyViewed", productListService.getRecentlyViewed(userId));

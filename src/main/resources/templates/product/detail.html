@@ -21,7 +21,7 @@
 
     /* 달력 부분 */
     .fc-daygrid-day.selected-start {
-      background-color: #00B9FF !important;  /* 진한 파랑 */
+      background-color: #339af0 !important;  /* 진한 파랑 */
     }
     .fc-daygrid-day.selected-range {
       background-color: #d0ebff !important;  /* 연한 파랑 */
@@ -105,6 +105,7 @@
 
   const productId = /*[[${product.productId}]]*/ 0;
 
+  // 모달 열기
   function openReservationModal() {
     document.getElementById('reservationModal').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
@@ -120,19 +121,24 @@
           selectOverlap: false,
           events: '/api/rental/reserved/' + productId,
 
-          dateClick: function(info) {
-            const clickedDate = new Date(info.date.setHours(0, 0, 0, 0));  // normalize
+          dateClick: function (info) {
+            const clickedDate = new Date(info.date);
+            clickedDate.setHours(0, 0, 0, 0);
 
-            // 예약된 날짜 클릭 방지
-            const isDisabled = calendar.getEvents().some(event =>
-                    clickedDate >= event.start && clickedDate < event.end
-            );
+            // 예약된 날짜인지 확인 (종료일 포함)
+            const isDisabled = calendar.getEvents().some(event => {
+              const start = new Date(event.start);
+              const end = new Date(event.end);
+              start.setHours(0, 0, 0, 0);
+              end.setHours(0, 0, 0, 0);
+              return clickedDate >= start && clickedDate <= end;
+            });
+
             if (isDisabled) {
               alert("해당 날짜는 예약할 수 없습니다.");
               return;
             }
 
-            // 첫 클릭 or 재선택
             if (!selectedStart || (selectedStart && selectedEnd)) {
               selectedStart = clickedDate;
               selectedEnd = null;
@@ -143,42 +149,45 @@
                 return;
               }
 
-              const overlap = calendar.getEvents().some(event =>
-                      event.start < clickedDate && event.end > selectedStart
-              );
+              // 범위 내 예약된 날짜 확인
+              const overlap = calendar.getEvents().some(event => {
+                const start = new Date(event.start);
+                const end = new Date(event.end);
+                start.setHours(0, 0, 0, 0);
+                end.setHours(0, 0, 0, 0);
+                return clickedDate >= start && selectedStart <= end;
+              });
+
               if (overlap) {
                 alert("선택한 날짜 범위 중 예약된 일정이 포함되어 있습니다.");
                 return;
               }
 
               selectedEnd = clickedDate;
-              document.getElementById('datePreview').innerText =
-                      selectedStart.toDateString() + " ~ " + selectedEnd.toDateString();
+              document.getElementById('datePreview').innerText = selectedStart.toDateString() + " ~ " + selectedEnd.toDateString();
             }
 
-            // 스타일 초기화
-            document.querySelectorAll('.fc-daygrid-day').forEach(el => {
-              el.classList.remove('selected-start', 'selected-range');
-            });
+            // 스타일 초기화 및 강조
+            document.querySelectorAll('.fc-daygrid-day').forEach(el => el.classList.remove('selected-start', 'selected-range'));
 
-            // 날짜 강조
-            const days = document.querySelectorAll('.fc-daygrid-day');
-            days.forEach(dayEl => {
+            document.querySelectorAll('.fc-daygrid-day').forEach(dayEl => {
               const dateAttr = dayEl.getAttribute('data-date');
               if (!dateAttr) return;
 
               const currentDate = new Date(dateAttr);
               currentDate.setHours(0, 0, 0, 0);
 
-              if (selectedStart && currentDate.getTime() === selectedStart.getTime()) {
+              const start = selectedStart ? new Date(selectedStart) : null;
+              const end = selectedEnd ? new Date(selectedEnd) : null;
+
+              if (start && !end && currentDate.getTime() === start.getTime()) {
                 dayEl.classList.add('selected-start');
               }
 
-              if (
-                      selectedStart && selectedEnd &&
-                      currentDate >= selectedStart &&
-                      currentDate <= selectedEnd
-              ) {
+              if (start && end && currentDate >= start && currentDate <= end) {
+                if (currentDate.getTime() === start.getTime()) {
+                  dayEl.classList.add('selected-start');
+                }
                 dayEl.classList.add('selected-range');
               }
             });
@@ -192,18 +201,25 @@
     }, 100);
   }
 
+  // 모달 닫기
   function closeReservationModal() {
     document.getElementById('reservationModal').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('datePreview').innerText = '날짜를 선택해주세요';
     selectedStart = null;
     selectedEnd = null;
-
-    document.querySelectorAll('.fc-daygrid-day').forEach(el => {
-      el.classList.remove('selected-start', 'selected-range');
-    });
+    document.querySelectorAll('.fc-daygrid-day').forEach(el => el.classList.remove('selected-start', 'selected-range'));
   }
 
+  // 날짜 문자열 포맷
+  function formatDate(date) {
+    const yyyy = date.getFullYear();
+    const mm = ('0' + (date.getMonth() + 1)).slice(-2);
+    const dd = ('0' + date.getDate()).slice(-2);
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // 예약 확정
   function submitReservation(event) {
     event.preventDefault();
 
@@ -212,11 +228,28 @@
       return;
     }
 
-    document.getElementById('startDate').value = selectedStart.toISOString().split('T')[0];
-    document.getElementById('endDate').value = selectedEnd.toISOString().split('T')[0];
+    const startDateStr = formatDate(selectedStart);
+    const endDateStr = formatDate(selectedEnd);
 
-    alert("예약 확정: " + selectedStart.toDateString() + " ~ " + selectedEnd.toDateString());
-    closeReservationModal();
+    fetch('/api/rental', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productId: productId,
+        startDate: startDateStr,
+        endDate: endDateStr
+      })
+    })
+            .then(res => {
+              if (!res.ok) throw new Error("예약 실패");
+              return res.text();
+            })
+            .then(msg => {
+              alert(msg);
+              closeReservationModal();
+              window.location.reload();
+            })
+            .catch(err => alert(err.message));
   }
 </script>
 
