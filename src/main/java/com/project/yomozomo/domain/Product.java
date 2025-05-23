@@ -14,7 +14,8 @@ import java.util.Date;
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_product")
+    @SequenceGenerator(name = "seq_product", sequenceName = "seq_product", allocationSize = 1)
     @Column(name = "product_id")
     private int productId;
 

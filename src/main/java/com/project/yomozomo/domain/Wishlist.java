@@ -13,7 +13,8 @@ import java.util.Date;
 public class Wishlist {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_product_likes")
+    @SequenceGenerator(name = "seq_product_likes", sequenceName = "seq_product_likes", allocationSize = 1)
     @Column(name = "like_id")
     private int likeId;
 
