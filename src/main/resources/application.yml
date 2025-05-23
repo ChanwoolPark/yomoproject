@@ -9,6 +9,18 @@ spring:
     username: Yomo
     password: 12345
 
+  devtools:
+    livereload:
+      enabled: true
+  freemarker:
+    cache: false
+  thymeleaf:
+    cache: false
+
+  sql: # spring 바로 아래 레벨
+    init: # sql 바로 아래 레벨
+      mode: embedded
+
   jpa:
     hibernate:
       ddl-auto: none  # create, update, none ? ?? ??
@@ -40,7 +52,6 @@ spring:
               - account_email
             client-name: Kakao
             provider: kakao
-
 
           naver:
             client-id: td847e40ucetFw3lr6g7
@@ -85,3 +96,15 @@ mybatis:
   mapper-locations: classpath*:com/project/yomozomo/mapper/*.xml
 
 
+api:
+  key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+
+
+
+logging:
+  level:
+    root: info
+naver:
+  map:
+    client-id: "n9zoa1avp8" # 실제 발급받은 클라이언트 ID
+    client-secret: "DM7myffwIr4XhmRNgOLQ5nfM8L1NHjy9axPi755k" # 민감한 정보이므로 꼭 .gitignore에 추가

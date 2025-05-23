@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 public class ViewedProduct {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_viewed_products")
+    @SequenceGenerator(name = "seq_viewed_products", sequenceName = "viewed_products", allocationSize = 1)
     private int id;
 
     // 유저와 다대일 관계
