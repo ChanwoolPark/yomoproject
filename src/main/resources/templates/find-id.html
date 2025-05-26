@@ -1,0 +1,19 @@
+<h2>아이디 찾기</h2>
+<form method="post" action="/api/user/find-id" id="findIdForm">
+    <label>이름: <input type="text" name="name" required></label><br>
+    <label>이메일: <input type="email" name="email" required></label><br>
+    <button type="submit">찾기</button>
+</form>
+<div id="idResult"></div>
+<script>
+    document.getElementById('findIdForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const res = await fetch('/api/user/find-id', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await res.text();
+        document.getElementById('idResult').innerText = result;
+    };
+</script>
