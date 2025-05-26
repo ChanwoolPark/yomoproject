@@ -1,4 +1,3 @@
-// src/main/java/com/chat/repository/ChatRepository.java
 package com.project.yomozomo.repository;
 
 import com.project.yomozomo.entity.Chat;
