@@ -1,5 +1,6 @@
 package com.project.yomozomo.domain;
 
+import com.project.yomozomo.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

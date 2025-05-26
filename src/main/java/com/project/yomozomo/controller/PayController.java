@@ -2,7 +2,7 @@
 
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.Rental;
-import com.project.yomozomo.domain.User;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.service.PayService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;

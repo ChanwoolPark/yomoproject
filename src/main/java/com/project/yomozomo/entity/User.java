@@ -1,4 +1,4 @@
-package com.project.yomozomo.domain;
+package com.project.yomozomo.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
