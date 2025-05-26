@@ -40,6 +40,8 @@ public class WebSocketChatController {
         this.messagingTemplate = messagingTemplate;
     }
 
+
+
     // HTTP 요청으로 채팅 페이지를 보여주는 메서드 (선택 사항)
     @GetMapping("/chat")
     public String chatPage(Model model) { // Model 파라미터를 추가합니다.

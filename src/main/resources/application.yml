@@ -108,3 +108,6 @@ naver:
   map:
     client-id: "n9zoa1avp8" # 실제 발급받은 클라이언트 ID
     client-secret: "DM7myffwIr4XhmRNgOLQ5nfM8L1NHjy9axPi755k" # 민감한 정보이므로 꼭 .gitignore에 추가
+
+file:
+  upload-dir: uploads/

@@ -1,5 +1,5 @@
 // src/main/java/com/chat/config/WebConfig.java
-package config;
+package com.project.yomozomo.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

@@ -5,6 +5,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Configuration // Spring 설정 클래스임을 명시
 @EnableWebSocketMessageBroker // STOMP 기반 WebSocket 메시징 활성화
@@ -30,4 +31,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws").withSockJS(); // SockJS 지원 활성화 (하위 호환성을 위해 권장)
         // .setAllowedOrigins("*") // CORS 문제 해결 (필요시 추가, 실제 운영에서는 특정 도메인만 허용)
     }
+
+
+
 }
