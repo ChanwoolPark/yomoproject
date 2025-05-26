@@ -1,9 +1,6 @@
-import com.project.yomozomo.domain.Product;
-import com.project.yomozomo.domain.User;
-
 /*
 import com.project.yomozomo.domain.Product;
-import com.project.yomozomo.domain.User;
+import com.project.yomozomo.entity.User;
 package com.project.yomozomo.service;
 
 import com.project.yomozomo.domain.*;

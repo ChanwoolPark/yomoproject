@@ -3,7 +3,7 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.ProductImage;
-import com.project.yomozomo.domain.User;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.service.ProductDetailService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;

@@ -42,15 +42,15 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "reporter_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-    private Users reporter;
+    private User reporter;
 
     @ManyToOne
     @JoinColumn(name = "target_user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-    private Users targetUser;
+    private User targetUser;
 
     @ManyToOne
     @JoinColumn(name = "processed_by", referencedColumnName = "user_id", insertable = false, updatable = false)
-    private Users processor;
+    private User processor;
 
     public Report() {
     }
@@ -158,27 +158,27 @@ public class Report {
         this.processedAt = processedAt;
     }
 
-    public Users getReporter() {
+    public User getReporter() {
         return reporter;
     }
 
-    public void setReporter(Users reporter) {
+    public void setReporter(User reporter) {
         this.reporter = reporter;
     }
 
-    public Users getTargetUser() {
+    public User getTargetUser() {
         return targetUser;
     }
 
-    public void setTargetUser(Users targetUser) {
+    public void setTargetUser(User targetUser) {
         this.targetUser = targetUser;
     }
 
-    public Users getProcessor() {
+    public User getProcessor() {
         return processor;
     }
 
-    public void setProcessor(Users processor) {
+    public void setProcessor(User processor) {
         this.processor = processor;
     }
 }

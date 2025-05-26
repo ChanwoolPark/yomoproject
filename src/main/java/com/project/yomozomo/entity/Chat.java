@@ -1,7 +1,7 @@
 // src/main/java/com/chat/entity/Chat.java
 package com.project.yomozomo.entity;
 
-import com.project.yomozomo.entity.Users;
+import com.project.yomozomo.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +24,7 @@ public class Chat {
 
     @ManyToOne(fetch = FetchType.LAZY) // 지연 로딩
     @JoinColumn(name = "USER_ID") // user_id 컬럼과 매핑
-    private Users user; // Users 엔티티와 관계 설정
+    private User user; // Users 엔티티와 관계 설정
 
     @Lob // CLOB 타입 매핑
     @Column(name = "MESSAGE")

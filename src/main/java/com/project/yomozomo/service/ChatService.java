@@ -3,10 +3,10 @@ package com.project.yomozomo.service;
 
 import com.project.yomozomo.entity.Chat;
 import com.project.yomozomo.entity.ChatRoom;
-import com.project.yomozomo.entity.Users;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ChatRepository;       // 변경
 import com.project.yomozomo.repository.ChatRoomRepository;   // 변경
-import com.project.yomozomo.repository.UsersRepository;      // 변경
+import com.project.yomozomo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +18,10 @@ public class ChatService {
 
     private final ChatRepository chatRepository;
     private final ChatRoomRepository chatRoomRepository;
-    private final UsersRepository usersRepository;
+    private final UserRepository usersRepository;
 
     @Autowired
-    public ChatService(ChatRepository chatRepository, ChatRoomRepository chatRoomRepository, UsersRepository usersRepository) {
+    public ChatService(ChatRepository chatRepository, ChatRoomRepository chatRoomRepository, UserRepository usersRepository) {
         this.chatRepository = chatRepository;
         this.chatRoomRepository = chatRoomRepository;
         this.usersRepository = usersRepository;
@@ -51,7 +51,7 @@ public class ChatService {
     public Chat saveChatMessage(Long roomId, Long userId, String messageContent, String imgUrl, String messageType) {
         ChatRoom chatRoom = chatRoomRepository.findByRoomId(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat room not found: " + roomId));
-        Users user = usersRepository.findByUserId(userId)
+        User user = usersRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
         Chat chat = new Chat();
@@ -74,14 +74,14 @@ public class ChatService {
 
     // TODO: 유저 생성/조회 (인증/인가 미포함, 단순 CRUD)
     @Transactional
-    public Users createUser(String username) {
-        Users user = new Users();
+    public User createUser(String username) {
+        User user = new User();
         user.setUsername(username);
         return usersRepository.save(user);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Users> getUserById(Long userId) {
-        return usersRepository.findByUserId(userId);
+    public Optional<User> getUserById(Long userId) {
+        return usersRepository.findById(userId);
     }
 }

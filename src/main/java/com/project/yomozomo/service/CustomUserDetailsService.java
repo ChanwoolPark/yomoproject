@@ -1,6 +1,6 @@
 package com.project.yomozomo.service;
 
-import com.project.yomozomo.domain.User;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

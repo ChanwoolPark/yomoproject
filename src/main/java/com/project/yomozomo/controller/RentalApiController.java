@@ -2,7 +2,7 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.Rental;
-import com.project.yomozomo.domain.User;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.dto.RentalRequestDto;
 import com.project.yomozomo.repository.ProductRepository;
 import com.project.yomozomo.repository.RentalRepository;
@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
