@@ -21,6 +21,7 @@ public class ProductListService {
     private final WishlistRepository wishlistRepo;
     private final ViewedProductRepository viewedRepo;
     private final ProductImageRepository productImageRepo;
+    private static final String NOT_DELETED = "N";
 
     public ProductListService(SubCategoryRepository subCategoryRepo,
                               ProductRepository productRepo,
@@ -41,13 +42,13 @@ public class ProductListService {
 
     @Transactional(readOnly = true)
     public List<ProductDto> getProductsByCategory(int categoryId) {
-        List<Product> products = productRepo.findBySubCategory_Category_CategoryId(categoryId);
+        List<Product> products = productRepo.findBySubCategory_Category_CategoryIdAndIsDeleted(categoryId, NOT_DELETED);
         return mapProductsToDto(products);
     }
 
     @Transactional(readOnly = true)
     public List<ProductDto> getProductsBySubCategoryId(int subCategoryId) {
-        List<Product> products = productRepo.findBySubCategory_SubCategoryId(subCategoryId);
+        List<Product> products = productRepo.findBySubCategory_SubCategoryIdAndIsDeleted(subCategoryId, NOT_DELETED);
         return mapProductsToDto(products);
     }
 

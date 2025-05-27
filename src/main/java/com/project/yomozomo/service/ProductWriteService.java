@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -72,6 +73,63 @@ public class ProductWriteService {
         return subCategoryRepo.findById(id).orElseThrow(() -> new RuntimeException("소카테고리 없음"));
     }
 
+    public Product getProductById(int productId) {
+        return productRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+    }
 
+    @Transactional
+    public void updateProduct(int productId, String title, String description, int price, int deposit,
+                              String status,  User seller, SubCategory subCategory,  List<MultipartFile> images) {
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+
+        product.setTitle(title);
+        product.setDescription(description);
+        product.setPrice(price);
+        product.setDeposit(deposit);
+        product.setSubCategory(subCategory);
+        product.setStatus(status);
+
+        if (images != null && images.stream().anyMatch(file -> !file.isEmpty())) {
+            imageRepo.deleteByProduct(product);
+
+            images.stream()
+                    .filter(file -> !file.isEmpty())
+                    .limit(3)
+                    .forEach(file -> {
+                        try {
+                            String uploadDir = new File("src/main/resources/static/images").getAbsolutePath();
+                            File dir = new File(uploadDir);
+                            if (!dir.exists()) {
+                                dir.mkdirs();
+                            }
+
+                            File dest = new File(uploadDir, file.getOriginalFilename());
+                            file.transferTo(dest);
+
+                            String imageUrl = "/images/" + file.getOriginalFilename();
+                            ProductImage img = new ProductImage();
+                            img.setProduct(product);
+                            img.setImageUrl(imageUrl);
+                            imageRepo.save(img);
+                        } catch (IOException e) {
+                            throw new RuntimeException("이미지 저장 중 오류 발생", e);
+                        }
+                    });
+        }
+    }
+
+    @Transactional
+    public void deleteProduct(int productId, User currentUser) {
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+
+        if (!product.getSeller().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        product.delete();  // isDeleted = 'Y'
+    }
 
 }

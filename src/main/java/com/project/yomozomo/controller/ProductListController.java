@@ -57,7 +57,6 @@ public class ProductListController {
         return "product/list";
     }
 
-    // 중복 제거: 로그인 사용자 관련 속성 처리
     private void addUserRelatedAttributes(Model model, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId != null) {

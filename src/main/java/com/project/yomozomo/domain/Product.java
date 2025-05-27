@@ -53,4 +53,9 @@ public class Product {
 
     @Column(length = 20)
     private String status = "판매중";
+
+    public void delete() {
+        this.isDeleted = "Y";
+    }
+
 }

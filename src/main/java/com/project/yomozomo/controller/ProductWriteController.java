@@ -1,5 +1,6 @@
 package com.project.yomozomo.controller;
 
+import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.SubCategory;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.service.ProductFormService;
@@ -9,13 +10,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -63,5 +62,58 @@ public class ProductWriteController {
 
         return "redirect:/category/" + subCategory.getCategory().getCategoryId();
     }
+    
+    // 수정시 데이터 불러오기
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable("id") int productId, Model model, Principal principal) {
+        Product product = productWriteService.getProductById(productId); // 상품 불러오기
+        String username = principal.getName(); // 로그인 사용자 확인
+        User user = userService.findByUsername(username);
 
+        if (!product.getSeller().getId().equals(user.getId())) {
+            return "redirect:/"; // 권한 없는 사용자는 리다이렉트
+        }
+
+        model.addAttribute("product", product);
+        model.addAttribute("subCategories", productFormService.getAllSubCategories(product.getSubCategory().getCategory().getCategoryId()));
+        return "product/edit"; // 수정 페이지
+    }
+
+    @PostMapping("/edit/{id}")
+    public String updateProduct(@PathVariable("id") int productId,
+                                @RequestParam("title") String title,
+                                @RequestParam("description") String description,
+                                @RequestParam("price") int price,
+                                @RequestParam("deposit") int deposit,
+                                @RequestParam("subCategoryId") int subCategoryId,
+                                @RequestParam("status") String status,
+                                @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                                Principal principal,
+                                RedirectAttributes redirectAttributes) {
+
+        String username = principal.getName();
+        User seller = userService.findByUsername(username);
+        SubCategory subCategory = productWriteService.getSubCategory(subCategoryId);
+
+        productWriteService.updateProduct(productId, title, description, price, deposit,status,  seller, subCategory, images);
+        redirectAttributes.addFlashAttribute("message", "상품이 수정되었습니다.");
+        return "redirect:/product/" + productId;
+    }
+
+    @PostMapping("/delete/{id}")
+    public String deleteProduct(@PathVariable("id") int productId,
+                                Principal principal,
+                                RedirectAttributes redirectAttributes) {
+        String username = principal.getName();
+        User seller = userService.findByUsername(username);
+
+        productWriteService.deleteProduct(productId, seller);
+
+        redirectAttributes.addFlashAttribute("message", "상품이 삭제되었습니다.");
+        return "redirect:/";
+    }
+
+
+    
 }
+

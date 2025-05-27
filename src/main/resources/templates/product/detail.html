@@ -91,6 +91,9 @@
     <h2 th:text="${product.title}">상품 제목</h2>
 
     <p>
+
+
+
       <strong th:text="'서브카테고리: ' + ${product.subCategory.name}">서브카테고리</strong>
       <span th:text="'거래 상태: ' + ${product.status}">거래 상태</span> |
       <span th:text="${createdAt}">등록일</span>
@@ -110,13 +113,42 @@
     </p>
 
     <!-- 버튼 -->
-    <div class="buttons" style="display: flex; gap: 10px;">
+    <!-- 상단: 찜하기, 1:1 채팅 -->
+    <div class="buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
       <button type="button">찜하기</button>
-      <button type="button" onclick="openReservationModal()">예약 신청</button>
-      <button type="button" style="margin-left: auto;">신고하기</button>
+      <button type="button" onclick="openChat()">1:1 채팅하기</button>
+    </div>
+
+    <!-- 하단: 수정, 삭제, 목록 (판매자만 수정/삭제 가능) -->
+    <div class="buttons" style="display: flex; gap: 10px;">
+  <span th:if="${userId == product.seller.id}">
+    <a th:href="@{'/product/edit/' + ${product.productId}}">
+      <button type="button">글 수정</button>
+    </a>
+    <form th:action="@{'/product/delete/' + ${product.productId}}" method="post" style="display:inline;" onsubmit="return confirmDelete();">
+      <button type="submit">글 삭제</button>
+    </form>
+  </span>
+
+      <!-- 항상 보이는 목록 버튼 -->
+      <a th:href="@{'/category/' + ${product.subCategory.category.categoryId}}" style="margin-left: auto;">
+        <button type="button">목록</button>
+      </a>
+    </div>
+
+    <!-- 삭제 확인 스크립트 -->
+    <script>
+      function confirmDelete() {
+        return confirm("정말 삭제하시겠습니까?");
+      }
+    </script>
+
     </div>
   </div>
 </div>
+
+
+
 
 <!-- 예약 모달 -->
 <div id="reservationModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
