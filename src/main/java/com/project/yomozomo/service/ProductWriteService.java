@@ -35,7 +35,7 @@ public class ProductWriteService {
         product.setDescription(description);
         product.setPrice(price);
         product.setDeposit(deposit);
-        product.setCount(1); // 기본 수량 1
+        product.setCount(0);
         product.setSeller(seller);
         product.setSubCategory(subCategory);
         product.setStatus("판매중");

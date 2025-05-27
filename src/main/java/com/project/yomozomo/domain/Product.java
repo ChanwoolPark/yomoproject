@@ -42,7 +42,7 @@ public class Product {
     private Integer deposit = 0;
 
     @Column(nullable = false)
-    private Integer count;
+    private Integer count = 0;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")

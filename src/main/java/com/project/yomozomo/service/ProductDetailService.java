@@ -49,10 +49,19 @@ public class ProductDetailService {
     }
 
     @Transactional
-    public void incrementViewCount(int productId) {
+    public Product incrementViewCount(int productId) {
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
-        product.setCount(product.getCount() + 1);
+
+        int currentCount = product.getCount();
+        System.out.println("[조회수 증가 전] count = " + currentCount);
+
+        product.setCount(currentCount + 1);
+        productRepo.save(product);
+
+        System.out.println("[조회수 증가 후] count = " + product.getCount());
+
+        return product; // ✔️ 조회된 product 리턴
     }
 
 

@@ -44,9 +44,7 @@ public class ProductController {
             userId = user.getId();
         }
 
-        productDetailService.incrementViewCount(productId);
-
-        Product product = productDetailService.getProductById(productId);
+        Product product = productDetailService.incrementViewCount(productId); // 조회 + 증가
         List<ProductImage> imageList = productDetailService.getProductImages(productId);
 
         // 판매자 정보
