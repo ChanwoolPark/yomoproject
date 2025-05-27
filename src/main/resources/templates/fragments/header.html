@@ -15,7 +15,7 @@
                th:if="${not #authorization.expression('isAuthenticated()')}">로그인</a>
             <a href="/logout" id="logoutBtn"
                th:if="${#authorization.expression('isAuthenticated()')}">로그아웃</a>
-            <a href="/my" id="myInfoBtn"
+            <a href="/mypage" id="myInfoBtn"
                th:if="${#authorization.expression('isAuthenticated()')}">마이페이지</a>
         </div>
     </header>

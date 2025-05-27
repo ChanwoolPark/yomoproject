@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div th:fragment="content">
+  <div style="display: flex; align-items: center; margin-bottom: 30px;">
+    <img th:src="${user.profileImageUrl}" alt="프로필 이미지" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-right: 20px;">
+    <div>
+      <div>
+        <strong th:text="${user.grade}">BRONZE</strong>
+        <span th:text="${user.nickname}">누나</span> 님 환영합니다.
+      </div>
+      <div style="margin-top: 10px;">
+        요모포인트 1000p, 쿠폰 <strong th:text="${user.couponCount}">3</strong>장
+      </div>
+      <div style="margin-top: 10px;">
+        <button type="button" onclick="loadContent('profile')" style="all: unset; color: blue; text-decoration: underline;">
+          프로필 상세보기 &gt;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div style="margin-top: 30px;">
+    <h3>최근 본 상품</h3>
+    <p>최근 본 상품이 없습니다.</p>
+  </div>
+
+  <hr>
+
+  <div style="margin-top: 30px;">
+    <h3>대여 목록</h3>
+    <p>진행 중인 대여가 없습니다.</p>
+  </div>
+</div>
+
+</body>
+</html>
