@@ -11,13 +11,14 @@
   <style>
     .container { display: flex; padding: 20px; gap: 40px; }
     .left, .right { flex: 1; }
-    .product-image { width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 10px; }
-    .seller-box { border: 1px solid #ddd; padding: 15px; margin-top: 20px; }
+    /*.product-image { width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 10px; }*/
+    .seller-box {
+      border: 1px solid #ddd; padding: 15px; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
     .seller-profile { display: flex; align-items: center; gap: 10px; }
     .profile-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
     .buttons { margin-top: 20px; display: flex; gap: 10px; }
     .buttons button { flex: 1; padding: 10px; }
-    .map-placeholder { height: 150px; background: #f2f2f2; margin-top: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #777; }
+    .map-placeholder { height: 150px; background: #f2f2f2; margin-top: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #777;  height: auto; /* ✅ 고정 높이 제거 */}
 
     /* 달력 부분 */
     .fc-daygrid-day.selected-start {
@@ -27,7 +28,25 @@
       background-color: #d0ebff !important;  /* 연한 파랑 */
     }
 
+    /* Swiper 버튼 색상 추가 */
+    .swiper-button-next,
+    .swiper-button-prev,
+    .swiper-pagination-bullet{
+      color: #ccc !important;
+    }
+    .swiper-pagination-bullet {
+      background: #ccc !important;
+      opacity: 1;
+    }
+
+    .swiper-pagination-bullet-active {
+      background: #999 !important;
+    }
+
   </style>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 </head>
 <body>
 
@@ -35,12 +54,24 @@
 
   <!-- 좌측 -->
   <div class="left">
-    <div style="display: flex; gap: 10px;">
-      <img th:each="img : ${imageList}"
-           th:src="@{${img.imageUrl}}"
-           alt="상품 이미지"
-           style="width: 150px; height: 150px; object-fit: cover; border: 1px solid #ccc;" />
+    <!-- 이미지 슬라이더 -->
+    <div class="swiper mySwiper" style="width: 100%; max-width: 600px; margin: 0 auto;">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide" th:each="img : ${imageList}">
+          <img th:src="@{${img.imageUrl}}"
+               alt="상품 이미지"
+               style="width: 100%; height: 300px; object-fit: cover;" />
+        </div>
+      </div>
+
+      <!-- 네비게이션 버튼 -->
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+
+      <!-- 페이지네이션 점 -->
+      <div class="swiper-pagination"></div>
     </div>
+
     <div class="seller-box">
       <div class="seller-profile">
         <img th:src="@{${seller.profileImageUrl}}" class="profile-img" alt="프로필 이미지"/>
@@ -58,23 +89,31 @@
   <!-- 우측 -->
   <div class="right">
     <h2 th:text="${product.title}">상품 제목</h2>
+
     <p>
-      <strong th:text="'중카테고리: ' + ${product.subCategory.name}">소분류</strong> |
+      <strong th:text="'서브카테고리: ' + ${product.subCategory.name}">서브카테고리</strong>
+      <span th:text="'거래 상태: ' + ${product.status}">거래 상태</span> |
       <span th:text="${createdAt}">등록일</span>
     </p>
+
     <p><strong th:text="${product.price} + '원 / 일'">가격</strong></p>
     <p><strong th:text="'보증금: ' + ${product.deposit} + '원'">보증금</strong></p>
+
     <hr/>
+
     <div th:text="${product.description}">상품 상세 설명</div>
+
     <hr/>
+
     <p>
       관심 <span>0</span> · 조회수 <span th:text="${product.count != null ? product.count : 0}">0</span>
     </p>
 
     <!-- 버튼 -->
-    <div class="buttons">
+    <div class="buttons" style="display: flex; gap: 10px;">
       <button type="button">찜하기</button>
       <button type="button" onclick="openReservationModal()">예약 신청</button>
+      <button type="button" style="margin-left: auto;">신고하기</button>
     </div>
   </div>
 </div>
@@ -105,10 +144,9 @@
 <!-- 지도 API KEY -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&libraries=services"></script>
 
-<!-- 지도 이벤트 -->
-<script>
+<script th:inline="javascript">
   document.addEventListener("DOMContentLoaded", function () {
-    const sellerAddress = "${seller.address}";
+    const sellerAddress = /*[[${seller.address}]]*/ "";
 
     const mapContainer = document.getElementById('map');
     const mapOption = {
@@ -121,12 +159,17 @@
 
     geocoder.addressSearch(sellerAddress, function(result, status) {
       if (status === kakao.maps.services.Status.OK) {
+        console.log("주소:", sellerAddress); // ✅ 주소 확인
+        console.log("변환 좌표:", result[0]); // ✅ 변환된 위도/경도 확인
+
         const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
         const marker = new kakao.maps.Marker({
           map: map,
           position: coords
         });
         map.setCenter(coords);
+      } else {
+        console.warn("주소 변환 실패:", sellerAddress);
       }
     });
   });
@@ -289,6 +332,24 @@
   }
 </script>
 
+<!-- swiper -->
+<script>
+  const swiper = new Swiper(".mySwiper", {
+    loop: true,
+    autoplay: {
+      delay: 3000,
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true,
+    },
+    navigation: {
+      nextEl: ".swiper-button-next",
+      prevEl: ".swiper-button-prev",
+    },
+  });
+</script>
 
 
 </body>

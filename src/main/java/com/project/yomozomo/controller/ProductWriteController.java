@@ -47,15 +47,15 @@ public class ProductWriteController {
                                @RequestParam(value = "images", required = false) List<MultipartFile> images,
                                RedirectAttributes redirectAttributes) {
 
-        // ✅ 로그인 사용자 정보 가져오기 (세션 안 씀)
+        // 로그인 사용자 정보 가져오기
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
-        // ✅ username → user_id로 변환
+        // username → user_id로 변환
         User seller = userService.findByUsername(username);  // 여기서 user_id 포함된 User 객체 획득
         Long userId = seller.getId(); // 나중에 user_id가 필요할 경우를 대비
 
-        // ✅ 상품 등록
+        // 상품 등록
         SubCategory subCategory = productWriteService.getSubCategory(subCategoryId);
         productWriteService.registerProduct(title, description, price, deposit, seller, subCategory, images);
 
