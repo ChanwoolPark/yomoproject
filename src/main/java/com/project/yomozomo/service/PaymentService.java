@@ -35,20 +35,34 @@ public class PaymentService {
         Product product = rental.getProduct();
         if (product == null) return false;
 
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return false;
+        User buyer = userRepository.findById(userId).orElse(null);
+        if (buyer == null) return false;
 
-        // (1) 잔액 체크
-        UserWallet userWallet = userWalletRepository.findByUserId(userId);
-        int totalPrice = rental.getTotalPrice() + product.getDeposit();
-        if (userWallet.getBalance() < totalPrice) return false;
+        UserWallet buyerWallet = userWalletRepository.findByUserId(userId);
+        int price = rental.getTotalPrice();
+        int deposit = product.getDeposit();
+        int totalPrice = price + deposit;
 
-        // (2) 포인트 차감
-        userWallet.setBalance(userWallet.getBalance() - totalPrice);
-        userWalletRepository.save(userWallet);
+        if (buyerWallet.getBalance() < totalPrice) return false;
 
-        // (3) 결제 내역 로그 기록
-        walletService.addChargeLog(userWallet.getWalletId(), -totalPrice, "상품대여");
+        // (1) 구매자 잔고 차감
+        buyerWallet.setBalance(buyerWallet.getBalance() - totalPrice);
+        userWalletRepository.save(buyerWallet);
+        walletService.addChargeLog(buyerWallet.getWalletId(), -totalPrice, "상품대여(차감)");
+
+        // (2) 판매자에게 가격 지급
+        Long sellerId = product.getSeller().getId(); // 혹은 product.getSellerId();
+        UserWallet sellerWallet = userWalletRepository.findByUserId(sellerId);
+        sellerWallet.setBalance(sellerWallet.getBalance() + price);
+        userWalletRepository.save(sellerWallet);
+        walletService.addChargeLog(sellerWallet.getWalletId(), price, "상품대여(판매자 수익)");
+
+        // (3) 관리자(1번 유저)에게 보증금 입금
+        Long adminId = 1L;
+        UserWallet adminWallet = userWalletRepository.findByUserId(adminId);
+        adminWallet.setBalance(adminWallet.getBalance() + deposit);
+        userWalletRepository.save(adminWallet);
+        walletService.addChargeLog(adminWallet.getWalletId(), deposit, "상품대여(보증금)");
 
         // (4) rental 상태 변경
         rental.setStatus("대여중");
