@@ -1,5 +1,6 @@
 package com.project.yomozomo.controller;
 
+import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.service.ProductListService;
 import jakarta.servlet.http.HttpSession;
@@ -28,6 +29,10 @@ public class ProductListController {
         List<ProductDto> products = productListService.getProductsByCategory(categoryId);
         model.addAttribute("products", products);
 
+        Category category = new Category();
+        category.setCategoryId(categoryId);
+        model.addAttribute("category", category);
+
         addUserRelatedAttributes(model, session);
 
         return "product/list";
@@ -42,6 +47,10 @@ public class ProductListController {
 
         List<ProductDto> products = productListService.getProductsBySubCategoryId(subCategoryId);
         model.addAttribute("products", products);
+
+        Category category = new Category();
+        category.setCategoryId(categoryId);
+        model.addAttribute("category", category);
 
         addUserRelatedAttributes(model, session);
 

@@ -85,4 +85,11 @@ public class UserService {
 
         return u;
     }
+
+    // 현재 로그인한 user 아이디로 User 조회
+    public User findByUsername(String username) {
+        return userRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    }
+
 }

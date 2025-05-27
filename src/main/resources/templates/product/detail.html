@@ -35,8 +35,11 @@
 
   <!-- 좌측 -->
   <div class="left">
-    <div>
-      <img th:src="@{${imageList[0].imageUrl}}" alt="상품 이미지" class="product-image"/>
+    <div style="display: flex; gap: 10px;">
+      <img th:each="img : ${imageList}"
+           th:src="@{${img.imageUrl}}"
+           alt="상품 이미지"
+           style="width: 150px; height: 150px; object-fit: cover; border: 1px solid #ccc;" />
     </div>
     <div class="seller-box">
       <div class="seller-profile">
