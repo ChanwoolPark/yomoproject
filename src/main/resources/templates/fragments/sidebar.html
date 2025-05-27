@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- fragments/sidebar.html -->
+<div th:fragment="sidebar" id="sidebar" style="width: 220px; border-right: 1px solid #ddd; padding: 10px;">
+  <div class="category-title">내 정보</div>
+  <ul>
+    <li><button onclick="showSection('profile')">프로필 상세보기</button></li>
+    <li><button onclick="showSection('edit-info')">개인정보 확인/수정</button></li>
+    <li><button onclick="showSection('yomopay')">요모페이 관리/충전</button></li>
+  </ul>
+
+  <div class="category-title">대여 관리</div>
+  <ul>
+    <li><button onclick="showSection('rents')">대여 목록</button></li>
+    <li><button onclick="showSection('sales')">판매 목록</button></li>
+    <li><button onclick="showSection('cancel')">취소/환불/반품 내역</button></li>
+  </ul>
+
+  <div class="category-title">내 활동</div>
+  <ul>
+    <li><button onclick="showSection('wishlist')">위시리스트</button></li>
+    <li><button onclick="showSection('recent')">최근 본 게시글</button></li>
+    <li><button onclick="showSection('reviews')">내가 쓴 리뷰</button></li>
+    <li><button onclick="showSection('inquiries')">문의내역 확인</button></li>
+  </ul>
+</div>
+
+</body>
+</html>

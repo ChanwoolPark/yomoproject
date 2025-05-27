@@ -1,0 +1,25 @@
+.category-title {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    cursor: default;
+}
+
+#sidebar ul {
+    list-style: none;
+    padding-left: 10px;
+    margin-bottom: 10px;
+}
+
+#sidebar button {
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 5px 0;
+    cursor: pointer;
+    color: #333;
+}
+
+#sidebar button:hover {
+    text-decoration: underline;
+}
