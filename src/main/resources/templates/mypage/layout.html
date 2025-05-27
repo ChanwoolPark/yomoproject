@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>마이페이지</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            display: flex;
+            font-family: sans-serif;
+        }
+        #sidebar {
+            width: 220px;
+            padding: 20px;
+        }
+        #sidebar ul {
+            list-style: none;
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+        #sidebar li {
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        #sidebar li.main {
+            font-weight: bold;
+            cursor: default;
+            padding: 10px;
+        }
+        #sidebar li.sub {
+            padding-left: 15px;
+            color: #333;
+        }
+        #content {
+            flex: 1;
+            padding: 30px;
+        }
+
+    </style>
+</head>
+<body>
+<div id="sidebar">
+    <ul>
+        <li class="main">내 정보</li>
+        <li class="sub" onclick="loadContent('profile')">프로필 상세보기</li>
+        <li class="sub" onclick="loadContent('edit-info')">개인정보 확인/수정</li>
+        <li class="sub" onclick="loadContent('yomopay')">요모페이 관리/충전</li>
+
+        <li class="main">대여 관리</li>
+        <li class="sub" onclick="loadContent('rent-list')">대여 목록</li>
+        <li class="sub" onclick="loadContent('sale-list')">판매 목록</li>
+        <li class="sub" onclick="loadContent('cancel-list')">취소/환불/반품 내역</li>
+
+        <li class="main">내 활동</li>
+        <li class="sub" onclick="loadContent('wishlist')">위시리스트</li>
+        <li class="sub" onclick="loadContent('recent')">최근 본 게시글</li>
+        <li class="sub" onclick="loadContent('reviews')">내가 쓴 리뷰</li>
+        <li class="sub" onclick="loadContent('inquiries')">문의내역 확인</li>
+    </ul>
+</div>
+
+<div id="content"></div>
+
+<script>
+    // ✅ 페이지 처음 진입 시 URL에서 메뉴 추출
+    document.addEventListener('DOMContentLoaded', function () {
+        const path = window.location.pathname;
+        const match = path.match(/\/mypage\/([^/]+)/);
+        const menu = match ? match[1] : 'home-summary';
+        loadContent(menu);
+    });
+
+    // ✅ 콘텐츠 로딩 + 주소 push
+    function loadContent(menuName) {
+        history.pushState({ menu: menuName }, '', `/mypage/${menuName}`);
+
+        fetch(`/mypage/${menuName}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('content').innerHTML = html;
+            });
+    }
+
+    // ✅ 뒤로가기 동작
+    window.onpopstate = function(event) {
+        const menu = event.state?.menu || 'home-summary';
+        fetch(`/mypage/${menu}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('content').innerHTML = html;
+            });
+    };
+</script>
+
+</body>
+</html>
