@@ -50,50 +50,50 @@ public class MyPageController {
         return "mypage/fragments/profile"; // html 전체 X, 조각만 리턴!
     }
 
-    /*@GetMapping("/edit-info")
+    @GetMapping("/edit-info")
     public String editInfoFragment() {
-        return "mypage/fragments/edit-info :: content";
+        return "mypage/fragments/edit-info";
     }
 
     @GetMapping("/yomopay")
     public String yomopayFragment() {
-        return "mypage/fragments/yomopay :: content";
+        return "mypage/fragments/yomopay";
     }
 
     // ────── 대여 관리 ──────
     @GetMapping("/rent-list")
     public String rentListFragment() {
-        return "mypage/fragments/rent-list :: content";
+        return "mypage/fragments/rent-list";
     }
 
     @GetMapping("/sale-list")
     public String saleListFragment() {
-        return "mypage/fragments/sale-list :: content";
+        return "mypage/fragments/sale-list";
     }
 
     @GetMapping("/cancel-list")
     public String cancelListFragment() {
-        return "mypage/fragments/cancel-list :: content";
+        return "mypage/fragments/cancel-list";
     }
 
     // ────── 내 활동 ──────
     @GetMapping("/wishlist")
     public String wishlistFragment() {
-        return "mypage/fragments/wishlist :: content";
+        return "mypage/fragments/wishlist";
     }
 
     @GetMapping("/recent")
     public String recentFragment() {
-        return "mypage/fragments/recent :: content";
+        return "mypage/fragments/recent";
     }
 
     @GetMapping("/reviews")
     public String reviewsFragment() {
-        return "mypage/fragments/reviews :: content";
+        return "mypage/fragments/reviews";
     }
 
     @GetMapping("/inquiries")
     public String inquiriesFragment() {
         return "mypage/fragments/inquiries :: content";
-    }*/
+    }
 }
