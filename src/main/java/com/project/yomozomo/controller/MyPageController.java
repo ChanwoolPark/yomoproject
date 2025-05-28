@@ -55,10 +55,10 @@ public class MyPageController {
         return "mypage/fragments/edit-info";
     }
 
-    @GetMapping("/yomopay")
+    /*@GetMapping("/yomopay")
     public String yomopayFragment() {
         return "mypage/fragments/yomopay";
-    }
+    }*/
 
     // ────── 대여 관리 ──────
     @GetMapping("/rent-list")

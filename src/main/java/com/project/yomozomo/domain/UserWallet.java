@@ -9,7 +9,8 @@ import lombok.Setter;
 @Table(name = "user_wallet")
 public class UserWallet {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_wallet_seq_gen")
+    @SequenceGenerator(name = "user_wallet_seq_gen", sequenceName = "user_wallet_seq", allocationSize = 1)
     @Column(name = "wallet_id")
     private Long walletId;
 
