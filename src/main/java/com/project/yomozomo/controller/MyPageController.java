@@ -1,14 +1,15 @@
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Product;
+import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.entity.Review;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ProductRepository;
 import com.project.yomozomo.repository.ReviewRepository;
 import com.project.yomozomo.repository.UserRepository;
+import com.project.yomozomo.service.UserService;
+import com.project.yomozomo.service.WishlistService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,10 @@ public class MyPageController {
     private final UserRepository usersRepository;
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
+    private final UserService userService;
+    private final WishlistService wishlistService;
 
+    
 
     @GetMapping({"/", ""})
     public String mypage(Model model, Principal principal) {
@@ -109,10 +113,21 @@ public class MyPageController {
         return "mypage/fragments/cancel-list";
     }
 
-    // ────── 내 활동 ──────
+    // ────── 내 활동(관심 목록) ──────
     @GetMapping("/wishlist")
-    public String wishlistFragment() {
-        return "mypage/fragments/wishlist";
+    public String userWishlist(Model model, Principal principal) {
+        if (principal == null) {
+            return "redirect:/login"; // 로그인 안 되어 있으면 로그인 페이지로
+        }
+
+        String username = principal.getName();
+        User user = userService.findByUsername(username);
+        Long userId = user.getId();
+
+        List<ProductDto> wishlist = wishlistService.getAllWishlist(userId);
+        model.addAttribute("wishlist", wishlist);
+
+        return "mypage/fragments/wishlist"; // 관심목록 보여줄 html
     }
 
     @GetMapping("/recent")

@@ -39,4 +39,19 @@ public class WishlistController {
             return ResponseEntity.ok(Map.of("success", false, "message", "이미 찜한 상품입니다."));
         }
     }
+
+    @DeleteMapping("/wishlist/{productId}")
+    public ResponseEntity<?> removeFromWishlist(@PathVariable int productId, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "로그인이 필요합니다."));
+        }
+
+        String username = principal.getName();
+        User user = userService.findByUsername(username);
+        Long userId = user.getId();
+
+        wishlistService.removeFromWishlist(userId, productId);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
 }

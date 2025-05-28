@@ -11,4 +11,7 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Integer> {
     // 찜 여부 확인용
     boolean existsByProduct_ProductIdAndUser_Id(int productId, Long userId);
 
+    // 찜 삭제
+    void deleteByUser_IdAndProduct_ProductId(Long userId, int productId);
+
 }
