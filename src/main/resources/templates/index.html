@@ -1,32 +1,172 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>메인 페이지</title>
+
+    <!-- Swiper CSS CDN 추가 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        header, footer { background: #fff; padding: 10px 20px; border-bottom: 1px solid #eee; }
-        .logo { font-weight: bold; color: orange; font-size: 24px; cursor: pointer; }
-        .nav { display: flex; gap: 20px; margin-left: 30px; }
-        .nav a { text-decoration: none; color: black; font-weight: bold; }
-        .login { margin-left: auto; }
-        .banner { height: 300px; background: #5b9bd5; color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; }
-        footer { border-top: 1px solid #eee; font-size: 14px; line-height: 1.6; display: flex; justify-content: space-between; }
-        #topBtn { position: fixed; bottom: 20px; right: 20px; padding: 15px; border-radius: 50%; background-color: #5b9bd5; color: white; border: none; cursor: pointer; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .nav-wrapper {
+            position: relative;
+        }
+
+        .nav {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav li a {
+            text-decoration: none;
+            color: #222;
+            font-weight: 600;
+            padding: 12px 8px;
+            display: inline-block;
+        }
+
+        .nav li a:hover {
+            color: #5b9bd5;
+        }
+
+        .all-sub-category-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 20px 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            z-index: 100;
+            gap: 60px;
+            width: 100%;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .nav-wrapper:hover .all-sub-category-menu {
+            display: flex !important;
+        }
+
+        .sub-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 120px;
+        }
+
+        .sub-group strong {
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .sub-group a {
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .sub-group a:hover {
+            color: #5b9bd5;
+        }
+
+        .banner {
+            height: 300px;
+            background: #5b9bd5;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        #topBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 50%;
+            background-color: #5b9bd5;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* ✅ Swiper 커스터마이징 */
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: #ccc !important;
+        }
+
+        .swiper-pagination-bullet {
+            background: #ccc !important;
+            opacity: 0.6;
+        }
+
+        .swiper-pagination-bullet-active {
+            background: #999 !important;
+
+        }
     </style>
 </head>
 <body>
 
+<!-- 헤더 삽입 -->
 <div th:replace="fragments/header :: header"></div>
 
 <main>
-    <section class="banner">배너</section>
+    <section class="banner swiper mySwiper" style="width: 100%; height: 400px; margin: 0;">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide" th:each="img : ${imageList}">
+                <img th:src="@{/images/{file}(file=${img})}" alt="배너 이미지"
+                     style="width: 100%; height: 400px; object-fit: cover;" />
+            </div>
+        </div>
+
+        <!-- Swiper control elements -->
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </section>
 </main>
 
+<!-- 푸터 삽입 -->
 <div th:replace="fragments/footer :: footer"></div>
 
+<!-- 상단 이동 버튼 -->
 <button id="topBtn" onclick="scrollToTop()">Top<br>버튼</button>
+
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<script>
+    const swiper = new Swiper(".mySwiper", {
+        loop: true,
+        autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+        },
+        navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+        },
+    });
+</script>
 
 </body>
 </html>

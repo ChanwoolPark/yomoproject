@@ -215,6 +215,9 @@
     };
 
     const map = new kakao.maps.Map(mapContainer, mapOption);
+
+
+
     const geocoder = new kakao.maps.services.Geocoder();
 
     geocoder.addressSearch(sellerAddress, function(result, status) {
