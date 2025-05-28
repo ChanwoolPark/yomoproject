@@ -52,6 +52,7 @@ public class ProductListService {
         return mapProductsToDto(products);
     }
 
+    // 관심항목
     @Transactional(readOnly = true)
     public List<ProductDto> getWishlist(Long userId) {
         List<Wishlist> wishlist = wishlistRepo.findByUserId(userId);
@@ -66,9 +67,15 @@ public class ProductListService {
                 .toList();
     }
 
+    // 최근본 항목
     @Transactional(readOnly = true)
     public List<ViewedProduct> getRecentlyViewed(Long userId) {
-        return viewedRepo.findTop5ByUserIdOrderByViewedAtDesc(userId);
+        return viewedRepo.findTop5ByUserIdOrderByViewedAtDesc(userId); // 목록이나 사이드바용
+    }
+
+    @Transactional(readOnly = true)
+    public List<ViewedProduct> getAllRecentlyViewed(Long userId) {
+        return viewedRepo.findByUserIdOrderByViewedAtDesc(userId); // 마이페이지용
     }
 
     private List<ProductDto> mapProductsToDto(List<Product> products) {
