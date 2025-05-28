@@ -1,5 +1,5 @@
 // src/main/java/com/project/yomozomo/config/SecurityConfig.java
-package com.project.yomozomo.config;
+package com.project.yomozomo.Config;
 
 import com.project.yomozomo.repository.UserRepository;
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 "/charge", "/oauth2/**", "/signup", "/category",
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
                                 "/find-id","/find-password.html",
-                                "/test-login"
+                                "/test-login", "/uploads/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
