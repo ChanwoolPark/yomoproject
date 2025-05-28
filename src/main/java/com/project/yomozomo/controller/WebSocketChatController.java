@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+/*package com.project.yomozomo.controller;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -73,4 +73,4 @@ public class WebSocketChatController {
         // 특정 목적지로 메시지를 전송 (이 경우에는 /topic/public을 구독하는 모든 사용자)
         messagingTemplate.convertAndSend("/topic/public", chatMessage);
     }
-}
+}*/
