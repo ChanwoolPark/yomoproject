@@ -84,10 +84,13 @@ public class UserService {
         return u;
     }
 
-    // !!! 이 부분을 추가해야 합니다 !!!
+
+
+    // 현재 로그인한 user 아이디로 User 조회
     public User findByUsername(String username) {
-        // UserRepository의 findByUsername을 호출하여 Optional<User>를 받고,
-        // User 객체가 있으면 반환하고 없으면 null을 반환합니다.
-        return userRepo.findByUsername(username).orElse(null);
+        return userRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
     }
+
+
 }

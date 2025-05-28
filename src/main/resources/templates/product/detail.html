@@ -11,13 +11,14 @@
   <style>
     .container { display: flex; padding: 20px; gap: 40px; }
     .left, .right { flex: 1; }
-    .product-image { width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 10px; }
-    .seller-box { border: 1px solid #ddd; padding: 15px; margin-top: 20px; }
+    /*.product-image { width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 10px; }*/
+    .seller-box {
+      border: 1px solid #ddd; padding: 15px; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
     .seller-profile { display: flex; align-items: center; gap: 10px; }
     .profile-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
     .buttons { margin-top: 20px; display: flex; gap: 10px; }
     .buttons button { flex: 1; padding: 10px; }
-    .map-placeholder { height: 150px; background: #f2f2f2; margin-top: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #777; }
+    .map-placeholder { height: 150px; background: #f2f2f2; margin-top: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #777;  height: auto; /* ✅ 고정 높이 제거 */}
 
     /* 달력 부분 */
     .fc-daygrid-day.selected-start {
@@ -27,17 +28,59 @@
       background-color: #d0ebff !important;  /* 연한 파랑 */
     }
 
+    .fc-day-past {
+      background-color: #f8f9fa !important;
+      color: #aaa !important;
+      pointer-events: none !important; /* 클릭도 막기 */
+    }
+
+    /* Swiper 버튼 색상 추가 */
+    .swiper-button-next,
+    .swiper-button-prev,
+    .swiper-pagination-bullet{
+      color: #ccc !important;
+    }
+    .swiper-pagination-bullet {
+      background: #ccc !important;
+      opacity: 1;
+    }
+
+    .swiper-pagination-bullet-active {
+      background: #999 !important;
+    }
+
   </style>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 </head>
 <body>
+
+<div th:replace="fragments/header :: header"></div>
+
 
 <div class="container">
 
   <!-- 좌측 -->
   <div class="left">
-    <div>
-      <img th:src="@{${imageList[0].imageUrl}}" alt="상품 이미지" class="product-image"/>
+    <!-- 이미지 슬라이더 -->
+    <div class="swiper mySwiper" style="width: 100%; max-width: 600px; margin: 0 auto;">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide" th:each="img : ${imageList}">
+          <img th:src="@{${img.imageUrl}}"
+               alt="상품 이미지"
+               style="width: 100%; height: 300px; object-fit: cover;" />
+        </div>
+      </div>
+
+      <!-- 네비게이션 버튼 -->
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+
+      <!-- 페이지네이션 점 -->
+      <div class="swiper-pagination"></div>
     </div>
+
     <div class="seller-box">
       <div class="seller-profile">
         <img th:src="@{${seller.profileImageUrl}}" class="profile-img" alt="프로필 이미지"/>
@@ -55,26 +98,81 @@
   <!-- 우측 -->
   <div class="right">
     <h2 th:text="${product.title}">상품 제목</h2>
+
     <p>
-      <strong th:text="'중카테고리: ' + ${product.subCategory.name}">소분류</strong> |
+
+
+
+      <strong th:text="'서브카테고리: ' + ${product.subCategory.name}">서브카테고리</strong>
+      <span th:text="'거래 상태: ' + ${product.status}">거래 상태</span> |
       <span th:text="${createdAt}">등록일</span>
     </p>
+
     <p><strong th:text="${product.price} + '원 / 일'">가격</strong></p>
     <p><strong th:text="'보증금: ' + ${product.deposit} + '원'">보증금</strong></p>
+
     <hr/>
+
     <div th:text="${product.description}">상품 상세 설명</div>
+
     <hr/>
+
     <p>
       관심 <span>0</span> · 조회수 <span th:text="${product.count != null ? product.count : 0}">0</span>
     </p>
 
     <!-- 버튼 -->
-    <div class="buttons">
-      <button type="button">찜하기</button>
+    <!-- 상단: 찜하기, 1:1 채팅 -->
+    <div class="buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <!-- 찜 안 되어 있을 때 -->
+      <button type="button"
+              th:if="${!wished}"
+              class="wishlist-btn"
+              th:data-product-id="${product.productId}">
+        찜하기
+      </button>
+
+      <!-- 찜 되어 있을 때 -->
+      <button type="button"
+              th:if="${wished}"
+              class="unwishlist-btn"
+              th:data-product-id="${product.productId}">
+        찜 취소
+      </button>
+
       <button type="button" onclick="openReservationModal()">예약 신청</button>
+    </div>
+
+    <!-- 하단: 수정, 삭제, 목록 (판매자만 수정/삭제 가능) -->
+    <div class="buttons" style="display: flex; gap: 10px;">
+  <span th:if="${userId == product.seller.id}">
+    <a th:href="@{'/product/edit/' + ${product.productId}}">
+      <button type="button">글 수정</button>
+    </a>
+    <form th:action="@{'/product/delete/' + ${product.productId}}" method="post" style="display:inline;" onsubmit="return confirmDelete();">
+      <button type="submit">글 삭제</button>
+    </form>
+  </span>
+
+      <!-- 항상 보이는 목록 버튼 -->
+      <a th:href="@{'/category/' + ${product.subCategory.category.categoryId}}" style="margin-left: auto;">
+        <button type="button">목록</button>
+      </a>
+    </div>
+
+    <!-- 삭제 확인 스크립트 -->
+    <script>
+      function confirmDelete() {
+        return confirm("정말 삭제하시겠습니까?");
+      }
+    </script>
+
     </div>
   </div>
 </div>
+
+
+
 
 <!-- 예약 모달 -->
 <div id="reservationModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
@@ -99,13 +197,38 @@
 <!-- 오버레이 -->
 <div id="overlay" onclick="closeReservationModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
 
+
+<div th:replace="fragments/footer :: footer"></div>
+
+
+
+
+<script>
+  document.querySelector('.wishlist-btn').addEventListener('click', function () {
+    const productId = this.dataset.productId;
+
+    fetch('/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId })
+    })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                alert('관심 목록에 추가되었습니다.');
+              } else {
+                alert(data.message || '이미 추가된 상품입니다.');
+              }
+            });
+  });
+</script>
+
 <!-- 지도 API KEY -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&libraries=services"></script>
 
-<!-- 지도 이벤트 -->
-<script>
+<script th:inline="javascript">
   document.addEventListener("DOMContentLoaded", function () {
-    const sellerAddress = "${seller.address}";
+    const sellerAddress = /*[[${seller.address}]]*/ "";
 
     const mapContainer = document.getElementById('map');
     const mapOption = {
@@ -118,17 +241,74 @@
 
     geocoder.addressSearch(sellerAddress, function(result, status) {
       if (status === kakao.maps.services.Status.OK) {
+        console.log("주소:", sellerAddress); // ✅ 주소 확인
+        console.log("변환 좌표:", result[0]); // ✅ 변환된 위도/경도 확인
+
         const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
         const marker = new kakao.maps.Marker({
           map: map,
           position: coords
         });
         map.setCenter(coords);
+      } else {
+        console.warn("주소 변환 실패:", sellerAddress);
       }
     });
   });
 </script>
 
+<!-- 찜하기 버튼 -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // 찜하기 버튼
+    const wishlistBtn = document.querySelector('.wishlist-btn');
+    if (wishlistBtn) {
+      wishlistBtn.addEventListener('click', function () {
+        const productId = this.dataset.productId;
+
+        fetch('/wishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ productId })
+        })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    alert('찜 목록에 추가되었습니다!');
+                    location.reload();
+                  } else {
+                    alert(data.message || '이미 찜한 상품입니다.');
+                  }
+                });
+      });
+    }
+
+    // 찜취소 버튼
+    const unwishlistBtn = document.querySelector('.unwishlist-btn');
+    if (unwishlistBtn) {
+      unwishlistBtn.addEventListener('click', function () {
+        const productId = this.dataset.productId;
+
+        fetch(`/wishlist/${productId}`, {
+          method: 'DELETE'
+        })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    alert('찜 목록에서 제거되었습니다!');
+                    location.reload();
+                  } else {
+                    alert(data.message || '요청 실패');
+                  }
+                });
+      });
+    }
+
+  });
+</script>
 
 <!-- 예약 부분 캘린더 JS 코드 -->
 <script th:inline="javascript">
@@ -158,6 +338,15 @@
             const clickedDate = new Date(info.date);
             clickedDate.setHours(0, 0, 0, 0);
 
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // 과거 날짜 선택 불가
+            if (clickedDate < today) {
+              alert("과거 날짜는 예약할 수 없습니다.");
+              return;
+            }
+
             // 예약된 날짜인지 확인 (종료일 포함)
             const isDisabled = calendar.getEvents().some(event => {
               const start = new Date(event.start);
@@ -172,6 +361,7 @@
               return;
             }
 
+            // 날짜 선택 처리
             if (!selectedStart || (selectedStart && selectedEnd)) {
               selectedStart = clickedDate;
               selectedEnd = null;
@@ -182,7 +372,7 @@
                 return;
               }
 
-              // 범위 내 예약된 날짜 확인
+              // 범위 내 예약된 날짜 겹침 확인
               const overlap = calendar.getEvents().some(event => {
                 const start = new Date(event.start);
                 const end = new Date(event.end);
@@ -197,10 +387,11 @@
               }
 
               selectedEnd = clickedDate;
-              document.getElementById('datePreview').innerText = selectedStart.toDateString() + " ~ " + selectedEnd.toDateString();
+              document.getElementById('datePreview').innerText =
+                      selectedStart.toDateString() + " ~ " + selectedEnd.toDateString();
             }
 
-            // 스타일 초기화 및 강조
+            // 스타일 초기화 및 선택 범위 강조
             document.querySelectorAll('.fc-daygrid-day').forEach(el => el.classList.remove('selected-start', 'selected-range'));
 
             document.querySelectorAll('.fc-daygrid-day').forEach(dayEl => {
@@ -244,7 +435,7 @@
     document.querySelectorAll('.fc-daygrid-day').forEach(el => el.classList.remove('selected-start', 'selected-range'));
   }
 
-  // 날짜 문자열 포맷
+  // 날짜 포맷 함수
   function formatDate(date) {
     const yyyy = date.getFullYear();
     const mm = ('0' + (date.getMonth() + 1)).slice(-2);
@@ -252,7 +443,7 @@
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  // 예약 확정
+  // 예약 확정 요청
   function submitReservation(event) {
     event.preventDefault();
 
@@ -286,6 +477,24 @@
   }
 </script>
 
+<!-- swiper -->
+<script>
+  const swiper = new Swiper(".mySwiper", {
+    loop: true,
+    autoplay: {
+      delay: 3000,
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true,
+    },
+    navigation: {
+      nextEl: ".swiper-button-next",
+      prevEl: ".swiper-button-prev",
+    },
+  });
+</script>
 
 
 </body>

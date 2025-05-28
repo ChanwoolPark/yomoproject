@@ -1,7 +1,7 @@
 <div th:fragment="header">
     <header style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
         <div style="display: flex; align-items: center; gap: 30px;">
-            <div class="logo" onclick="location.href='/'" style="cursor:pointer;">🥕당근</div>
+            <div class="logo" onclick="location.href='/'" style="cursor:pointer;">🐥요모</div>
             <nav class="nav">
                 <ul th:if="${categories != null}" style="display: flex; gap: 20px; list-style: none; margin: 0; padding: 0;">
                     <li th:each="category : ${categories}">
@@ -15,8 +15,8 @@
                th:if="${not #authorization.expression('isAuthenticated()')}">로그인</a>
             <a href="/logout" id="logoutBtn"
                th:if="${#authorization.expression('isAuthenticated()')}">로그아웃</a>
-            <a href="/my" id="myInfoBtn"
-               th:if="${#authorization.expression('isAuthenticated()')}">내정보</a>
+            <a href="/mypage" id="myInfoBtn"
+               th:if="${#authorization.expression('isAuthenticated()')}">마이페이지</a>
         </div>
     </header>
 </div>

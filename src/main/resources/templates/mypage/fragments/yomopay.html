@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>요모페이 관리/충전</title>
+    <style>
+        .charge-container {
+            max-width: 430px;
+            margin: 50px auto;
+            padding: 2rem;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            background: #fafbff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .charge-container h2 { margin-bottom: 1.2rem; text-align: center; }
+        .user-point { margin-bottom: 1.6rem; text-align: right; font-size: 1.08rem; color: #222; font-weight: bold; }
+        .charge-container label { font-weight: bold; display: block; margin-bottom: 0.5rem; }
+        .charge-container input[type="number"] {
+            width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 1.2rem;
+        }
+        .charge-container button {
+            width: 100%; padding: 0.8rem; background: #4477ee; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-bottom: 1rem;
+        }
+        .charge-history { margin-top: 2rem; }
+        .charge-history h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .charge-history table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .charge-history th, .charge-history td { border: 1px solid #ddd; padding: 0.5rem 0.4rem; text-align: center; }
+        .charge-history th { background: #f3f6fc; }
+        .alert { margin: 1rem 0; color: #e22; text-align: center; font-weight: bold;}
+        .success { color: #228822; }
+    </style>
+</head>
+<body>
+<div class="charge-container">
+    <h2>요모페이 관리/충전</h2>
+
+    <!-- 성공/실패 메시지 출력 -->
+    <div th:if="${success}" class="alert success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert" th:text="${error}"></div>
+
+    <div class="user-point">
+        내 포인트: <span th:text="${point}">12,000</span> P
+    </div>
+
+    <!-- 충전 폼 -->
+    <form action="/widget" method="post">
+        <label for="chargeAmount">충전 금액</label>
+        <input type="number" id="chargeAmount" name="chargeAmount" placeholder="충전할 금액 입력" min="1000" step="1000" required>
+        <button type="submit">충전하기</button>
+    </form>
+
+    <div class="charge-history">
+        <h3>최근 충전 내역</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>날짜</th>
+                <th>금액</th>
+                <th>결제수단</th>
+                <th>상태</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="log : ${logs}">
+                <td th:text="${#dates.format(log.createdAt, 'yyyy-MM-dd')}"></td>
+                <td th:text="${log.amount} + 'P'"></td>
+                <td th:text="${log.method}"></td>
+                <td th:text="${log.type}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(logs)}">
+                <td colspan="4">충전 내역이 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

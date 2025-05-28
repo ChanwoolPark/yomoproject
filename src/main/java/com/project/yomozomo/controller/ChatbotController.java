@@ -2,12 +2,10 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.service.ChatbotService;
 import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.web.bind.annotation.RestController; // 이 줄을 주석 처리하거나 삭제
 import org.springframework.stereotype.Controller; // 이 줄로 변경합니다.
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody; // API 메서드에 개별적으로 추가
-
 import java.util.Map;
 
 @Controller // @RestController 대신 @Controller를 사용합니다.

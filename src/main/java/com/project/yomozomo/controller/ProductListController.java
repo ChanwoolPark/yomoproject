@@ -1,14 +1,15 @@
 package com.project.yomozomo.controller;
 
+import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.dto.ProductDto;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.service.ProductListService;
-import jakarta.servlet.http.HttpSession;
+import com.project.yomozomo.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -16,19 +17,25 @@ import java.util.List;
 public class ProductListController {
 
     private final ProductListService productListService;
+    private final UserService userService;
 
-    public ProductListController(ProductListService productListService) {
+    public ProductListController(ProductListService productListService, UserService userService) {
         this.productListService = productListService;
+        this.userService = userService;
     }
 
     @GetMapping("/{categoryId}")
-    public String productList(@PathVariable int categoryId, Model model, HttpSession session) {
+    public String productList(@PathVariable int categoryId, Model model, Principal principal) {
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
 
         List<ProductDto> products = productListService.getProductsByCategory(categoryId);
         model.addAttribute("products", products);
 
-        addUserRelatedAttributes(model, session);
+        Category category = new Category();
+        category.setCategoryId(categoryId);
+        model.addAttribute("category", category);
+
+        addUserRelatedAttributes(model, principal);
 
         return "product/list";
     }
@@ -37,21 +44,27 @@ public class ProductListController {
     public String productListBySubCategory(@PathVariable int categoryId,
                                            @PathVariable int subCategoryId,
                                            Model model,
-                                           HttpSession session) {
+                                           Principal principal) {
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
 
         List<ProductDto> products = productListService.getProductsBySubCategoryId(subCategoryId);
         model.addAttribute("products", products);
 
-        addUserRelatedAttributes(model, session);
+        Category category = new Category();
+        category.setCategoryId(categoryId);
+        model.addAttribute("category", category);
+
+        addUserRelatedAttributes(model, principal);
 
         return "product/list";
     }
 
-    // 중복 제거: 로그인 사용자 관련 속성 처리
-    private void addUserRelatedAttributes(Model model, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId != null) {
+    private void addUserRelatedAttributes(Model model, Principal principal) {
+        if (principal != null) {
+            String username = principal.getName();
+            User user = userService.findByUsername(username);
+            Long userId = user.getId();
+
             model.addAttribute("wishlist", productListService.getWishlist(userId));
             model.addAttribute("recentlyViewed", productListService.getRecentlyViewed(userId));
         } else {

@@ -2,16 +2,17 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.Rental;
-import com.project.yomozomo.entity.User;
 import com.project.yomozomo.dto.RentalRequestDto;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ProductRepository;
 import com.project.yomozomo.repository.RentalRepository;
 import com.project.yomozomo.repository.UserRepository;
-import jakarta.servlet.http.HttpSession;
+import com.project.yomozomo.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
@@ -26,13 +27,15 @@ public class RentalApiController {
     private final RentalRepository rentalRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     public RentalApiController(RentalRepository rentalRepository,
                                ProductRepository productRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository, UserService userService) {
         this.rentalRepository = rentalRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     private String formatDate(Date date) {
@@ -62,8 +65,12 @@ public class RentalApiController {
     // RentalApiController.java 내부에 추가
     @PostMapping
     public ResponseEntity<?> createRental(@RequestBody RentalRequestDto requestDto,
-                                          HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+                                          Principal principal) {
+        // 로그인 ID 가져오기
+        String username = principal.getName(); // 로그인된 사용자의 username(email, 아이디 등)
+        User user = userService.findByUsername(username); // DB 조회
+        Long userId = user.getId(); // 실제 user_id 추출
+
         /* 로그인 실험용
         if (userId == null) {
             userId = 1L;
@@ -74,7 +81,7 @@ public class RentalApiController {
         }
 
         try {
-            User user = userRepository.findById(userId).orElseThrow();
+            user = userRepository.findById(userId).orElseThrow();
             Product product = productRepository.findById(requestDto.getProductId()).orElseThrow();
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");

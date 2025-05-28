@@ -196,4 +196,5 @@ public class WebSocketChatController {
         messagingTemplate.convertAndSend("/topic/chat/room/" + roomId, chatMessage);
         System.out.println("사용자 입장: User=" + chatMessage.getSender() + ", Type=" + chatMessage.getType() + ", Room=" + roomId);
     }
+
 }

@@ -7,11 +7,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;//패스워드는 민감한 자료여서
 @Entity
 @Table(name = "USERS")
 @Getter @Setter @NoArgsConstructor
-
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -32,6 +32,7 @@ public class User {
     @Column(name = "email", length = 100, nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password", length = 100, nullable = false)
     private String password;
 
@@ -69,12 +70,15 @@ public class User {
     private String businessNumber;
 
     @Column(name = "user_grade", length = 20)
-    private String grade;
+    private String grade = "BRONZE";
 
     // NUMBER(2,1) 은 BigDecimal + precision/scale 로 매핑합니다
-    @Column(name = "user_rating", precision = 2, scale = 1)
-    private BigDecimal rating;
+    @Column(name = "user_rating", precision = 3, scale = 1)
+    private BigDecimal rating = BigDecimal.valueOf(0.0);
 
     @Column(name = "review_count")
     private Integer reviewCount;
+
+    @Column(name = "coupon_count")
+    private Integer couponCount = 0;
 }

@@ -1,5 +1,6 @@
 package com.project.yomozomo.repository;
 
+import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.ProductImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,7 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Inte
 
     // 상세 페이지용: 전체 이미지 조회
     List<ProductImage> findByProductProductId(int productId);
+
+    // 기존 이미지 삭제용 메서드
+    void deleteByProduct(Product product);
 }

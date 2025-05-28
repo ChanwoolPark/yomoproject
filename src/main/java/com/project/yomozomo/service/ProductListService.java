@@ -21,6 +21,7 @@ public class ProductListService {
     private final WishlistRepository wishlistRepo;
     private final ViewedProductRepository viewedRepo;
     private final ProductImageRepository productImageRepo;
+    private static final String NOT_DELETED = "N";
 
     public ProductListService(SubCategoryRepository subCategoryRepo,
                               ProductRepository productRepo,
@@ -41,24 +42,40 @@ public class ProductListService {
 
     @Transactional(readOnly = true)
     public List<ProductDto> getProductsByCategory(int categoryId) {
-        List<Product> products = productRepo.findBySubCategory_Category_CategoryId(categoryId);
+        List<Product> products = productRepo.findBySubCategory_Category_CategoryIdAndIsDeleted(categoryId, NOT_DELETED);
         return mapProductsToDto(products);
     }
 
     @Transactional(readOnly = true)
     public List<ProductDto> getProductsBySubCategoryId(int subCategoryId) {
-        List<Product> products = productRepo.findBySubCategory_SubCategoryId(subCategoryId);
+        List<Product> products = productRepo.findBySubCategory_SubCategoryIdAndIsDeleted(subCategoryId, NOT_DELETED);
         return mapProductsToDto(products);
     }
 
+    // 관심항목
     @Transactional(readOnly = true)
-    public List<Wishlist> getWishlist(Long userId) {
-        return wishlistRepo.findByUserId(userId);
+    public List<ProductDto> getWishlist(Long userId) {
+        List<Wishlist> wishlist = wishlistRepo.findByUserId(userId);
+
+        return wishlist.stream()
+                .sorted((w1, w2) -> w2.getLikedDate().compareTo(w1.getLikedDate())) // 최신순
+                .limit(5)
+                .map(w -> {
+                    Product p = w.getProduct();
+                    return new ProductDto(p.getProductId(), p.getTitle(), p.getThumbnailUrl());
+                })
+                .toList();
+    }
+
+    // 최근본 항목
+    @Transactional(readOnly = true)
+    public List<ViewedProduct> getRecentlyViewed(Long userId) {
+        return viewedRepo.findTop5ByUserIdOrderByViewedAtDesc(userId); // 목록이나 사이드바용
     }
 
     @Transactional(readOnly = true)
-    public List<ViewedProduct> getRecentlyViewed(Long userId) {
-        return viewedRepo.findTop5ByUserIdOrderByViewedAtDesc(userId);
+    public List<ViewedProduct> getAllRecentlyViewed(Long userId) {
+        return viewedRepo.findByUserIdOrderByViewedAtDesc(userId); // 마이페이지용
     }
 
     private List<ProductDto> mapProductsToDto(List<Product> products) {

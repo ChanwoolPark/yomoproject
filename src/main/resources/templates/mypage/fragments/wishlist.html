@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관심목록</title>
+</head>
+<body>
+<h2>관심목록 전체 보기</h2>
+
+<div th:if="${wishlist.size() == 0}">
+    <p>찜한 상품이 없습니다.</p>
+</div>
+
+<div th:each="item : ${wishlist}" class="wishlist-item" style="display: flex; margin-bottom: 10px;">
+    <img th:src="${item.imageUrl}" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px;">
+    <div>
+        <a th:href="@{'/product/' + ${item.productId}}" th:text="${item.title}" style="font-size: 16px;"></a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div th:fragment="content">
+  <div style="display: flex; align-items: center; margin-bottom: 30px;">
+    <img th:src="${user.profileImageUrl}" alt="프로필 이미지" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-right: 20px;">
+    <div>
+      <div>
+        <strong th:text="${user.grade}">BRONZE</strong>
+        <span th:text="${user.nickname}">누나</span> 님 환영합니다.
+      </div>
+      <div style="margin-top: 10px;">
+        요모포인트 1000p, 쿠폰 <strong th:text="${user.couponCount}">3</strong>장
+      </div>
+      <div style="margin-top: 10px;">
+        <button type="button" onclick="loadContent('profile')" style="all: unset; color: blue; text-decoration: underline;">
+          프로필 상세보기 &gt;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div style="margin-top: 30px;">
+    <h3>최근 본 상품</h3>
+    <div th:if="${#lists.isEmpty(recentlyViewed)}">
+      <p>최근 본 상품이 없습니다.</p>
+    </div>
+    <div th:if="${!#lists.isEmpty(recentlyViewed)}" style="display: flex; gap: 15px;">
+      <div th:each="item : ${recentlyViewed}" class="recent-item" style="text-align: center;">
+        <a th:href="@{'/product/' + ${item.product.productId}}">
+          <img th:src="${item.product.thumbnailUrl}" alt="최근 본 이미지"
+               style="width: 100px; height: 100px; object-fit: cover;"><br>
+          <span th:text="${item.product.title}" style="font-size: 14px;"></span>
+        </a>
+      </div>
+    </div>
+    <div style="margin-top: 10px;">
+      <a href="/mypage/recent">전체 보기 →</a>
+    </div>
+  </div>
+
+  <hr>
+
+  <div style="margin-top: 30px;">
+    <h3>대여 목록</h3>
+    <p>진행 중인 대여가 없습니다.</p>
+  </div>
+</div>
+
+</body>
+</html>
