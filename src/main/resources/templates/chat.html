@@ -1,520 +1,495 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>1:1 실시간 채팅</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2인 대화 채팅창</title>
     <style>
-        /* 이전 CSS 코드와 동일 (변경 없음) */
+        /* 기본적인 CSS 스타일 */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
             background-color: #f0f2f5;
-            overflow: hidden;
         }
-
         .chat-container {
-            width: 100%;
-            max-width: 600px;
-            height: 70vh; /* 채팅창의 전체 높이 */
-            min-height: 400px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background-color: #fff;
-            position: relative;
         }
-
         .chat-header {
-            background: #4477ee;
-            color: white;
-            padding: 15px;
-            font-size: 1.3rem;
-            font-weight: 600;
-            text-align: center;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            position: relative;
-            z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            background-color: #f8f8f8;
+            font-weight: bold;
+            color: #333;
         }
-
         .chat-messages {
             flex-grow: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
-            background-color: #eef1f6;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            transition: padding-bottom 0.3s ease-out;
-            scroll-behavior: smooth;
-            position: relative;
-            z-index: 1;
+            gap: 10px; /* 메시지 간 간격 */
         }
-
-        /* 메시지 래퍼: 보낸 사람과 받은 사람 구분 */
-        .message-wrapper {
-            display: flex;
-            flex-direction: column;
-            max-width: 75%;
-            word-wrap: break-word;
-            flex-shrink: 0;
-        }
-
-        .message-content {
+        .message {
+            max-width: 70%;
             padding: 10px 15px;
             border-radius: 18px;
+            word-wrap: break-word;
             line-height: 1.4;
-            font-size: 0.95rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
         }
-
-        .message-time {
-            font-size: 0.75rem;
-            color: #777;
-            margin-top: 4px;
-            opacity: 0.8;
-        }
-
-        /* 상대방 메시지 스타일 */
-        .message-wrapper.received {
+        .message.user-a { /* 왼쪽 정렬, 상대방 메시지 */
             align-self: flex-start;
-        }
-        .message-wrapper.received .message-content {
-            background-color: #ffffff;
+            background-color: #e2e2e2;
             color: #333;
-            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 2px;
         }
-        .message-wrapper.received .message-time {
-            text-align: left;
-            margin-left: 10px;
-        }
-
-        /* 본인 메시지 스타일 */
-        .message-wrapper.sent {
+        .message.user-b { /* 오른쪽 정렬, 내 메시지 */
             align-self: flex-end;
-        }
-        .message-wrapper.sent .message-content {
-            background-color: #4477ee;
+            background-color: #007bff;
             color: white;
+            border-bottom-right-radius: 2px;
         }
-        .message-wrapper.sent .message-time {
-            text-align: right;
-            margin-right: 10px;
-        }
-
-        /* 입장/퇴장 메시지 스타일 */
-        .message-wrapper.event-message {
+        .message.system { /* 시스템 메시지 */
             align-self: center;
+            background-color: #f0f0f0;
+            color: #777;
+            font-size: 0.85em;
             text-align: center;
-            font-style: italic;
-            color: #666;
-            font-size: 0.85rem;
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+        .message img {
             max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 5px;
         }
-        .message-wrapper.event-message .message-content {
-            background-color: transparent;
-            padding: 5px 0;
-            border-radius: 0;
-            border: none;
-            box-shadow: none;
+        /* 지도 메시지 내 링크 스타일 */
+        .message a {
+            color: #004085;
+            text-decoration: underline;
         }
-        .message-wrapper.event-message .message-time {
-            text-align: center;
-            margin: 0;
+        .message.user-b a { /* 내 메시지 안의 링크는 흰색에 가깝게 */
+            color: #f8f9fa;
         }
 
         .chat-input-area {
+            border-top: 1px solid #eee;
+            padding: 15px 20px;
             display: flex;
             flex-direction: column;
-            padding: 15px;
-            border-top: 1px solid #eee;
-            background-color: #fff;
-            position: relative;
-            z-index: 10;
+            gap: 10px;
+            background-color: #f8f8f8;
         }
-
-        .input-and-send {
+        .input-row {
             display: flex;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 10px;
+            gap: 10px;
         }
-
-        .chat-input-area input[type="text"] {
+        .message-input {
             flex-grow: 1;
             padding: 10px 15px;
             border: 1px solid #ddd;
-            border-radius: 25px;
-            margin-right: 10px;
-            font-size: 1rem;
+            border-radius: 20px;
+            font-size: 1em;
             outline: none;
-            height: 40px;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
         }
-        .chat-input-area input[type="text"]:focus {
-            border-color: #4477ee;
-        }
-
-        .chat-input-area button.send-button {
-            background: #4477ee;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.4rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s ease-out;
-            flex-shrink: 0;
-        }
-        .chat-input-area button.send-button:hover {
-            background-color: #3355cc;
-            transform: scale(1.05);
-        }
-        .chat-input-area button.send-button:active {
-            transform: scale(0.95);
-        }
-
-        /* 하단 툴바 (가로 배열) */
-        .input-toolbar {
-            display: flex;
-            justify-content: flex-start;
-            gap: 10px;
-            width: 100%;
-            padding: 0 5px;
-        }
-
-        .input-toolbar button {
-            width: 38px;
-            height: 38px;
-            font-size: 1.3rem;
-            background: #e9ecef;
-            color: #495057;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s, transform 0.1s ease-out;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            flex-shrink: 0;
-        }
-        .input-toolbar button:hover {
-            background-color: #dee2e6;
-            color: #212529;
-            transform: scale(1.05);
-        }
-        .input-toolbar button:active {
-            transform: scale(0.95);
-        }
-
-
-        /* 확장 패널 - 채팅창 하단 1/2만 덮도록 수정 */
-        .expanded-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 0; /* 초기 높이 0 (숨김) */
-            background-color: #f8f9fa;
-            border-top: 1px solid #eee;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            transition: height 0.3s ease-out, padding 0.3s ease-out;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 0 15px; /* 초기 패딩 0 */
-            box-sizing: border-box;
-            z-index: 15;
-        }
-
-        .expanded-panel.active {
-            height: calc(70vh / 2); /* 채팅창 높이의 1/2 */
-            padding: 15px; /* 활성화 시 패딩 추가 */
-        }
-
-        .expanded-panel .panel-header {
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-            padding-top: 10px;
-        }
-
-        .expanded-panel .panel-header button {
-            background: none;
-            border: none;
-            font-size: 1.8rem;
-            color: #6c757d;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .expanded-panel .panel-header button:hover {
-            color: #333;
-        }
-
-        .expanded-panel .inner-buttons-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        /* 확장 패널 내부 버튼 */
-        .expanded-panel .inner-buttons-grid button {
+        .send-button {
+            padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 15px;
-            font-size: 1.1rem;
+            border-radius: 20px;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s ease-out;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
+            font-size: 1em;
+            transition: background-color 0.2s;
+        }
+        .send-button:hover {
+            background-color: #0056b3;
+        }
+        .feature-buttons {
             display: flex;
-            flex-direction: column;
+            gap: 10px;
+            justify-content: flex-start;
+            padding-top: 5px;
+        }
+        .feature-button {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
             justify-content: center;
             align-items: center;
-            height: auto;
-            min-height: 80px;
+            cursor: pointer;
+            font-size: 1.2em;
+            color: #495057;
+            transition: background-color 0.2s;
         }
-        .expanded-panel .inner-buttons-grid button .icon {
-            font-size: 2rem;
-            margin-bottom: 5px;
+        .feature-button:hover {
+            background-color: #dee2e6;
         }
-        .expanded-panel .inner-buttons-grid button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
+        /* 네이버 지도 컨테이너 스타일 */
+        #naverMapContainer {
+            width: 100%; /* 너비 전체 사용 */
+            height: 300px; /* 높이 설정 */
+            border-radius: 8px;
+            margin-top: 10px; /* 메시지와의 간격 */
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            background-color: #f5f5f5; /* 로딩 중 배경색 */
+            display: none; /* 초기에는 숨김 */
+            position: relative; /* 마커나 컨트롤을 올리기 위해 */
         }
-        .expanded-panel .inner-buttons-grid button:active {
-            transform: translateY(0);
+        /* 지도 닫기 버튼 스타일 */
+        #closeMapButton { /* ID 선택자로 변경 */
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            z-index: 10; /* 지도가 다른 요소 위에 오도록 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     </style>
+
+    <script type="text/javascript" th:src="@{${'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + naverMapsClientId + '&submodules=geocoder&callback=initMap'}}" defer></script>
+
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+
 </head>
 <body>
-
 <div class="chat-container">
     <div class="chat-header">
-        <h3 id="chatHeader">채팅방 - <span th:text="${targetUsername}"></span>님과의 대화</h3>
+        <div class="user-profile">
+            <span>사용자 A (상대방)</span>
+        </div>
+        <div class="user-profile">
+            <span>사용자 B (나)</span>
+        </div>
     </div>
+
     <div class="chat-messages" id="chatMessages">
     </div>
-    <div class="chat-input-area">
-        <div class="input-and-send">
-            <input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
-            <button id="sendMessageBtn" class="send-button">▲</button>
-        </div>
 
-        <div class="input-toolbar">
-            <button id="togglePanelBtn">😊</button>
-            <button id="button2">📅</button>
-            <button id="button3">🕒</button>
-            <button id="button4">📄</button>
-        </div>
+    <div id="naverMapContainer" style="display: none;">
+        <button id="closeMapButton" class="close-map-button">✖</button>
     </div>
 
-    <div class="expanded-panel" id="expandedPanel">
-        <div class="panel-header">
-            <button id="closePanelBtn">✖</button>
+    <div class="chat-input-area">
+        <div class="input-row">
+            <input type="text" id="messageInput" class="message-input" placeholder="메시지를 입력하세요...">
+            <button id="sendMessageButton" class="send-button">전송</button>
         </div>
-        <div class="inner-buttons-grid">
-            <button id="innerButton1"><span class="icon">📝</span> 메뉴 A</button>
-            <button id="innerButton2"><span class="icon">📷</span> 메뉴 B</button>
-            <button id="innerButton3"><span class="icon">📍</span> 메뉴 C</button>
-            <button id="innerButton4"><span class="icon">🔗</span> 메뉴 D</button>
+        <div class="feature-buttons">
+            <button class="feature-button" id="gptButton" title="GPT (AI) 기능">
+                🤖
+            </button>
+            <button class="feature-button" id="naverMapsButton" title="네이버 지도">
+                🗺️
+            </button>
+            <input type="file" id="imageUploadInput" style="display: none;" accept="image/*">
+            <button class="feature-button" id="attachImageButton" title="이미지 첨부">
+                📸
+            </button>
+            <button class="feature-button" id="calendarButton" title="캘린더/일정 공유">
+                🗓️
+            </button>
         </div>
     </div>
 </div>
 
-<script src="/webjars/sockjs-client/sockjs.min.js"></script>
-<script src="/webjars/stomp-websocket/stomp.min.js"></script>
 <script th:inline="javascript">
-    /*<![CDATA[*/
+    // Thymeleaf를 통해 Client ID를 JavaScript 변수로 가져오기
+    const naverMapsClientId = /*[[${naverMapsClientId}]]*/ 'YOUR_FALLBACK_CLIENT_ID'; // 대체 Client ID (개발/테스트용)
 
-    var stompClient = null;
-    var username = /*[[${username}]]*/ 'defaultUser'; // 현재 사용자 이름
-    var targetUsername = /*[[${targetUsername}]]*/ 'defaultTarget'; // 대화 상대 이름
-    var roomId = /*[[${roomId}]]*/ 'defaultRoom'; // 채팅방 ID
-    var expandedPanel = document.getElementById('expandedPanel');
-    var chatMessagesDiv = document.getElementById('chatMessages');
-    var messageInput = document.getElementById('messageInput');
+    // DOM 요소 변수 선언 (초기 null 할당)
+    let chatMessages = null;
+    let messageInput = null;
+    let sendMessageButton = null;
+    let attachImageButton = null;
+    let imageUploadInput = null;
+    let gptButton = null;
+    let naverMapsButton = null;
+    let calendarButton = null;
+    let naverMapContainer = null;
+    let closeMapButton = null;
 
-    // 1. WebSocket 연결 함수
+    let naverMapInstance = null; // 지도 객체를 저장할 변수
+    let selectedMapMarker = null; // 지도에 표시될 마커 객체
+
+    let stompClient = null; // STOMP 웹소켓 클라이언트 객체
+
+    // Naver Map API가 로드된 후 호출될 전역 콜백 함수
+    // 이 함수는 `callback=initMap` 파라미터에 의해 네이버 API 스크립트 로드 완료 시 자동으로 호출됩니다.
+    function initMap() {
+        console.log("Naver Map API ready. Global 'naver' object is available.");
+
+        // 여기에서 네이버 지도 API의 'init' 이벤트를 기다립니다.
+        // 이 이벤트는 naver.maps 객체와 모든 하위 모듈이 완전히 준비되었을 때 발생합니다.
+        naver.maps.Event.once(naver, 'init', function() {
+            console.log("Naver Map fully loaded and ready for use!");
+            // 이제 naver.maps.ControlPosition 등을 안전하게 사용할 수 있습니다.
+            // 이 시점 이후에 naver.maps 객체를 사용하면 됩니다.
+            // 지도 초기화는 버튼 클릭 시점에 하므로, 여기서는 별도의 로직을 추가하지 않아도 됩니다.
+        });
+    }
+
+    // 웹소켓 연결 함수
     function connect() {
-        if (!username || username === 'defaultUser') {
-            console.error("서버로부터 유저네임을 가져오지 못했습니다. 기본값으로 'defaultUser'를 사용합니다.");
-        }
-        if (!targetUsername || targetUsername === 'defaultTarget') {
-            console.error("서버로부터 상대방 유저네임을 가져오지 못했습니다. 기본값으로 'defaultTarget'를 사용합니다.");
-        }
-        if (!roomId || roomId === 'defaultRoom') {
-            console.error("서버로부터 roomId를 가져오지 못했습니다. 기본값으로 'defaultRoom'를 사용합니다.");
-        }
-
-        var socket = new SockJS('/ws');
+        // Spring Boot에서 등록한 웹소켓 엔드포인트 "/ws"에 연결
+        const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
-        stompClient.connect({}, onConnected, onError);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            // 서버에서 "/topic/messages"로 전송하는 메시지를 구독
+            // 이 콜백 함수는 메시지를 받으면 실행됩니다.
+            stompClient.subscribe('/topic/public', function (messageOutput) {
+                const message = JSON.parse(messageOutput.body);
+                // 받은 메시지를 채팅창에 추가
+                // 여기서는 'user-a'로 표시. 실제로는 sender에 따라 'user-a' 또는 'user-b'를 동적으로 결정.
+                addChatMessage(`${message.sender} (${message.time}): ${message.content}`, 'user-a');
+            });
+        }, function(error) {
+            // 연결 에러 처리
+            console.error('STOMP Error:', error);
+            // 에러 발생 시 재연결 시도 (예: 5초 후)
+            // setTimeout(connect, 5000); // 실제 배포 환경에서는 재연결 로직 고려
+        });
     }
 
-    // 2. WebSocket 연결 성공 시 호출되는 함수
-    function onConnected() {
-        // 이제 /topic/public 대신 특정 roomId의 토픽을 구독합니다.
-        stompClient.subscribe('/topic/chat/room/' + roomId, onMessageReceived);
-        console.log("구독 채널: " + '/topic/chat/room/' + roomId);
+    // 메시지 전송 함수 (웹소켓을 통해)
+    function sendMessageViaWebSocket() {
+        const messageText = messageInput.value.trim();
+        const senderName = "사용자 B"; // 현재 사용자의 이름을 설정 (실제 앱에서는 로그인 정보 활용)
 
-        // 입장 메시지 전송 시 roomId와 receiver 정보 포함
-        var joinMessage = {
-            sender: username,
-            receiver: targetUsername, // 입장 메시지에도 수신자 명시 (선택 사항)
-            type: 'JOIN',
-            roomId: roomId // Room ID 추가
-        };
-        stompClient.send("/app/chat.addUser", {}, JSON.stringify(joinMessage));
-        console.log("WebSocket에 연결되었습니다. 사용자: " + username + ", 대화 상대: " + targetUsername + ", Room ID: " + roomId);
-    }
-
-    // 3. WebSocket 연결 실패 시 호출되는 함수
-    function onError(error) {
-        console.error('WebSocket 서버에 연결할 수 없습니다. 페이지를 새로고침하여 다시 시도하세요!', error);
-        alert('채팅 서버 연결에 실패했습니다. 다시 시도해 주세요. 개발자 도구 콘솔을 확인하세요.');
-    }
-
-    // 4. 메시지 전송 함수
-    function sendMessage() {
-        var messageContent = messageInput.value.trim();
-
-        if (messageContent && stompClient) {
-            var chatMessage = {
-                sender: username,
-                receiver: targetUsername, // 메시지 수신자 명시
-                content: messageContent,
-                type: 'CHAT',
-                roomId: roomId // Room ID 포함
-            };
-            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
-            messageInput.value = '';
-        }
-    }
-
-    // 5. 메시지 수신 시 호출되는 함수
-    function onMessageReceived(payload) {
-        var message = JSON.parse(payload.body);
-        var chatMessagesDiv = document.getElementById('chatMessages');
-
-        var messageWrapper = document.createElement('div');
-        messageWrapper.classList.add('message-wrapper');
-
-        var messageContent = document.createElement('div');
-        messageContent.classList.add('message-content');
-
-        var messageTime = document.createElement('div');
-        messageTime.classList.add('message-time');
-
-        if (message.type === 'JOIN' || message.type === 'LEAVE') {
-            messageWrapper.classList.add('event-message');
-            messageContent.textContent = `${message.sender} 님이 ${message.type === 'JOIN' ? '입장' : '퇴장'}하셨습니다.`;
-            messageWrapper.appendChild(messageContent);
-            if (message.time) {
-                messageTime.textContent = message.time;
-                messageWrapper.appendChild(messageTime);
-            }
-        } else { // 'CHAT' 메시지
-            messageContent.textContent = message.content;
-            messageTime.textContent = message.time || '시간 없음';
-
-            // 메시지 보낸 사람이 현재 사용자인지, 상대방인지에 따라 스타일 적용
-            if (message.sender === username) {
-                messageWrapper.classList.add('sent');
-            } else if (message.sender === targetUsername) { // 상대방 메시지
-                messageWrapper.classList.add('received');
-            }
-            // 그 외의 경우 (예: 다른 방의 메시지 또는 잘못된 sender)는 처리하지 않거나 기본 스타일 적용
-
-            messageWrapper.appendChild(messageContent);
-            messageWrapper.appendChild(messageTime);
-        }
-
-        chatMessagesDiv.appendChild(messageWrapper);
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-    }
-
-    // 6. 확장 패널 토글 함수 (이전 답변과 동일하게 유지)
-    function toggleExpandedPanel() {
-        const inputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
-
-        if (expandedPanel.classList.contains('active')) {
-            expandedPanel.classList.remove('active');
-            chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
+        if (messageText && stompClient && stompClient.connected) {
+            // "/app/sendMessage"로 메시지 전송 (InputMessage DTO 형태에 맞게)
+            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({'content': messageText, 'sender': senderName,'type': 'CHAT'}));
+            messageInput.value = ''; // 입력창 비우기
+            // 내가 보낸 메시지는 즉시 화면에 표시
+            addChatMessage(messageText, 'user-b');
         } else {
-            expandedPanel.classList.add('active');
-            const chatContainerHeight = document.querySelector('.chat-container').offsetHeight;
-            const targetPanelHeight = chatContainerHeight / 2;
-
-            chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
+            console.warn("웹소켓 연결이 없거나 메시지가 비어 있습니다.");
+            // 웹소켓 연결이 안 된 경우 일반 메시지 전송으로 대체
+            if (messageText) {
+                addChatMessage(messageText, 'user-b');
+                messageInput.value = '';
+            }
         }
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        hideMapContainer(); // 지도가 표시되어 있다면 숨김
     }
 
 
-    // DOMContentLoaded 이벤트 리스너: 페이지 로드 후 실행될 코드
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
+        // DOM 요소들을 가져와 할당
+        chatMessages = document.getElementById('chatMessages');
+        messageInput = document.getElementById('messageInput');
+        sendMessageButton = document.getElementById('sendMessageButton');
+        attachImageButton = document.getElementById('attachImageButton');
+        imageUploadInput = document.getElementById('imageUploadInput');
+        gptButton = document.getElementById('gptButton');
+        naverMapsButton = document.getElementById('naverMapsButton');
+        calendarButton = document.getElementById('calendarButton');
+        naverMapContainer = document.getElementById('naverMapContainer');
+        closeMapButton = document.getElementById('closeMapButton');
+
+        // 필수 요소 존재 여부 확인 (콘솔에 경고 출력)
+        if (!chatMessages) { console.error("Error: Element with ID 'chatMessages' not found. Please add <div id=\"chatMessages\"></div>."); return; }
+        if (!messageInput) { console.error("Error: Element with ID 'messageInput' not found."); return; }
+        if (!sendMessageButton) { console.error("Error: Element with ID 'sendMessageButton' not found."); return; }
+        if (!naverMapsButton) { console.error("Error: Element with ID 'naverMapsButton' not found."); return; }
+        if (!naverMapContainer) { console.error("Error: Element with ID 'naverMapContainer' not found."); return; }
+        if (!closeMapButton) { console.error("Error: Element with ID 'closeMapButton' not found."); return; }
+
+
+        // 웹소켓 연결 시작
         connect();
 
-        document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
+        // 메시지 전송 버튼 클릭 이벤트: 웹소켓을 통해 메시지 전송
+        sendMessageButton.addEventListener('click', sendMessageViaWebSocket);
+
+        // 이미지 첨부 로직
+        attachImageButton.addEventListener('click', () => {
+            imageUploadInput.click();
+        });
+
+        imageUploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                alert(`이미지 파일 선택됨: ${file.name}\n(실제로는 서버로 업로드 및 URL 반환 로직 필요)`);
+                // TODO: 이미지 업로드 API 호출 및 응답 처리 로직
+                // 예: const imageUrl = "업로드된_이미지_URL";
+                // addChatMessage(`이미지를 보냈습니다.<br><img src="${imageUrl}" alt="첨부 이미지">`, 'user-b', true);
             }
         });
 
-        document.getElementById('togglePanelBtn').addEventListener('click', toggleExpandedPanel);
-        document.getElementById('closePanelBtn').addEventListener('click', toggleExpandedPanel);
-
-        document.getElementById('button2').addEventListener('click', function() {
-            alert('달력/일정 버튼 클릭됨!');
-        });
-        document.getElementById('button3').addEventListener('click', function() {
-            alert('시간/알림 버튼 클릭됨!');
-        });
-        document.getElementById('button4').addEventListener('click', function() {
-            alert('문서/파일 첨부 버튼 클릭됨!');
+        // GPT 버튼 클릭 이벤트 (AI 기능 활성화)
+        gptButton.addEventListener('click', () => {
+            alert('GPT (AI) 기능 활성화! (여기에 AI 대화 모달 또는 입력창 전환 로직 구현)');
+            // TODO: GPT API 호출 로직 추가 (백엔드 연동)
+            hideMapContainer(); // 다른 기능 활성화 시 지도 숨김
         });
 
-        document.getElementById('innerButton1').addEventListener('click', function() {
-            alert('내부 메뉴 A 클릭됨!');
-        });
-        document.getElementById('innerButton2').addEventListener('click', function() {
-            alert('내부 메뉴 B 클릭됨!');
-        });
-        document.getElementById('innerButton3').addEventListener('click', function() {
-            alert('내부 메뉴 C 클릭됨!');
-        });
-        document.getElementById('innerButton4').addEventListener('click', function() {
-            alert('내부 메뉴 D 클릭됨!');
+        // 네이버 지도 버튼 클릭 이벤트
+        naverMapsButton.addEventListener('click', () => {
+            naverMapContainer.style.display = 'block'; // 지도 컨테이너 표시
+
+            // 지도 API 로드 확인 및 초기화
+            if (typeof naver === 'undefined' || typeof naver.maps === 'undefined') {
+                console.error("Naver Maps API not loaded. Check network and Client ID.");
+                alert("네이버 지도 API 로드에 실패했습니다. Client ID 또는 네트워크 상태를 확인해주세요.");
+                hideMapContainer(); // 실패 시 지도 컨테이너 다시 숨김
+                return;
+            }
+
+            // 지도 초기화 또는 재사용
+            if (!naverMapInstance) {
+                naverMapInstance = new naver.maps.Map('naverMapContainer', {
+                    center: new naver.maps.LatLng(37.5665, 126.9780), // 서울 시청
+                    zoom: 15,
+                    zoomControl: true, // 확대/축소 컨트롤 표시
+                    zoomControlOptions: {
+                        position: naver.maps.ControlPosition.TOP_RIGHT
+                    }
+                });
+                console.log("Naver Map initialized.");
+
+                // 지도 로드 완료 이벤트 (선택 사항)
+                naver.maps.Event.once(naverMapInstance, 'init', function() {
+                    console.log("Naver Map fully loaded and ready!");
+                    // 추가적인 마커, 정보창 등 지도 관련 로직을 여기에 추가할 수 있습니다.
+                });
+
+                // 지도 클릭 이벤트 핸들러 (위치 선택)
+                naver.maps.Event.addListener(naverMapInstance, 'click', (e) => {
+                    const selectedLatLng = e.coord; // 클릭한 위치의 좌표
+                    const selectedLat = selectedLatLng.lat();
+                    const selectedLng = selectedLatLng.lng();
+
+                    // 기존 마커가 있으면 제거
+                    if (selectedMapMarker) {
+                        selectedMapMarker.setMap(null);
+                    }
+
+                    // 클릭한 위치에 마커 추가
+                    selectedMapMarker = new naver.maps.Marker({
+                        position: selectedLatLng,
+                        map: naverMapInstance
+                    });
+
+                    // 사용자에게 선택된 위치를 공유할지 확인하는 창 띄우기
+                    if (confirm(`선택한 위치를 공유하시겠습니까?\n위도: ${selectedLat}\n경도: ${selectedLng}`)) {
+                        // 네이버 지도 링크 생성 (클릭 시 해당 위치로 이동)
+                        const mapLink = `https://map.naver.com/v5/search/${selectedLat},${selectedLng}`; // 좌표 검색 링크
+
+                        // 스태틱 지도 이미지 URL 생성 (Client ID 사용)
+                        const staticMapImageUrl = `https://naveropenapi.map.naver.com/api/v3/staticmap?w=200&h=150&center=${selectedLng},${selectedLat}&zoom=15&markers=${selectedLng},${selectedLat}&key=${naverMapsClientId}`;
+
+                        // 메시지로 표시 (HTML 형태로 링크 및 이미지 포함)
+                        const messageHtml = `위치를 공유했습니다: <br><a href="${mapLink}" target="_blank" style="color: white; text-decoration: underline;">지도에서 보기</a><br><img src="${staticMapImageUrl}" alt="공유된 지도 이미지" style="max-width: 100%; border-radius: 4px; margin-top: 5px;">`;
+                        addChatMessage(messageHtml, 'user-b', true);
+
+                        // TODO: 선택한 위치 정보를 서버로 전송
+                        // message: mapLink, message_type: 'MAP', latitude: selectedLat, longitude: selectedLng 등
+                        // 실제 DB에 저장할 때는 이미지 URL 대신 위도/경도 또는 지도 링크만 저장하고, 프론트엔드에서 렌더링 시
+                        // 동적으로 지도를 그리거나 스태틱 맵 이미지를 요청할 수 있습니다.
+                        // fetch('/api/chat/message', {
+                        //     method: 'POST',
+                        //     headers: { 'Content-Type': 'application/json' },
+                        //     body: JSON.stringify({
+                        //         room_id: 123, // 실제 room_id
+                        //         user_id: 456, // 실제 user_id
+                        //         message: `위치를 공유했습니다.`, // 메시지 텍스트
+                        //         img_url: staticMapImageUrl, // 지도 스태틱 이미지 URL
+                        //         has_image: 'Y',
+                        //         message_type: 'IMAGE_MAP', // 새로운 메시지 타입 정의
+                        //         location_data: { lat: selectedLat, lng: selectedLng, link: mapLink } // 위치 데이터 추가
+                        //     })
+                        // });
+
+                        // 지도를 다시 숨김
+                        hideMapContainer();
+                    }
+                });
+            } else {
+                // 이미 지도가 로드되어 있다면, 지도를 다시 표시하고 중심을 초기화
+                naverMapInstance.setCenter(new naver.maps.LatLng(37.5665, 126.9780)); // 서울 시청으로 다시 중심 설정
+                naverMapInstance.setZoom(15);
+                // 기존 마커가 있다면 제거
+                if (selectedMapMarker) {
+                    selectedMapMarker.setMap(null);
+                    selectedMapMarker = null;
+                }
+                console.log("Naver Map instance reused.");
+            }
         });
 
-        const initialInputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
-        chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
+        // 지도 닫기 버튼 이벤트
+        closeMapButton.addEventListener('click', () => {
+            hideMapContainer();
+        });
+
+        // 캘린더 버튼 로직
+        calendarButton.addEventListener('click', () => {
+            alert('캘린더/일정 공유 기능 활성화! (여기에 날짜 선택 모달 로직)');
+            // TODO: 캘린더/일정 공유 기능 구현
+            hideMapContainer(); // 다른 기능 활성화 시 지도 숨김
+        });
+
+        // 메시지 입력창에서 Enter 키로 전송
+        messageInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessageViaWebSocket(); // 웹소켓 메시지 전송 함수 호출
+            }
+        });
     });
 
-    /*]]>*/
-</script>
+    // 채팅 메시지를 화면에 추가하는 헬퍼 함수
+    function addChatMessage(content, type, isHtml = false) {
+        const newMessageDiv = document.createElement('div');
+        newMessageDiv.classList.add('message', type);
+        if (isHtml) {
+            newMessageDiv.innerHTML = content;
+        } else {
+            newMessageDiv.textContent = content;
+        }
+        chatMessages.appendChild(newMessageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // 스크롤 하단으로 이동
+    }
 
+    // 지도 컨테이너를 숨기고 마커 제거
+    function hideMapContainer() {
+        naverMapContainer.style.display = 'none';
+        if (selectedMapMarker) {
+            selectedMapMarker.setMap(null); // 마커 제거
+            selectedMapMarker = null;
+        }
+    }
+</script>
 </body>
 </html>

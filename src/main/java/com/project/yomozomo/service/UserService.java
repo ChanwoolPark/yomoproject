@@ -1,4 +1,5 @@
 package com.project.yomozomo.service;
+
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.dto.SignupForm;
 import com.project.yomozomo.repository.UserRepository;
@@ -10,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 
 @Service
@@ -82,12 +84,5 @@ public class UserService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return u;
-    }
-
-    // !!! 이 부분을 추가해야 합니다 !!!
-    public User findByUsername(String username) {
-        // UserRepository의 findByUsername을 호출하여 Optional<User>를 받고,
-        // User 객체가 있으면 반환하고 없으면 null을 반환합니다.
-        return userRepo.findByUsername(username).orElse(null);
     }
 }
