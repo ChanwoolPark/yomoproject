@@ -1,10 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>최근 본 상품</title>
+    <style>
+        .recent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .recent-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        .recent-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+    </style>
 </head>
 <body>
-<h1>최근 본 창입니다.</h1>
+<div th:fragment="content">
+    <h2 style="padding-left: 20px;">최근 본 상품 전체</h2>
+
+    <div th:if="${#lists.isEmpty(recentlyViewed)}">
+        <p style="padding: 20px;">최근 본 상품이 없습니다.</p>
+    </div>
+
+    <div class="recent-grid" th:if="${!#lists.isEmpty(recentlyViewed)}">
+        <div th:each="item : ${recentlyViewed}" class="recent-item">
+            <a th:href="@{'/product/' + ${item.product.productId}}">
+                <img th:src="${item.product.thumbnailUrl}" alt="상품 이미지">
+                <p th:text="${item.product.title}"></p>
+            </a>
+        </div>
+    </div>
+</div>
 </body>
 </html>

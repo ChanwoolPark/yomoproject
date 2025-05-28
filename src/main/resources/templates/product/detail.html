@@ -56,6 +56,9 @@
 </head>
 <body>
 
+<div th:replace="fragments/header :: header"></div>
+
+
 <div class="container">
 
   <!-- 좌측 -->
@@ -121,7 +124,22 @@
     <!-- 버튼 -->
     <!-- 상단: 찜하기, 1:1 채팅 -->
     <div class="buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
-      <button type="button" class="wishlist-btn" th:data-product-id="${product.productId}">찜하기</button>
+      <!-- 찜 안 되어 있을 때 -->
+      <button type="button"
+              th:if="${!wished}"
+              class="wishlist-btn"
+              th:data-product-id="${product.productId}">
+        찜하기
+      </button>
+
+      <!-- 찜 되어 있을 때 -->
+      <button type="button"
+              th:if="${wished}"
+              class="unwishlist-btn"
+              th:data-product-id="${product.productId}">
+        찜 취소
+      </button>
+
       <button type="button" onclick="openReservationModal()">예약 신청</button>
     </div>
 
@@ -179,6 +197,12 @@
 <!-- 오버레이 -->
 <div id="overlay" onclick="closeReservationModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
 
+
+<div th:replace="fragments/footer :: footer"></div>
+
+
+
+
 <script>
   document.querySelector('.wishlist-btn').addEventListener('click', function () {
     const productId = this.dataset.productId;
@@ -233,6 +257,58 @@
   });
 </script>
 
+<!-- 찜하기 버튼 -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // 찜하기 버튼
+    const wishlistBtn = document.querySelector('.wishlist-btn');
+    if (wishlistBtn) {
+      wishlistBtn.addEventListener('click', function () {
+        const productId = this.dataset.productId;
+
+        fetch('/wishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ productId })
+        })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    alert('찜 목록에 추가되었습니다!');
+                    location.reload();
+                  } else {
+                    alert(data.message || '이미 찜한 상품입니다.');
+                  }
+                });
+      });
+    }
+
+    // 찜취소 버튼
+    const unwishlistBtn = document.querySelector('.unwishlist-btn');
+    if (unwishlistBtn) {
+      unwishlistBtn.addEventListener('click', function () {
+        const productId = this.dataset.productId;
+
+        fetch(`/wishlist/${productId}`, {
+          method: 'DELETE'
+        })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    alert('찜 목록에서 제거되었습니다!');
+                    location.reload();
+                  } else {
+                    alert(data.message || '요청 실패');
+                  }
+                });
+      });
+    }
+
+  });
+</script>
 
 <!-- 예약 부분 캘린더 JS 코드 -->
 <script th:inline="javascript">

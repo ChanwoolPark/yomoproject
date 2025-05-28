@@ -1,14 +1,17 @@
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Product;
+import com.project.yomozomo.domain.ViewedProduct;
+import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.entity.Review;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ProductRepository;
 import com.project.yomozomo.repository.ReviewRepository;
 import com.project.yomozomo.repository.UserRepository;
+import com.project.yomozomo.service.ProductListService;
+import com.project.yomozomo.service.UserService;
+import com.project.yomozomo.service.WishlistService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +30,10 @@ public class MyPageController {
     private final UserRepository usersRepository;
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
+    private final UserService userService;
+    private final WishlistService wishlistService;
+    private final ProductListService productListService;
+
 
 
     @GetMapping({"/", ""})
@@ -39,11 +46,17 @@ public class MyPageController {
         return "mypage/layout";
     }
 
-    @GetMapping("/home-summary")
+    @GetMapping("/home-summary") // 전체 경로: /mypage/home-summary
     public String homeSummaryFragment(Model model, Principal principal) {
         String username = principal.getName();
         User user = usersRepository.findByUsername(username).orElseThrow();
+        Long userId = user.getId();
+
         model.addAttribute("user", user);
+
+        // 최근 본 상품 5개 추가
+        List<ViewedProduct> recent5 = productListService.getRecentlyViewed(userId);
+        model.addAttribute("recentlyViewed", recent5);
 
         return "mypage/fragments/home-summary :: content";
     }
@@ -109,14 +122,39 @@ public class MyPageController {
         return "mypage/fragments/cancel-list";
     }
 
-    // ────── 내 활동 ──────
+    // ────── 내 활동(관심 목록) ──────
     @GetMapping("/wishlist")
-    public String wishlistFragment() {
-        return "mypage/fragments/wishlist";
+    public String userWishlist(Model model, Principal principal) {
+        if (principal == null) {
+            return "redirect:/login"; // 로그인 안 되어 있으면 로그인 페이지로
+        }
+
+        String username = principal.getName();
+        User user = userService.findByUsername(username);
+        Long userId = user.getId();
+
+        List<ProductDto> wishlist = wishlistService.getAllWishlist(userId);
+        model.addAttribute("wishlist", wishlist);
+
+        return "mypage/fragments/wishlist"; // 관심목록 보여줄 html
     }
 
-    @GetMapping("/recent")
-    public String recentFragment() {
+
+
+    // 최근 본 전체 페이지
+    @GetMapping("/recent") // 전체 경로: /mypage/recent
+    public String myPageRecentlyViewed(Model model, Principal principal) {
+        if (principal != null) {
+            String username = principal.getName();
+            User user = userService.findByUsername(username);
+            Long userId = user.getId();
+
+            List<ViewedProduct> allViewed = productListService.getAllRecentlyViewed(userId);
+            model.addAttribute("recentlyViewed", allViewed);
+        } else {
+            model.addAttribute("recentlyViewed", List.of());
+        }
+
         return "mypage/fragments/recent";
     }
 

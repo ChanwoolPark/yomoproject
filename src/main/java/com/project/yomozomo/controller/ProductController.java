@@ -34,7 +34,6 @@ public class ProductController {
     public String showProductDetail(@PathVariable("id") int productId,
                                     Model model) {
 
-        // 현재 로그인 유저 ID (Spring Security로 가져오기)
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
@@ -42,15 +41,15 @@ public class ProductController {
         if (!"anonymousUser".equals(username)) {
             User user = userService.findByUsername(username);
             userId = user.getId();
+
+            // 👉 최근 본 상품 저장 로직 추가
+            productDetailService.saveViewedProduct(userId, productId);
         }
 
-        Product product = productDetailService.incrementViewCount(productId); // 조회 + 증가
+        Product product = productDetailService.incrementViewCount(productId);
         List<ProductImage> imageList = productDetailService.getProductImages(productId);
-
-        // 판매자 정보
         User seller = product.getSeller();
 
-        // 날짜 포맷
         String formattedDate = product.getCreatedAt() != null
                 ? product.getCreatedAt().toInstant()
                 .atZone(ZoneId.systemDefault())
