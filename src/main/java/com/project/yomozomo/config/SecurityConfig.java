@@ -20,13 +20,13 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class Securityconfig {
 
 
 
     private final OAuth2LoginSuccessHandler successHandler;
 
-    public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
+    public Securityconfig(OAuth2LoginSuccessHandler successHandler) {
         this.successHandler = successHandler;
     }
 
@@ -41,7 +41,7 @@ public class SecurityConfig {
                                 "/charge", "/oauth2/**", "/signup", "/category",
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
                                 "/find-id","/find-password.html",
-                                "/test-login"
+                                "/test-login", "/uploads/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -266,7 +266,7 @@
     </div>
   </div>
 </div>
-<script>
+<script th:inline="javascript">
   main();
 
   async function main() {
@@ -274,7 +274,7 @@
     const coupon = document.getElementById("coupon-box");
     const amount = {
       currency: "KRW",
-      value: 5001,
+      value: /*[[${chargeAmount}]]*/,
     };
     // ------  결제위젯 초기화 ------
     // TODO: clientKey는 개발자센터의 결제위젯 연동 키 > 클라이언트 키로 바꾸세요.
@@ -334,11 +334,11 @@
       // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
       await widgets.requestPayment({
         orderId: generateRandomString(),
-        orderName: "토스 티셔츠 외 2건",
+        orderName: "요모페이 포인트 충전",
         successUrl: window.location.origin + "/success",
         failUrl: window.location.origin + "/fail",
-        customerEmail: "customer123@gmail.com",
-        customerName: "김토스",
+        customerEmail: /*[[${userEmail}]]*/,
+        customerName: /*[[${userNickname}]]*/,
         customerMobilePhone: "01012341234",
       });
     });
