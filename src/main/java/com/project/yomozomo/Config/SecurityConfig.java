@@ -1,5 +1,5 @@
 // src/main/java/com/project/yomozomo/config/SecurityConfig.java
-package com.project.yomozomo.config;
+package com.project.yomozomo.Config;
 
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
