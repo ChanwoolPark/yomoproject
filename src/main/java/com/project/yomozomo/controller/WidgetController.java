@@ -1,5 +1,9 @@
 package com.project.yomozomo.controller;
 
+import com.project.yomozomo.domain.UserWallet;
+import com.project.yomozomo.entity.User;
+import com.project.yomozomo.repository.UserRepository;
+import com.project.yomozomo.repository.UserWalletRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -8,34 +12,49 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.Base64;
 
 @Controller
 public class WidgetController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final UserRepository userRepository;
+    private final UserWalletRepository userWalletRepository;
 
-    @RequestMapping(value = "/widget", method = RequestMethod.POST)
-    public String widgetCharge(HttpServletRequest request, Model model) throws Exception {
-        // 폼에서 받은 값 처리 (예: chargeAmount)
-        String chargeAmount = request.getParameter("chargeAmount");
-        // TODO: 금액에 대한 결제/DB저장/비즈니스 로직 추가
+    public WidgetController(UserRepository userRepository, UserWalletRepository userWalletRepository) {
+        this.userRepository = userRepository;
+        this.userWalletRepository = userWalletRepository;
+    }
 
-        // 예시: 금액을 모델에 다시 담아서 /charge로 리다이렉트
-        // model.addAttribute("point", ...);
-        // model.addAttribute("logs", ...);
+    @PostMapping("/widget")
+    public String widgetCharge(HttpServletRequest request, Principal principal, Model model) {
+        // 충전 폼에서 넘어온 값 받기
+        String chargeAmountStr = request.getParameter("chargeAmount");
+        int chargeAmount = Integer.parseInt(chargeAmountStr);
 
-        // 충전 후 포인트 페이지로 이동
-        return  "checkout";
+        // 로그인 사용자 정보 조회
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+        // (상품명은 고정값이거나, 필요시 폼에서 받아오기)
+        String productName = "요모페이 포인트 충전";
+
+        // 모델에 값 담아서 checkout.html로 넘김
+        model.addAttribute("chargeAmount", chargeAmount);
+        model.addAttribute("userNickname", user.getNickname());
+        model.addAttribute("userEmail", user.getEmail());
+        model.addAttribute("productName", productName);
+
+        return "checkout";
     }
     @RequestMapping(value = "/confirm")
     public ResponseEntity<JSONObject> confirmPayment(@RequestBody String jsonBody) throws Exception {
@@ -103,9 +122,36 @@ public class WidgetController {
      * @return
      * @throws Exception
      */
-    @RequestMapping(value = "/success", method = RequestMethod.GET)
-    public String paymentRequest(HttpServletRequest request, Model model) throws Exception {
-        return "/success";
+    @GetMapping("/success")
+    public String paymentRequest(HttpServletRequest request, Model model, Principal principal) {
+        String orderId = request.getParameter("orderId");
+        String amountStr = request.getParameter("amount");
+        int amount = 0;
+        if (amountStr != null) {
+            amount = Integer.parseInt(amountStr);
+        }
+
+        // 현재 로그인한 유저 정보 가져오기
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+        // 지갑 정보 가져오기 (UserWallet, 예시)
+        UserWallet wallet = userWalletRepository.findByUserId(user.getId());
+        if (wallet == null) {
+            wallet = new UserWallet();
+            wallet.setUserId(user.getId());
+            wallet.setBalance(0);
+        }
+        // 충전 금액 반영
+        wallet.setBalance(wallet.getBalance() + amount);
+        userWalletRepository.save(wallet);
+
+        // 성공 메시지/금액 모델에 추가
+        model.addAttribute("amount", amount);
+        model.addAttribute("walletBalance", wallet.getBalance());
+
+        return "success"; // success.html
     }
 
     @RequestMapping(value = "/widget", method = RequestMethod.GET)
