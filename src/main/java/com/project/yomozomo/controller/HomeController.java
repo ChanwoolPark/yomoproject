@@ -30,10 +30,10 @@ public class HomeController {
         return "redirect:/";
     }
 
-    @GetMapping("/my")
+/*    @GetMapping("/my")
     public String myPage() {
         return "redirect:/my.html";
-    }
+    }*/
 
 //    @GetMapping("/chatbot")
 //    public String chatbot() {

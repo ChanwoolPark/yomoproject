@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>마이페이지</title>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #fff;
+            padding: 16px 32px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        #main {
+            display: flex;
+            flex: 1;
+            padding: 24px;
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        #sidebar {
+            width: 240px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        #sidebar ul {
+            list-style: none;
+        }
+
+        #sidebar li.main {
+            font-weight: bold;
+            margin: 16px 0 8px;
+            color: #444;
+            font-size: 15px;
+        }
+
+        #sidebar li.sub {
+            padding: 6px 0 6px 12px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+        }
+
+        #sidebar li.sub:hover {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+
+        #content {
+            flex: 1;
+            padding: 24px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid #ddd;
+        }
+
+        footer {
+            background-color: #f1f1f1;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+
+    </style>
+
+
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<div id="main">
+    <div id="sidebar">
+        <ul>
+            <li class="main">내 정보</li>
+            <li class="sub" onclick="loadContent('profile')">프로필 상세보기</li>
+            <li class="sub" onclick="loadContent('edit-info')">개인정보 확인/수정</li>
+            <li class="sub" onclick="loadContent('yomopay')">요모페이 관리/충전</li>
+
+            <li class="main">대여 관리</li>
+            <li class="sub" onclick="loadContent('rent-list')">대여 목록</li>
+            <li class="sub" onclick="loadContent('sale-list')">판매 목록</li>
+            <li class="sub" onclick="loadContent('cancel-list')">취소/환불/반품 내역</li>
+
+            <li class="main">내 활동</li>
+            <li class="sub" onclick="loadContent('wishlist')">위시리스트</li>
+            <li class="sub" onclick="loadContent('recent')">최근 본 게시글</li>
+            <li class="sub" onclick="loadContent('reviews')">내가 쓴 리뷰</li>
+            <li class="sub" onclick="loadContent('inquiries')">문의내역 확인</li>
+        </ul>
+    </div>
+    <div id="content"></div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // ✨ URL 파라미터에서 menu 추출
+        const urlParams = new URLSearchParams(window.location.search);
+        const menu = urlParams.get("menu") || "home-summary"; // 기본은 home-summary
+        loadContent(menu);
+    });
+
+    function loadContent(menuName) {
+        // 히스토리 push는 menu 파라미터 방식으로!
+        history.pushState({ menu: menuName }, '', `/mypage?menu=${menuName}`);
+
+        fetch(`/mypage/${menuName}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('content').innerHTML = html;
+            });
+    }
+
+
+    // ✅ 뒤로가기 동작
+    window.onpopstate = function(event) {
+        const menu = event.state?.menu || 'home-summary';
+        fetch(`/mypage/${menu}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('content').innerHTML = html;
+            });
+    };
+</script>
+
+</body>
+</html>
