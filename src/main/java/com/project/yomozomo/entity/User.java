@@ -72,8 +72,8 @@ public class User {
     private String grade = "BRONZE";
 
     // NUMBER(2,1) 은 BigDecimal + precision/scale 로 매핑합니다
-    @Column(name = "user_rating", precision = 2, scale = 1)
-    private BigDecimal rating;
+    @Column(name = "user_rating", precision = 3, scale = 1)
+    private BigDecimal rating = BigDecimal.valueOf(0.0);
 
     @Column(name = "review_count")
     private Integer reviewCount;

@@ -1,14 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>마이페이지 프로필</title>
 </head>
 <body>
-<div>
-    <h2>프로필 상세보기</h2>
-    <p>이름: [[${user.name}]]</p>
-    <p>이메일: [[${user.email}]]</p>
+<div class="profile-section">
+    <div class="profile-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+        <img th:src="${user.profileImageUrl}" alt="프로필 이미지"
+             style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-right: 16px;">
+        <div>
+            <h2 style="margin-bottom: 8px;" th:text="${user.nickname + ' (' + user.username + ')'}"></h2>
+            <button onclick="loadContent('edit-info')"
+                    style="padding: 6px 12px; background-color: #4a90e2; color: white; border: none; border-radius: 4px; font-size: 13px;">
+                내 정보 수정
+            </button>
+
+        </div>
+    </div>
+
+    <div class="profile-rating" style="margin-bottom: 16px;">
+        <span style="font-size: 16px; font-weight: bold; color: #ff9800;" th:text="${user.rating}">4.5</span>
+        <span class="stars" th:utext="${@starUtil.renderStars(user.rating)}" style="margin-left: 8px;"></span>
+    </div>
+
+    <div class="profile-stats" style="margin-bottom: 24px; color: #555;">
+        <p style="margin-bottom: 6px;">재거래 희망률: <span>92%</span></p>
+        <p style="margin-bottom: 6px;">응답률: <span>95%</span></p>
+    </div>
+
+    <div class="profile-sales" style="margin-bottom: 32px;">
+        <h3 style="font-size: 16px; margin-bottom: 12px;">대여/판매 중인 목록</h3>
+        <div th:each="item : ${products}" style="margin-bottom: 8px; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
+            <p th:text="${item.title}" style="margin: 0;">상품명</p>
+        </div>
+    </div>
+
+    <div class="profile-reviews">
+        <h3 style="font-size: 16px; margin-bottom: 12px;">받은 리뷰</h3>
+        <div th:each="review : ${reviews}" style="margin-bottom: 12px; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
+            <strong th:text="${review.reviewer.name}" style="display: block; margin-bottom: 4px;">리뷰어</strong>
+            <p th:text="${review.reviewText}" style="margin: 0 0 4px;">리뷰 내용</p>
+            <small th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}" style="color: #888;">날짜</small>
+        </div>
+
+    </div>
 </div>
 
 </body>
