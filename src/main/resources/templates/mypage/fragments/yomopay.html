@@ -64,9 +64,9 @@
             <tbody>
             <tr th:each="log : ${logs}">
                 <td th:text="${#dates.format(log.createdAt, 'yyyy-MM-dd')}"></td>
-                <td th:text="${log.amount} + 'P'"></td>
-                <td th:text="${log.method}"></td>
+                <td th:text="${log.amount}"></td>
                 <td th:text="${log.type}"></td>
+                <td>완료</td>
             </tr>
             <tr th:if="${#lists.isEmpty(logs)}">
                 <td colspan="4">충전 내역이 없습니다.</td>

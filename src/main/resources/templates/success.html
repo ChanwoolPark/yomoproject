@@ -6,10 +6,12 @@
   <link rel="stylesheet" type="text/css" href="/style.css" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>토스페이먼츠 샘플 프로젝트</title>
+  <title>요모조모</title>
 </head>
 
 <body>
+<!-- 헤더 -->
+<div th:replace="fragments/header :: header"></div>
 <div class="box_section" style="width: 600px">
   <img width="100px" src="https://static.toss.im/illusts/check-blue-spot-ending-frame.png" />
   <h2>결제를 완료했어요</h2>
@@ -27,15 +29,11 @@
     <div class="p-grid-col text--right" id="paymentKey" style="white-space: initial; width: 250px"></div>
   </div>
   <div class="p-grid" style="margin-top: 30px">
-    <button class="button p-grid-col5" onclick="location.href='https://docs.tosspayments.com/guides/v2/payment-widget/integration';">연동 문서</button>
-    <button class="button p-grid-col5" onclick="location.href='https://discord.gg/A4fRFXQhRu';" style="background-color: #e8f3ff; color: #1b64da">실시간 문의</button>
+    <button class="button p-grid-col5" onclick="location.href='http://localhost:8080';">메인 화면</button>
+    <button class="button p-grid-col5" onclick="location.href='http://localhost:8080/mypage?menu=yomopay';" style="background-color: #e8f3ff; color: #1b64da">마이페이지</button>
   </div>
 </div>
 
-<div class="box_section" style="width: 600px; text-align: left">
-  <b>Response Data :</b>
-  <div id="response" style="white-space: initial"></div>
-</div>
 
 <script>
   // 쿼리 파라미터 값이 결제 요청할 때 보낸 데이터와 동일한지 반드시 확인하세요.
@@ -70,9 +68,6 @@
     // console.log(json);
     return json;
   }
-  confirm().then(function (data) {
-    document.getElementById("response").innerHTML = `<pre>${JSON.stringify(data, null, 4)}</pre>`;
-  });
 
   const paymentKeyElement = document.getElementById("paymentKey");
   const orderIdElement = document.getElementById("orderId");
@@ -82,5 +77,7 @@
   amountElement.textContent = urlParams.get("amount") + "원";
   paymentKeyElement.textContent = urlParams.get("paymentKey");
 </script>
+<!-- 푸터 -->
+<div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>

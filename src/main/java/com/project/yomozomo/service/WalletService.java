@@ -25,7 +25,6 @@ public class WalletService {
         log.setUserWalletId(userWalletId);
         log.setAmount(amount);
         log.setType("충전");
-        log.setMethod(method);
         walletLogMapper.insertLog(log);
     }
 
