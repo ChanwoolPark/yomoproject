@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "product")
@@ -56,6 +58,17 @@ public class Product {
 
     public void delete() {
         this.isDeleted = "Y";
+    }
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductImage> productImages = new ArrayList<>();
+
+    // 헬퍼 메서드
+    public String getThumbnailUrl() {
+        if (productImages != null && !productImages.isEmpty()) {
+            return productImages.get(0).getImageUrl();
+        }
+        return "/img/default.png"; // 기본 이미지 경로
     }
 
 }

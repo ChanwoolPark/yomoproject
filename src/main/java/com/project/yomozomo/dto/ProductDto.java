@@ -1,6 +1,5 @@
 package com.project.yomozomo.dto;
 
-import com.project.yomozomo.domain.Product;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,4 +21,11 @@ public class ProductDto {
         this.createdAt = createdAt;
         this.imageUrl = (imageUrl != null) ? imageUrl.trim() : null;
     }
+
+    public ProductDto(int productId, String title, String imageUrl) {
+        this.productId = productId;
+        this.title = title;
+        this.imageUrl = imageUrl;
+    }
+
 }

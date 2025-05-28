@@ -53,8 +53,17 @@ public class ProductListService {
     }
 
     @Transactional(readOnly = true)
-    public List<Wishlist> getWishlist(Long userId) {
-        return wishlistRepo.findByUserId(userId);
+    public List<ProductDto> getWishlist(Long userId) {
+        List<Wishlist> wishlist = wishlistRepo.findByUserId(userId);
+
+        return wishlist.stream()
+                .sorted((w1, w2) -> w2.getLikedDate().compareTo(w1.getLikedDate())) // 최신순
+                .limit(5)
+                .map(w -> {
+                    Product p = w.getProduct();
+                    return new ProductDto(p.getProductId(), p.getTitle(), p.getThumbnailUrl());
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)

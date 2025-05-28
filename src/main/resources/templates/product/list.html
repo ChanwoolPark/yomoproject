@@ -77,12 +77,15 @@
                 <span th:if="${item.product != null}" th:text="${item.product.title}">상품명</span>
             </li>
         </ul>
-        <h4>찜한 상품</h4>
-        <ul>
-            <li th:each="wish : ${wishlist}">
-                <span th:if="${wish.product != null}" th:text="${wish.product.title}">상품명</span>
-            </li>
-        </ul>
+        <div class="wishlist-box">
+            <h4>관심목록</h4>
+            <div class="wishlist-items">
+                <div th:each="item : ${wishlist}" class="wishlist-item" style="display: flex; margin-bottom: 10px;">
+                    <img th:src="${item.imageUrl}" alt="찜한 상품" style="width: 60px; height: 60px; object-fit: cover; margin-right: 10px;">
+                    <a th:href="@{'/product/' + ${item.productId}}" th:text="${item.title}" style="font-size: 14px;"></a>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>

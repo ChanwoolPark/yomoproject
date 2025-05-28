@@ -121,7 +121,7 @@
     <!-- 버튼 -->
     <!-- 상단: 찜하기, 1:1 채팅 -->
     <div class="buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
-      <button type="button">찜하기</button>
+      <button type="button" class="wishlist-btn" th:data-product-id="${product.productId}">찜하기</button>
       <button type="button" onclick="openReservationModal()">예약 신청</button>
     </div>
 
@@ -178,6 +178,26 @@
 
 <!-- 오버레이 -->
 <div id="overlay" onclick="closeReservationModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
+
+<script>
+  document.querySelector('.wishlist-btn').addEventListener('click', function () {
+    const productId = this.dataset.productId;
+
+    fetch('/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId })
+    })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                alert('관심 목록에 추가되었습니다.');
+              } else {
+                alert(data.message || '이미 추가된 상품입니다.');
+              }
+            });
+  });
+</script>
 
 <!-- 지도 API KEY -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&libraries=services"></script>

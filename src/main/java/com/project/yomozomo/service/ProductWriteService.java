@@ -42,6 +42,8 @@ public class ProductWriteService {
 
         productRepo.save(product); // 먼저 product 저장 (ID 필요)
 
+
+
         if (images != null) {
             images.stream().limit(3).forEach(file -> {
                 try {
