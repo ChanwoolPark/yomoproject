@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class WishlistService {
 
+    //
     private final WishlistRepository wishlistRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
