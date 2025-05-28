@@ -12,4 +12,5 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Integer> {
     );
 
     Optional<ChatRoom> findByRoomId(Long roomId);
+
 }

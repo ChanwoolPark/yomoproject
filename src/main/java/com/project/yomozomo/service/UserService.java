@@ -1,5 +1,4 @@
 package com.project.yomozomo.service;
-
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.dto.SignupForm;
 import com.project.yomozomo.repository.UserRepository;
@@ -11,7 +10,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
 @Service
@@ -86,10 +84,13 @@ public class UserService {
         return u;
     }
 
+
+
     // 현재 로그인한 user 아이디로 User 조회
     public User findByUsername(String username) {
         return userRepo.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
     }
+
 
 }

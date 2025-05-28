@@ -7,11 +7,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;//패스워드는 민감한 자료여서
 @Entity
 @Table(name = "USERS")
 @Getter @Setter @NoArgsConstructor
-
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -32,6 +32,7 @@ public class User {
     @Column(name = "email", length = 100, nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password", length = 100, nullable = false)
     private String password;
 

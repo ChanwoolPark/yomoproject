@@ -4,6 +4,7 @@ import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.UserWallet;
 import com.project.yomozomo.domain.ViewedProduct;
 import com.project.yomozomo.dto.ProductDto;
+import com.project.yomozomo.dto.UserEditForm;
 import com.project.yomozomo.entity.Review;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ProductRepository;
@@ -14,13 +15,17 @@ import com.project.yomozomo.service.ProductListService;
 import com.project.yomozomo.service.UserService;
 import com.project.yomozomo.service.WalletService;
 import com.project.yomozomo.service.WishlistService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.List;
@@ -103,12 +108,6 @@ public class MyPageController {
         return "mypage/fragments/profile";
     }
 
-
-    @GetMapping("/edit-info")
-    public String editInfoFragment() {
-        return "mypage/fragments/edit-info";
-    }
-
     /*@GetMapping("/yomopay")
     public String yomopayFragment() {
         return "mypage/fragments/yomopay";
@@ -181,5 +180,85 @@ public class MyPageController {
         // 직접 /mypage/profile 등으로 진입하면 → /mypage?menu=profile 로 리디렉트
         return "redirect:/mypage?menu=" + menuName;
     }
+
+    // 📌 개인정보 확인/수정 페이지 이동
+    @GetMapping("/edit-info")
+    public String editInfoPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        String username = userDetails.getUsername();
+        User user = usersRepository.findByUsername(username).orElseThrow();
+        model.addAttribute("user", user);
+        return "mypage/fragments/edit-info";
+    }
+
+    // 📌 닉네임 중복 확인
+    @GetMapping("/check-nickname")
+    @ResponseBody
+    public boolean checkNickname(@RequestParam String nickname) {
+        return usersRepository.existsByNickname(nickname);
+    }
+
+    // 📌 이메일 중복 확인
+    @GetMapping("/check-email")
+    @ResponseBody
+    public boolean checkEmail(@RequestParam String email) {
+        return usersRepository.existsByEmail(email);
+    }
+
+    // 📌 휴대폰 중복 확인
+    @GetMapping("/check-phone")
+    @ResponseBody
+    public boolean checkPhone(@RequestParam String phone) {
+        return usersRepository.existsByPhone(phone);
+    }
+
+    @PostMapping("/edit-info")
+    @Transactional
+    public String updateUserInfo(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @ModelAttribute UserEditForm form,
+            @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile) {
+
+        User user = usersRepository.findByUsername(userDetails.getUsername()).orElseThrow();
+
+        if (profileImageFile != null && !profileImageFile.isEmpty()) {
+            try {
+                // 1. 실제 저장 경로는 C:/YomoProject/uploads/
+                String uploadsDir = "C:/YomoProject/uploads/";
+                File dir = new File(uploadsDir);
+                if (!dir.exists()) dir.mkdirs();
+
+                // 2. 파일명(중복방지)
+                String originalFilename = profileImageFile.getOriginalFilename();
+                String safeFileName = System.currentTimeMillis() + "_" + originalFilename;
+                File dest = new File(dir, safeFileName);
+
+                // 3. 파일 저장
+                profileImageFile.transferTo(dest);
+
+                System.out.println("실제 저장 경로: " + dest.getAbsolutePath());
+
+                // 4. DB에는 /uploads/파일명 으로 저장 (★슬래시 주의)
+                user.setProfileImageUrl("/uploads/" + safeFileName);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                // 필요하면 에러 메시지 보여주기!
+            }
+        }
+
+        // 나머지 정보 저장
+        user.setNickname(form.getNickname());
+        user.setEmail(form.getEmail());
+        user.setPhone(form.getPhone());
+        user.setAddress(form.getAddress());
+        user.setAddressDetail(form.getAddressDetail());
+        user.setZipNo(form.getZipNo());
+
+        return "redirect:/mypage?menu=profile";
+    }
+
+
+
+
 
 }

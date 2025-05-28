@@ -4,7 +4,7 @@ spring:
     name: Yomozomo
 
   datasource:
-    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
+    url: jdbc:oracle:thin:@localhost:1521/XEPDB1 # <--- 이 줄을 수정합니다.
     driver-class-name: oracle.jdbc.OracleDriver
     username: Yomo
     password: 12345
@@ -110,4 +110,9 @@ naver:
     client-secret: "DM7myffwIr4XhmRNgOLQ5nfM8L1NHjy9axPi755k" # 민감한 정보이므로 꼭 .gitignore에 추가
 
 file:
-  upload-dir: uploads/
+  upload-dir: C:/YomoProject/uploads
+
+  servlet:
+    multipart:
+      enabled: true
+      location: C:/YomoProject/uploads
