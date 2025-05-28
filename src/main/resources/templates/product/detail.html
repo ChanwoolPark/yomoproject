@@ -201,28 +201,6 @@
 <div th:replace="fragments/footer :: footer"></div>
 
 
-
-
-<script>
-  document.querySelector('.wishlist-btn').addEventListener('click', function () {
-    const productId = this.dataset.productId;
-
-    fetch('/wishlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId })
-    })
-            .then(res => res.json())
-            .then(data => {
-              if (data.success) {
-                alert('관심 목록에 추가되었습니다.');
-              } else {
-                alert(data.message || '이미 추가된 상품입니다.');
-              }
-            });
-  });
-</script>
-
 <!-- 지도 API KEY -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&libraries=services"></script>
 
