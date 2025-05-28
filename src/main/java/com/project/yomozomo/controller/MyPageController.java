@@ -1,6 +1,7 @@
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Product;
+import com.project.yomozomo.domain.UserWallet;
 import com.project.yomozomo.domain.ViewedProduct;
 import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.dto.UserEditForm;
@@ -9,8 +10,10 @@ import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ProductRepository;
 import com.project.yomozomo.repository.ReviewRepository;
 import com.project.yomozomo.repository.UserRepository;
+import com.project.yomozomo.repository.UserWalletRepository;
 import com.project.yomozomo.service.ProductListService;
 import com.project.yomozomo.service.UserService;
+import com.project.yomozomo.service.WalletService;
 import com.project.yomozomo.service.WishlistService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -38,6 +41,8 @@ public class MyPageController {
     private final UserService userService;
     private final WishlistService wishlistService;
     private final ProductListService productListService;
+    private final UserWalletRepository userWalletRepository;
+    private final WalletService walletService;
 
 
 
@@ -45,6 +50,7 @@ public class MyPageController {
     public String mypage(Model model, Principal principal) {
         String username = principal.getName(); // email 또는 username
         User user = usersRepository.findByUsername(username).orElseThrow();; // 또는 findByEmail
+
 
         model.addAttribute("user", user);  // ★ 이게 안 들어가면 Thymeleaf에서 user.profileImageUrl 못 씀
 
@@ -56,8 +62,10 @@ public class MyPageController {
         String username = principal.getName();
         User user = usersRepository.findByUsername(username).orElseThrow();
         Long userId = user.getId();
-
+        UserWallet wallet = userWalletRepository.findByUserId(user.getId());
+        int userPoint = wallet.getBalance();
         model.addAttribute("user", user);
+        model.addAttribute("point", userPoint);
 
         // 최근 본 상품 5개 추가
         List<ViewedProduct> recent5 = productListService.getRecentlyViewed(userId);

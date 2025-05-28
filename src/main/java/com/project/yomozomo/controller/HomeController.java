@@ -1,22 +1,38 @@
 package com.project.yomozomo.controller;
 
-import org.springframework.security.core.Authentication;
+import com.project.yomozomo.domain.Category;
+import com.project.yomozomo.service.CategoryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.List;
+
 @Controller
+@RequiredArgsConstructor
 public class HomeController {
+
+    private final CategoryService categoryService;
 
     @GetMapping("/")
     public String home(Model model, @AuthenticationPrincipal User user) {
+        // 카테고리 정보
+        List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
+        model.addAttribute("categories", categories);
+
+        // 배너 이미지 리스트
+        List<String> imageList = List.of(
+                "banner1.png",
+                "banner2.png",
+                "banner3.png"
+        );
+        model.addAttribute("imageList", imageList);
+
         return "index";
     }
-
-
 
 
     @GetMapping("/category")

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "category")
 @Getter @Setter
@@ -16,4 +18,8 @@ public class Category {
     private int categoryId;
 
     private String name;
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    private List<SubCategory> subCategories;
+
 }

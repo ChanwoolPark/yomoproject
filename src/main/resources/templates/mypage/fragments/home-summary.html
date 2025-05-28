@@ -14,7 +14,7 @@
         <span th:text="${user.nickname}">누나</span> 님 환영합니다.
       </div>
       <div style="margin-top: 10px;">
-        요모포인트 1000p, 쿠폰 <strong th:text="${user.couponCount}">3</strong>장
+        요모포인트 <span th:text="${point}">1000</span> p, 쿠폰 <strong th:text="${user.couponCount}">3</strong>장
       </div>
       <div style="margin-top: 10px;">
         <button type="button" onclick="loadContent('profile')" style="all: unset; color: blue; text-decoration: underline;">
