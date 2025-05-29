@@ -1,5 +1,5 @@
 // src/main/java/com/project/yomozomo/config/SecurityConfig.java
-package com.project.yomozomo.Config;
+package com.project.yomozomo.config;
 
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +13,8 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,11 @@ public class Securityconfig {
 
     public Securityconfig(OAuth2LoginSuccessHandler successHandler) {
         this.successHandler = successHandler;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
