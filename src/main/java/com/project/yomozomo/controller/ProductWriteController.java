@@ -34,6 +34,7 @@ public class ProductWriteController {
     @GetMapping("/write")
     public String showWriteForm(@RequestParam("categoryId") int categoryId, Model model) {
         model.addAttribute("subCategories", productFormService.getAllSubCategories(categoryId));
+        model.addAttribute("categoryId", categoryId);
         return "product/write";
     }
 
