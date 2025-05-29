@@ -50,6 +50,7 @@ public class ProductController {
         List<ProductImage> imageList = productDetailService.getProductImages(productId);
         User seller = product.getSeller();
 
+
         String formattedDate = product.getCreatedAt() != null
                 ? product.getCreatedAt().toInstant()
                 .atZone(ZoneId.systemDefault())

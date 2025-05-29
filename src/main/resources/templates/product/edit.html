@@ -38,6 +38,21 @@
       width: 100px;
       margin-right: 10px;
     }
+
+    .back-btn {
+      padding: 8px 18px;
+      background: #aaa;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 1rem;
+    }
+    .back-btn:hover {
+      background: #888;
+    }
   </style>
 </head>
 <body>
@@ -98,6 +113,11 @@
     </div>
   </form>
 </div>
+
+<div style="text-align:center; margin-top: 20px;">
+  <button type="button" class="back-btn" th:onclick="|location.href='/product/' + ${product.productId}|">뒤로가기</button>
+</div>
+
 
 </body>
 </html>
