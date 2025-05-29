@@ -378,7 +378,7 @@
 <div class="chat-container">
     <div class="chat-header">
         <h3 id="chatHeader">
-            채팅방 ID: <span th:text="${roomId}">[채팅방 ID]</span>
+            <p>렌탈 ID: <span th:text="${currentRental?.rentalId}">[렌탈 ID]</span></p>
         </h3>
         <img id="myUserProfileImage" class="profile-image-header" src="/images/default_profile.png" alt="내 프로필">
     </div>
@@ -402,7 +402,7 @@
         <div class="panel-header">
             <button id="closePanelBtn">✖</button>
         </div>
-        <div class="inner-buttons-grid">
+         <div class="inner-buttons-grid">
             <div class="grid-item-full">
                 <button id="innerButton1" title="거래 시작"><span class="icon">📝</span>거래 시작</button>
             </div>
@@ -412,8 +412,8 @@
             <div class="grid-item-half">
                 <button id="innerButton3" title="완료"><span class="icon">✅</span>완료</button>
             </div>
-        </div>
-</div>
+         </div>
+    </div>
 
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
@@ -619,6 +619,5 @@
         chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
     });
 </script>
-
 </body>
 </html>
