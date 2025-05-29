@@ -52,17 +52,16 @@
             text-align: center; /* 제목 텍스트 중앙 정렬 */
             order: 2; /* 기본 순서 2 (가운데) */
         }
-
-        /* 프로필 이미지 스타일 추가 */
+        /* 프로필 이미지 스타일 (공통) */
         .profile-image-header {
             width: 40px; /* 이미지 크기 조절 */
             height: 40px;
             border-radius: 50%; /* 원형으로 */
             object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
-            margin-left: 10px; /* 제목과의 간격 */
             border: 2px solid white; /* 흰색 테두리 */
             flex-shrink: 0; /* 크기가 줄어들지 않도록 */
-            order: 3; /* 기본 순서 3 (오른쪽) */
+            margin-right: 10px; /* 제목과의 간격 */
+            /* order: 1; 제거: 이제 이미지 하나이므로 순서 지정이 덜 중요 */
         }
         /* 프로필 이미지 로드 실패 시 또는 src가 없을 때 */
         .profile-image-header:not([src]):before {
@@ -81,6 +80,7 @@
         .profile-image-header[src]:before {
             content: none;
         }
+
 
 
         .chat-messages {
@@ -332,13 +332,25 @@
 
         .expanded-panel .inner-buttons-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            /* 기존: grid-template-columns: repeat(2, 1fr); */
+            /* 이제 각 버튼이 감싸진 div에 클래스를 부여하여 제어합니다. */
+            grid-template-columns: 1fr 1fr; /* 두 번째 줄부터 1:1 비율 */
+            gap: 15px; /* 버튼 사이의 간격 */
             width: 100%;
             max-width: 400px;
         }
 
-        /* 확장 패널 내부 버튼 */
+        /* 첫 번째 버튼이 전체 너비를 차지하도록 하는 스타일 */
+        .expanded-panel .grid-item-full {
+            grid-column: 1 / span 2; /* 1번 컬럼부터 2칸(전체) 차지 */
+        }
+        /* 절반 너비를 차지하는 버튼 컨테이너 (이전 button 스타일을 재활용할 수도 있습니다) */
+        .expanded-panel .grid-item-half {
+            /* 이 안에 있는 button은 기존 button 스타일을 따릅니다. */
+        }
+
+
+        /* 확장 패널 내부 버튼 (기존 스타일 유지, 상위 div가 크기를 조절) */
         .expanded-panel .inner-buttons-grid button {
             background-color: #007bff;
             color: white;
@@ -350,23 +362,14 @@
             transition: background-color 0.2s, transform 0.1s ease-out;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: center;
-            display: flex;
-            flex-direction: column;
+            display: flex; /* 내부 아이콘과 텍스트 정렬을 위해 */
+            flex-direction: column; /* 아이콘 위에 텍스트 (또는 그 반대) */
             justify-content: center;
             align-items: center;
-            height: auto;
-            min-height: 80px;
-        }
-        .expanded-panel .inner-buttons-grid button .icon {
-            font-size: 2rem;
-            margin-bottom: 5px;
-        }
-        .expanded-panel .inner-buttons-grid button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-        .expanded-panel .inner-buttons-grid button:active {
-            transform: translateY(0);
+            height: auto; /* 내용에 따라 높이 자동 조절 */
+            min-height: 80px; /* 최소 높이 */
+            width: 100%; /* 부모 grid-item-half의 너비를 꽉 채움 */
+            box-sizing: border-box; /* padding이 너비에 포함되도록 */
         }
     </style>
 </head>
@@ -375,19 +378,10 @@
 <div class="chat-container">
     <div class="chat-header">
         <h3 id="chatHeader">
-            <span th:text="${headerTitlePrefix}">채팅방</span> - <span th:text="${targetUsername}"></span>님과의 대화
+            채팅방 ID: <span th:text="${roomId}">[채팅방 ID]</span>
         </h3>
-        <img id="targetUserProfileImage" class="profile-image-header" src="/images/default_profile.png" alt="상대방 프로필">
+        <img id="myUserProfileImage" class="profile-image-header" src="/images/default_profile.png" alt="내 프로필">
     </div>
-
-    <div class="rental-info-area" th:if="${targetrental != null}">
-        <h4>현재 진행 중인 렌탈 정보</h4>
-        <p>상품 ID: <span th:text="${targetrental.product_id}">[상품ID]</span></p>
-        <p>렌탈 시작일: <span th:text="${#temporals.format(targetrental.rentalStartDate, 'yyyy-MM-dd')}">[시작일]</span></p>
-        <p>렌탈 종료일: <span th:text="${#temporals.format(targetrental.rentalEndDate, 'yyyy-MM-dd')}">[종료일]</span></p>
-        <p th:if="${targetrental.status != null}">상태: <span th:text="${targetrental.status}">[상태]</span></p>
-    </div>
-
     <div class="chat-messages" id="chatMessages">
     </div>
     <div class="chat-input-area">
@@ -397,10 +391,10 @@
         </div>
 
         <div class="input-toolbar">
-            <button id="togglePanelBtn">😊</button>
-            <button id="button2">📅</button>
-            <button id="button3">🕒</button>
-            <button id="button4">📄</button>
+            <button id="togglePanelBtn" title="거래 메뉴">😊</button>
+            <button id="button2" title="파일 첨부">📎</button>
+            <button id="button3" title="일정">📅</button>
+            <button id="button4" title="신고창">🚨</button>
         </div>
     </div>
 
@@ -409,12 +403,16 @@
             <button id="closePanelBtn">✖</button>
         </div>
         <div class="inner-buttons-grid">
-            <button id="innerButton1"><span class="icon">📝</span> 거래시작</button>
-            <button id="innerButton2"><span class="icon">📷</span> 거래 상태창 표시</button>
-            <button id="innerButton3"><span class="icon">📍</span> 메뉴 C</button>
-            <button id="innerButton4"><span class="icon">🔗</span> 신고창</button>
+            <div class="grid-item-full">
+                <button id="innerButton1" title="거래 시작"><span class="icon">📝</span>거래 시작</button>
+            </div>
+            <div class="grid-item-half">
+                <button id="innerButton2" title="금액 조절"><span class="icon">💰</span>금액 조절</button>
+            </div>
+            <div class="grid-item-half">
+                <button id="innerButton3" title="완료"><span class="icon">✅</span>완료</button>
+            </div>
         </div>
-    </div>
 </div>
 
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
@@ -429,8 +427,7 @@
     var expandedPanel = document.getElementById('expandedPanel');
     var chatMessagesDiv = document.getElementById('chatMessages');
     var messageInput = document.getElementById('messageInput');
-    const targetUserProfileImage = document.getElementById('targetUserProfileImage');
-
+    const myUserProfileImage = document.getElementById('myUserProfileImage'); // 새로 추가된 이미지 요소
     // 1. WebSocket 연결 함수
     function connect() {
         if (!username || username === 'defaultUser') {
@@ -547,14 +544,14 @@
         chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
     }
 
-    // 7. 상대방 프로필 이미지 로드 함수
-    function loadTargetUserProfileImage() {
-        if (!targetUsername || targetUsername === 'defaultTarget') {
-            console.warn("상대방 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
+    // 7. 내 프로필 이미지 로드 함수 (이것만 사용)
+    function loadMyUserProfileImage() {
+        if (!username || username === 'defaultUser') {
+            console.warn("내 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
             return;
         }
 
-        fetch('/api/users/' + targetUsername + '/profile')
+        fetch('/api/users/' + username + '/profile')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP 오류! 상태: ${response.status}`);
@@ -563,15 +560,15 @@
             })
             .then(userProfile => {
                 if (userProfile && userProfile.profileImageUrl) {
-                    targetUserProfileImage.src = userProfile.profileImageUrl;
+                    myUserProfileImage.src = userProfile.profileImageUrl;
                 } else {
-                    console.warn("상대방 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
-                    targetUserProfileImage.src = "/images/default_profile.png";
+                    console.warn("내 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
+                    myUserProfileImage.src = "/images/default_profile.png";
                 }
             })
             .catch(error => {
-                console.error('상대방 프로필 이미지 로드 중 오류 발생:', error);
-                targetUserProfileImage.src = "/images/default_profile.png";
+                console.error('내 프로필 이미지 로드 중 오류 발생:', error);
+                myUserProfileImage.src = "/images/default_profile.png";
             });
     }
 
@@ -579,7 +576,8 @@
     // DOMContentLoaded 이벤트 리스너: 페이지 로드 후 실행될 코드
     document.addEventListener('DOMContentLoaded', function() {
         connect();
-        loadTargetUserProfileImage();
+        // loadTargetUserProfileImage(); // 상대방 프로필 이미지 로드 함수 호출 제거
+        loadMyUserProfileImage();     // 내 프로필 이미지 로드 함수만 호출
 
         document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
@@ -601,23 +599,19 @@
             alert('문서/파일 첨부 버튼 클릭됨!');
         });
 
+        // 변경된 inner 버튼 ID와 기능에 맞게 수정
         document.getElementById('innerButton1').addEventListener('click', function() {
-            alert('거래시작 버튼 클릭됨!');
-        });
-        document.getElementById('innerButton2').addEventListener('click', function() {
-            window.location.href = '/report';
-        });
-        document.getElementById('innerButton3').addEventListener('click', function() {
-            window.location.href = '/report';
+            alert('거래 시작 로직을 여기에 구현하세요!');
         });
 
-        // innerButton4 (신고창) 버튼 클릭 시 report.html로 이동
-        document.getElementById('innerButton4').addEventListener('click', function() {
-            // alert('신고창 버튼 클릭됨!'); // 테스트용 alert는 주석 처리하거나 제거
-            // report.html로 이동
-            window.location.href = '/report';
-            // 만약 특정 정보를 신고 페이지로 넘기고 싶다면 쿼리 파라미터를 추가할 수 있습니다.
-            // 예: window.location.href = '/report?roomId=' + roomId + '&targetUser=' + targetUsername;
+        document.getElementById('innerButton2').addEventListener('click', function() {
+            alert('금액 조절 로직을 여기에 구현하세요!');
+        });
+
+        document.getElementById('innerButton3').addEventListener('click', function() {
+            alert('완료 로직을 여기에 구현하세요!'); // Alert 메시지 변경
+            // window.location.href = '/report'; // 완료 버튼이 report로 가는 것은 일반적으로 적절하지 않으므로 주석 처리
+            // 만약 '완료' 버튼 클릭 시 수행할 특정 서버 로직(예: 거래 상태 변경)이 있다면, 여기에 해당 API 호출 코드를 작성해야 합니다.
         });
 
         // 채팅 메시지 영역의 하단 패딩 설정 (입력창과 겹치지 않도록)
