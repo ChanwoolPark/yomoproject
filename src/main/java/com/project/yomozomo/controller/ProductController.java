@@ -63,12 +63,15 @@ public class ProductController {
             isWished = productDetailService.isProductWishedByUser(productId, userId);
         }
 
+        int wishlistCount = productDetailService.getWishlistCount(productId);
+
         model.addAttribute("product", product);
         model.addAttribute("imageList", imageList);
         model.addAttribute("seller", seller);
         model.addAttribute("createdAt", formattedDate);
         model.addAttribute("wished", isWished);
         model.addAttribute("userId", userId);
+        model.addAttribute("wishlistCount", wishlistCount);
 
         return "product/detail";
     }

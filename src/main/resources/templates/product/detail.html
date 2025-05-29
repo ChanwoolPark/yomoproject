@@ -79,6 +79,7 @@
 
       <!-- 페이지네이션 점 -->
       <div class="swiper-pagination"></div>
+
     </div>
 
     <div class="seller-box">
@@ -118,7 +119,7 @@
     <hr/>
 
     <p>
-      관심 <span>0</span> · 조회수 <span th:text="${product.count != null ? product.count : 0}">0</span>
+      찜 개수 <span th:text="${wishlistCount}">0</span>명 · 조회수 <span th:text="${product.count != null ? product.count : 0}">0</span>
     </p>
 
     <!-- 버튼 -->

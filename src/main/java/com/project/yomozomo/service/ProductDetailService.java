@@ -103,4 +103,10 @@ public class ProductDetailService {
         }
     }
 
+    // 상품 찜 개수
+    @Transactional(readOnly = true)
+    public int getWishlistCount(int productId) {
+        return wishlistRepo.countByProduct_ProductId(productId);
+    }
+
 }
