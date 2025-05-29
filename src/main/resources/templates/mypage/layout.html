@@ -239,7 +239,7 @@
                 phoneValid = false;
                 msg.textContent = "";
                 if (!phone) return;
-                fetch('/mypage/check-phone?phone=' + encodeURIComponent(phone))
+                fetch('/mypage/check-phone?phone=' + encodeURIComponent(콜))
                     .then(response => response.json())
                     .then(isDuplicate => {
                         if (isDuplicate) {
