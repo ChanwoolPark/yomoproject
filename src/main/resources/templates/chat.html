@@ -52,17 +52,16 @@
             text-align: center; /* 제목 텍스트 중앙 정렬 */
             order: 2; /* 기본 순서 2 (가운데) */
         }
-
-        /* 프로필 이미지 스타일 추가 */
+        /* 프로필 이미지 스타일 (공통) */
         .profile-image-header {
             width: 40px; /* 이미지 크기 조절 */
             height: 40px;
             border-radius: 50%; /* 원형으로 */
             object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
-            margin-left: 10px; /* 제목과의 간격 */
             border: 2px solid white; /* 흰색 테두리 */
             flex-shrink: 0; /* 크기가 줄어들지 않도록 */
-            order: 3; /* 기본 순서 3 (오른쪽) */
+            margin-right: 10px; /* 제목과의 간격 */
+            /* order: 1; 제거: 이제 이미지 하나이므로 순서 지정이 덜 중요 */
         }
         /* 프로필 이미지 로드 실패 시 또는 src가 없을 때 */
         .profile-image-header:not([src]):before {
@@ -81,6 +80,7 @@
         .profile-image-header[src]:before {
             content: none;
         }
+
 
 
         .chat-messages {
@@ -375,19 +375,10 @@
 <div class="chat-container">
     <div class="chat-header">
         <h3 id="chatHeader">
-            <span th:text="${headerTitlePrefix}">채팅방</span> - <span th:text="${targetUsername}"></span>님과의 대화
+            채팅방 ID: <span th:text="${roomId}">[채팅방 ID]</span>
         </h3>
-        <img id="targetUserProfileImage" class="profile-image-header" src="/images/default_profile.png" alt="상대방 프로필">
+        <img id="myUserProfileImage" class="profile-image-header" src="/images/default_profile.png" alt="내 프로필">
     </div>
-
-    <div class="rental-info-area" th:if="${targetrental != null}">
-        <h4>현재 진행 중인 렌탈 정보</h4>
-        <p>상품 ID: <span th:text="${targetrental.product_id}">[상품ID]</span></p>
-        <p>렌탈 시작일: <span th:text="${#temporals.format(targetrental.rentalStartDate, 'yyyy-MM-dd')}">[시작일]</span></p>
-        <p>렌탈 종료일: <span th:text="${#temporals.format(targetrental.rentalEndDate, 'yyyy-MM-dd')}">[종료일]</span></p>
-        <p th:if="${targetrental.status != null}">상태: <span th:text="${targetrental.status}">[상태]</span></p>
-    </div>
-
     <div class="chat-messages" id="chatMessages">
     </div>
     <div class="chat-input-area">
@@ -429,8 +420,7 @@
     var expandedPanel = document.getElementById('expandedPanel');
     var chatMessagesDiv = document.getElementById('chatMessages');
     var messageInput = document.getElementById('messageInput');
-    const targetUserProfileImage = document.getElementById('targetUserProfileImage');
-
+    const myUserProfileImage = document.getElementById('myUserProfileImage'); // 새로 추가된 이미지 요소
     // 1. WebSocket 연결 함수
     function connect() {
         if (!username || username === 'defaultUser') {
@@ -547,14 +537,14 @@
         chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
     }
 
-    // 7. 상대방 프로필 이미지 로드 함수
-    function loadTargetUserProfileImage() {
-        if (!targetUsername || targetUsername === 'defaultTarget') {
-            console.warn("상대방 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
+    // 7. 내 프로필 이미지 로드 함수 (이것만 사용)
+    function loadMyUserProfileImage() {
+        if (!username || username === 'defaultUser') {
+            console.warn("내 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
             return;
         }
 
-        fetch('/api/users/' + targetUsername + '/profile')
+        fetch('/api/users/' + username + '/profile')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP 오류! 상태: ${response.status}`);
@@ -563,15 +553,15 @@
             })
             .then(userProfile => {
                 if (userProfile && userProfile.profileImageUrl) {
-                    targetUserProfileImage.src = userProfile.profileImageUrl;
+                    myUserProfileImage.src = userProfile.profileImageUrl;
                 } else {
-                    console.warn("상대방 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
-                    targetUserProfileImage.src = "/images/default_profile.png";
+                    console.warn("내 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
+                    myUserProfileImage.src = "/images/default_profile.png";
                 }
             })
             .catch(error => {
-                console.error('상대방 프로필 이미지 로드 중 오류 발생:', error);
-                targetUserProfileImage.src = "/images/default_profile.png";
+                console.error('내 프로필 이미지 로드 중 오류 발생:', error);
+                myUserProfileImage.src = "/images/default_profile.png";
             });
     }
 
@@ -579,7 +569,8 @@
     // DOMContentLoaded 이벤트 리스너: 페이지 로드 후 실행될 코드
     document.addEventListener('DOMContentLoaded', function() {
         connect();
-        loadTargetUserProfileImage();
+        // loadTargetUserProfileImage(); // 상대방 프로필 이미지 로드 함수 호출 제거
+        loadMyUserProfileImage();     // 내 프로필 이미지 로드 함수만 호출
 
         document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
         document.getElementById('messageInput').addEventListener('keypress', function(e) {

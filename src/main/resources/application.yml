@@ -110,4 +110,9 @@ naver:
     client-secret: "DM7myffwIr4XhmRNgOLQ5nfM8L1NHjy9axPi755k" # 민감한 정보이므로 꼭 .gitignore에 추가
 
 file:
-  upload-dir: uploads/
+  upload-dir: C:/YomoProject/uploads
+
+  servlet:
+    multipart:
+      enabled: true
+      location: C:/YomoProject/uploads
