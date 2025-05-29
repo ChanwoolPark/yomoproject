@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.security.Principal;
+
 @Controller
 public class PaymentController {
 
@@ -32,16 +34,27 @@ public class PaymentController {
 
     // 결제 페이지 진입
     @GetMapping("/payment/{rentalId}")
-    public String paymentPage(@PathVariable Long rentalId, HttpSession session, Model model) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) return "redirect:/login";
+    public String paymentPage(@PathVariable Long rentalId, Principal principal, Model model) {
+        if (principal == null) return "redirect:/login";
+
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+        Long userId = user.getId();
+
 
         Rental rental = rentalRepository.findById(rentalId).orElse(null);
+        System.out.println("Rental not found: " + rentalId);
         if (rental == null) return "error/404";
         Product product = rental.getProduct();
+        System.out.println("Product is null for rental: " + rentalId);
         if (product == null) return "error/404";
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return "redirect:/login";
+
+
+        // 반드시 구매자 본인만 결제페이지 진입 가능
+        if (!rental.getUser().getId().equals(userId)) {
+            return "error/403"; // 권한 없음 페이지
+        }
         User seller = product.getSeller();
 
         UserWallet userWallet = userWalletRepository.findByUserId(userId);
