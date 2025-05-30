@@ -859,24 +859,13 @@
             const innerButton3 = document.getElementById('innerButton3');
             if (innerButton3) {
                 innerButton3.addEventListener('click', function() {
-                    console.log('innerButton3 클릭됨! 금액 조절 모달 띄우기 시도.');
                     togglePriceAdjustmentModal(true); // 금액 조절 모달 띄우기
-                    toggleExpandedPanel(false); // 모달이 뜨면 확장 패널은 닫도록
-                    showPanelSection(defaultPanelContent); // 패널 닫으면 기본 콘텐츠로 돌아오도록
+                    toggleExpandedPanel(false); // 패널 닫기
+                    showPanelSection(defaultPanelContent); // 패널 닫히면 기본 콘텐츠 보이기
                 });
             }
 
-            // 만약 기존의 '결재창' 기능이 필요하다면 새로운 버튼을 추가하고 아래와 같이 연결하세요.
-            const innerButton4 = document.getElementById('innerButton4'); // 예시: 새로운 결재창 버튼 ID
-            if (innerButton4) {
-                innerButton4.addEventListener('click', function() {
-                    console.log('innerButton4 클릭됨! 결재창 섹션 표시 시도.');
-                    showPanelSection(paymentPanelContent);
-                    if (!expandedPanel || !expandedPanel.classList.contains('active')) {
-                        toggleExpandedPanel(true);
-                    }
-                });
-            }
+
 
 
             // '결재 진행' 버튼 (paymentPanelContent 내) 이벤트 리스너
