@@ -62,7 +62,7 @@ public class PaymentService {
         walletLogService.saveLog(sellerWallet.getWalletId(), "상품대여(판매자 수익)", price);
 
         // (3) 관리자(1번 유저)에게 보증금 입금
-        Long adminId = 1L;
+        Long adminId = 999L;
         UserWallet adminWallet = userWalletRepository.findByUserId(adminId);
         adminWallet.setBalance(adminWallet.getBalance() + deposit);
         userWalletRepository.save(adminWallet);

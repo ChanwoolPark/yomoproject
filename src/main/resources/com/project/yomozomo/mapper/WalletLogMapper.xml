@@ -5,13 +5,14 @@
 
 <mapper namespace="com.project.yomozomo.mapper.WalletLogMapper">
 
-    <!-- user_wallet_id로 해당 유저의 지갑 로그 목록 조회 -->
-    <select id="findLogsByUserWalletId" parameterType="long" resultType="com.project.yomozomo.domain.WalletLog">
-        SELECT *
-        FROM wallet_log
+    <insert id="insertLog" parameterType="com.project.yomozomo.domain.WalletLog">
+        INSERT INTO wallet_log (log_id, wallet_id, amount, change_type, created_at)
+        VALUES (wallet_log_seq.NEXTVAL, #{userWalletId}, #{amount}, #{type}, SYSDATE)
+    </insert>
+
+    <select id="findLogsByUserWalletId" resultType="com.project.yomozomo.domain.WalletLog">
+        SELECT * FROM wallet_log
         WHERE wallet_id = #{userWalletId}
         ORDER BY created_at DESC
     </select>
-
-
 </mapper>
