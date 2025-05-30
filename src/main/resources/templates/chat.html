@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <title>1:1 실시간 채팅</title>
     <style>
+        html, body {
+            height: 100%; /* HTML, BODY가 전체 높이를 차지하도록 */
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            min-height: 100vh; /* 뷰포트 높이의 최소 100% */
             background-color: #f0f2f5;
-            overflow: hidden;
+            overflow: hidden; /* 전체 페이지 스크롤 방지 */
         }
-
         .chat-container {
             width: 100%;
             max-width: 600px;
@@ -27,7 +30,8 @@
             flex-direction: column;
             overflow: hidden;
             background-color: #fff;
-            position: relative;
+            position: relative; /* 자식 요소 (expanded-panel)의 absolute 위치 기준 */
+            z-index: 10; /* 모달보다는 아래, body 콘텐츠보다는 위에 */
         }
 
         /* chat-header 수정: Flexbox를 사용하여 제목과 이미지를 정렬 */
@@ -292,9 +296,9 @@
             border-top: 1px solid #eee;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             transition: height 0.3s ease-out, padding 0.3s ease-out;
-            overflow: hidden;
+            overflow: hidden; /* 내부 콘텐츠가 넘치면 숨김 */
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* 자식 요소들을 세로로 정렬 */
             justify-content: flex-start;
             align-items: center;
             padding: 0 15px; /* 초기 패딩 0 */
@@ -305,6 +309,7 @@
         .expanded-panel.active {
             height: calc(70vh / 2); /* 채팅창 높이의 1/2 */
             padding: 15px; /* 활성화 시 패딩 추가 */
+            overflow-y: auto; /* 패널 내부 내용이 길어지면 스크롤바 생성 */
         }
 
         .expanded-panel .panel-header {
@@ -313,6 +318,7 @@
             justify-content: flex-end;
             margin-bottom: 10px;
             padding-top: 10px;
+            flex-shrink: 0; /* 헤더 높이 고정 */
         }
 
         .expanded-panel .panel-header button {
@@ -333,6 +339,8 @@
             gap: 15px; /* 버튼 사이의 간격 */
             width: 100%;
             max-width: 400px;
+            flex-shrink: 0; /* 버튼 그리드 높이 고정 */
+            margin-bottom: 20px; /* 섹션과의 간격 */
         }
 
         /* 첫 번째 버튼이 전체 너비를 차지하도록 하는 스타일 */
@@ -367,21 +375,150 @@
             margin-bottom: 5px; /* 텍스트와의 간격 */
         }
 
-        .price-adjustment-section h3 {
+        /* =================================================== */
+        /* 패널 내 콘텐츠 섹션 스타일 (새로 추가/수정) */
+        /* =================================================== */
+        .panel-content-wrapper {
+            width: 100%;
+            flex-grow: 1; /* 남은 공간을 모두 차지하도록 */
+            position: relative; /* 자식 섹션의 absolute 위치를 위한 기준 */
+            overflow: hidden; /* 내부 섹션의 전환을 위해 오버플로우 숨김 */
+        }
+
+        .panel-content-section {
+            position: absolute; /* 모든 섹션을 겹쳐 놓습니다. */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* 부모 .panel-content-wrapper에 맞춰 높이 설정 */
+            padding: 0 15px; /* 패널의 전체 패딩에 더해짐 */
+            box-sizing: border-box;
+            background-color: #f8f9fa; /* 패널 배경색과 일치 */
+            display: none; /* 기본적으로 모든 섹션을 숨깁니다. */
+            overflow-y: auto; /* 섹션 내부 내용이 길어지면 스크롤 가능 */
+            transition: opacity 0.3s ease-in-out; /* 부드러운 전환 효과 */
+            opacity: 0; /* 초기 투명도 */
+            pointer-events: none; /* 숨겨진 동안 클릭 이벤트 방지 */
+        }
+
+        /* 현재 활성화된 패널 섹션만 보이도록 합니다. */
+        .panel-content-section.active-panel-section {
+            display: block; /* 요소를 보이게 함 */
+            opacity: 1; /* 완전히 보이게 함 */
+            pointer-events: auto; /* 활성화된 동안 클릭 이벤트 허용 */
+        }
+
+        /* 기본 패널 콘텐츠 스타일 */
+        #defaultPanelContent {
+            display: block; /* 초기 로드 시 기본 콘텐츠는 보이도록 설정 */
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 결재창 (paymentPanelContent) 내의 요소들 스타일 */
+        #paymentPanelContent h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+
+        #paymentPanelContent label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        #paymentPanelContent input[type="number"] {
+            width: calc(100% - 22px); /* 패딩 고려 */
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        #paymentPanelContent button#processPaymentBtn {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745; /* 녹색 계열 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            height: auto; /* 기본 버튼 스타일 오버라이드 */
+            min-height: 0;
+            flex-direction: row;
+        }
+
+        #paymentPanelContent button#processPaymentBtn:hover {
+            background-color: #218838;
+        }
+
+
+        /* 💰 금액 조절 모달 스타일 (기존 유지) */
+        .modal-overlay {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* 다른 모든 요소 위에 표시 */
+        }
+
+        .modal-overlay.active {
+            display: flex; /* 활성화 시 표시 */
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .modal-close-btn:hover {
+            color: #333;
+        }
+
+        .modal-content h3 {
             margin-top: 0;
             color: #333;
             margin-bottom: 20px;
         }
 
-        .price-adjustment-section label {
+        .modal-content label {
             display: block;
             margin-bottom: 10px;
             font-weight: bold;
             color: #555;
         }
 
-        .price-adjustment-section input[type="number"] {
-            width: 80%;
+        .modal-content input[type="number"] {
+            width: calc(100% - 22px); /* 패딩 고려 */
             padding: 12px;
             margin-bottom: 20px;
             border: 1px solid #ddd;
@@ -390,12 +527,12 @@
             text-align: center;
         }
 
-        .price-adjustment-section .panel-buttons {
+        .modal-buttons {
             display: flex;
             gap: 15px;
         }
 
-        .price-adjustment-section .panel-buttons button {
+        .modal-buttons button {
             padding: 12px 25px;
             border: none;
             border-radius: 6px;
@@ -404,44 +541,53 @@
             transition: background-color 0.3s ease, transform 0.1s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             flex-grow: 1; /* 버튼이 동일 너비로 확장 */
-            height: auto; /* 기존 버튼 높이 설정 제거 */
-            min-height: 0; /* 기존 버튼 최소 높이 제거 */
-            flex-direction: row; /* 텍스트와 아이콘이 가로로 */
-            gap: 8px; /* 아이콘과 텍스트 간격 */
-        }
-        .price-adjustment-section .panel-buttons button .icon {
-            font-size: 1em; /* 아이콘 크기 원래대로 */
-            margin-bottom: 0; /* 텍스트와 간격 제거 */
         }
 
-
-        #confirmPriceBtn {
-            background-color: #28a745; /* 녹색 계열 */
+        #modalConfirmBtn {
+            background-color: #007bff;
             color: white;
         }
-        #confirmPriceBtn:hover {
-            background-color: #218838;
+        #modalConfirmBtn:hover {
+            background-color: #0056b3;
         }
 
-        #cancelPriceBtn {
-            background-color: #dc3545; /* 빨간색 계열 */
+        #modalCancelBtn {
+            background-color: #6c757d;
             color: white;
         }
-        #cancelPriceBtn:hover {
-            background-color: #c82333;
+        #modalCancelBtn:hover {
+            background-color: #5a6268;
+        }
+        /* 확장 패널 - 채팅창 하단 1/2만 덮도록 수정 */
+        .expanded-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            /* ⚠️ 핵심 변경: 초기 높이를 0으로 설정하여 기본적으로 숨겨둡니다. */
+            height: 0;
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            /* ⚠️ 핵심 변경: 높이와 패딩에 트랜지션 적용 */
+            transition: height 0.3s ease-out, padding 0.3s ease-out;
+            overflow: hidden; /* 내부 콘텐츠가 넘치면 숨김 */
+            display: flex; /* Flexbox 레이아웃 유지 */
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            /* ⚠️ 핵심 변경: 초기 패딩을 0으로 설정 */
+            padding: 0 15px;
+            box-sizing: border-box;
+            z-index: 15;
         }
 
-        /* 확장 패널 - 내부 버튼 그리드 (금액 조절 패널이 활성화되면 숨기도록) */
-        .inner-buttons-grid {
-            /* 기존 스타일 */
-            transition: opacity 0.3s ease-out; /* 부드러운 전환 */
-            z-index: 1; /* 금액 조절 패널보다 아래에 */
+        .expanded-panel.active {
+            /* ⚠️ 핵심 변경: .active 클래스 있을 때만 높이와 패딩을 설정하여 보이게 합니다. */
+            height: calc(70vh / 2); /* 채팅창 높이의 1/2 */
+            padding: 15px; /* 활성화 시 패딩 추가 */
+            overflow-y: auto; /* 패널 내부 내용이 길어지면 스크롤바 생성 */
         }
-        .expanded-panel.price-active .inner-buttons-grid {
-            opacity: 0;
-            pointer-events: none; /* 클릭 이벤트 막기 */
-        }
-
     </style>
 </head>
 <body>
@@ -454,14 +600,15 @@
         </h3>
         <img id="myUserProfileImage" class="profile-image-header right" src="/images/default-profile.png" alt="내 프로필">
     </div>
+
     <div class="chat-messages" id="chatMessages">
     </div>
+
     <div class="chat-input-area">
         <div class="input-and-send">
             <label for="messageInput"></label><input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
             <button id="sendMessageBtn" class="send-button">▲</button>
         </div>
-
         <div class="input-toolbar">
             <button id="togglePanelBtn" title="거래 메뉴">😊</button>
             <button id="button2" title="파일 첨부">📎</button>
@@ -483,25 +630,34 @@
             </div>
             <div class="grid-item-half">
                 <button id="innerButton3" title="거래 완료"><span class="icon">💸</span>결재창</button>
-
+            </div>
+        </div>
+        <div class="panel-content-wrapper">
+            <div id="defaultPanelContent" class="panel-content-section active-panel-section">
+                <p>확장 패널의 기본 콘텐츠입니다.</p>
+                <p>위 버튼을 눌러 다른 기능을 사용해보세요.</p>
+            </div>
+            <div id="paymentPanelContent" class="panel-content-section">
+                <h4>결재 정보 입력</h4>
+                <p>여기에 결재에 필요한 입력 필드나 정보가 들어갑니다.</p>
+                <label for="paymentAmount">결재 금액:</label>
+                <input type="number" id="paymentAmount" value="0">
+                <button id="processPaymentBtn">결재 진행</button>
             </div>
         </div>
     </div>
-    <div id="priceAdjustmentModalOverlay" class="modal-overlay">
-        <div class="modal-content">
-            <button id="modalCloseBtn" class="modal-close-btn">✖</button>
-            <h3>금액 조절</h3>
-            <label for="modalNewPriceInput">새로운 금액을 입력하세요:</label>
-            <input type="number" id="modalNewPriceInput" name="newPrice" min="0" placeholder="예: 25000">
-
-            <div class="modal-buttons">
-                <button id="modalConfirmBtn">확인</button>
-                <button id="modalCancelBtn">취소</button>
-            </div>
+</div> <div id="priceAdjustmentModalOverlay" class="modal-overlay">
+    <div class="modal-content">
+        <button id="modalCloseBtn" class="modal-close-btn">✖</button>
+        <h3>금액 조절</h3>
+        <label for="modalNewPriceInput">새로운 금액을 입력하세요:</label>
+        <input type="number" id="modalNewPriceInput" name="newPrice" min="0" placeholder="예: 25000">
+        <div class="modal-buttons">
+            <button id="modalConfirmBtn">확인</button>
+            <button id="modalCancelBtn">취소</button>
         </div>
     </div>
-
-
+</div>
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script th:inline="javascript">
@@ -737,25 +893,37 @@
 
 
         // =======================================================
-        // 3. DOMContentLoaded 이벤트 리스너: 페이지 로드 후, DOM 요소 준비 완료 시 실행
-        //    모든 DOM 요소 선택 및 이벤트 리스너 등록은 이 블록 안에서 이루어져야 합니다.
-        // =======================================================
+        // ... (기존 JavaScript 코드 - 변수 선언, 함수 정의 등) ...
+
+
+        // ... (기존 전역 변수 선언 및 헬퍼 함수 showPanelSection, togglePriceAdjustmentModal 등) ...
+
+        // DOMContentLoaded 이벤트 리스너 내부
         document.addEventListener('DOMContentLoaded', function() {
-            // 모든 DOM 요소들을 이 시점에서 선택하여 변수에 할당합니다.
-            // 이렇게 하면 HTML 파싱이 완료된 후에 요소에 접근할 수 있습니다.
-            expandedPanel = document.getElementById('expandedPanel');
+            // DOM 요소 초기화 (변수명이 올바른지 다시 확인하세요)
             chatMessagesDiv = document.getElementById('chatMessages');
             messageInput = document.getElementById('messageInput');
-            myUserProfileImage = document.getElementById('myUserProfileImage');
-            targetUserProfileImage = document.getElementById('targetUserProfileImage');
+            sendMessageBtn = document.getElementById('sendMessageBtn');
+            togglePanelBtn = document.getElementById('togglePanelBtn'); // '거래 메뉴' 버튼
+            closePanelBtn = document.getElementById('closePanelBtn');
+            expandedPanel = document.getElementById('expandedPanel');
 
             // 💰 금액 조절 모달 관련 DOM 요소 초기화
-            priceAdjustmentButton = document.getElementById('innerButton2');
-            priceAdjustmentModalOverlay = document.getElementById('priceAdjustmentModalOverlay');
+            const innerButton2 = document.getElementById('innerButton2'); // innerButton2는 '금액 조절' 버튼
+            priceAdjustmentModalOverlay = document.getElementById('priceAdjustmentModalOverlay'); // 모달 오버레이
             modalCloseBtn = document.getElementById('modalCloseBtn');
             modalConfirmBtn = document.getElementById('modalConfirmBtn');
             modalCancelBtn = document.getElementById('modalCancelBtn');
             modalNewPriceInput = document.getElementById('modalNewPriceInput');
+
+            // 패널 내 섹션 DOM 요소 초기화
+            defaultPanelContent = document.getElementById('defaultPanelContent');
+            paymentPanelContent = document.getElementById('paymentPanelContent'); // '결재창' 섹션
+            processPaymentBtn = document.getElementById('processPaymentBtn');
+            paymentAmountInput = document.getElementById('paymentAmount');
+
+            // ⚠️ 불필요한 변수 제거:
+            // const priceAdjustmentSection = document.getElementById('priceAdjustmentSection'); // 이 변수는 사용되지 않으므로 제거
 
             // 초기 연결 및 프로필 이미지 로드
             connect();
@@ -763,93 +931,104 @@
             loadTargetUserProfileImage();
 
             // 채팅 메시지 입력 및 전송 이벤트
-            document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
-            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            sendMessageBtn.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     sendMessage();
                 }
             });
 
-            // 확장 패널 토글 버튼 이벤트
-            document.getElementById('togglePanelBtn').addEventListener('click', toggleExpandedPanel);
-            document.getElementById('closePanelBtn').addEventListener('click', toggleExpandedPanel);
-
-            // 기타 기능 버튼 이벤트
-            document.getElementById('button2').addEventListener('click', function() {
-                alert('파일 첨부 버튼 클릭됨!');
-            });
-            document.getElementById('button3').addEventListener('click', function() {
-                alert('달력/일정 버튼 클릭됨!');
-            });
-            document.getElementById('button4').addEventListener('click', function() {
-                alert('신고 / 문의 버튼 클릭됨!');
-            });
-
-            // 확장 패널 내부 버튼 이벤트
-            document.getElementById('innerButton1').addEventListener('click', function() {
-                alert('거래 시작 로직을 여기에 구현하세요!');
-                toggleExpandedPanel();
-            });
-
-            // 💰 금액 조절 버튼 (innerButton2) 클릭 시 모달 띄우기
-            if (priceAdjustmentButton) { // priceAdjustmentButton이 null이 아닌지 확인
-                priceAdjustmentButton.addEventListener('click', function() {
-                    togglePriceAdjustmentModal(true);
-                    toggleExpandedPanel();
+            // 확장 패널 토글 버튼 이벤트 ('거래 메뉴' 버튼)
+            if (togglePanelBtn) {
+                togglePanelBtn.addEventListener('click', function() {
+                    toggleExpandedPanel(); // 패널 열고 닫는 함수
+                    // 패널이 열릴 때 defaultPanelContent가 보이도록 합니다.
+                    if (expandedPanel.classList.contains('active')) {
+                        showPanelSection(defaultPanelContent);
+                    }
+                });
+            }
+            if (closePanelBtn) {
+                closePanelBtn.addEventListener('click', function() {
+                    toggleExpandedPanel(false); // 패널 닫는 함수 (닫을 때는 명시적으로 false 전달)
                 });
             }
 
+            // innerButton1 ('거래 시작') 클릭 시 로직
+            const innerButton1 = document.getElementById('innerButton1');
+            if (innerButton1) {
+                innerButton1.addEventListener('click', function() {
+                    alert('거래 시작 로직을 여기에 구현하세요!');
+                    // '거래 시작' 후에는 패널 닫고 기본 콘텐츠로 돌아오기 (선택 사항)
+                    toggleExpandedPanel(false); // 닫기
+                    showPanelSection(defaultPanelContent); // 기본 콘텐츠
+                });
+            }
 
-            // 💰 금액 조절 모달 내 '확인' 버튼 이벤트
-            if (modalConfirmBtn) { // modalConfirmBtn이 null이 아닌지 확인
+            // ⭐ innerButton2 ('금액 조절') 클릭 시 로직 (금액 조절 모달 띄우기) ⭐
+            if (innerButton2) {
+                innerButton2.addEventListener('click', function() {
+                    togglePriceAdjustmentModal(true); // 금액 조절 모달 띄우기
+                    toggleExpandedPanel(false); // 모달이 뜨면 확장 패널은 닫도록 (일반적인 UI 흐름)
+                    showPanelSection(defaultPanelContent); // 패널 닫으면 기본 콘텐츠로 돌아오도록
+                });
+            }
+
+            // ⭐ innerButton3 ('결재창') 클릭 시 로직 (패널 내 '결재창' 섹션 표시) ⭐
+            const innerButton3 = document.getElementById('innerButton3');
+            if (innerButton3) {
+                innerButton3.addEventListener('click', function() {
+                    showPanelSection(paymentPanelContent); // '결재창' 섹션 표시
+                    // 만약 패널이 닫혀있다면, '결재창'을 누름과 동시에 패널을 열어줍니다.
+                    if (!expandedPanel.classList.contains('active')) {
+                        toggleExpandedPanel(true);
+                    }
+                });
+            }
+
+            // '결재 진행' 버튼 (paymentPanelContent 내) 이벤트 리스너
+            if (processPaymentBtn) {
+                processPaymentBtn.addEventListener('click', function() {
+                    const amount = paymentAmountInput ? paymentAmountInput.value : 0;
+                    if (amount <= 0 || isNaN(amount)) {
+                        alert("유효한 결재 금액을 입력해주세요.");
+                        return;
+                    }
+                    alert(`결재 금액: ${amount}원으로 결재를 진행합니다! (실제 결재 로직 필요)`);
+                    // 결재 완료 후 다시 기본 패널 콘텐츠로 돌아오고 패널 닫기 (선택 사항)
+                    showPanelSection(defaultPanelContent);
+                    toggleExpandedPanel(false);
+                });
+            }
+
+            // 금액 조절 모달 확인/취소/닫기 버튼 이벤트 (기존과 동일)
+            if (modalConfirmBtn) {
                 modalConfirmBtn.addEventListener('click', function() {
                     const newPrice = modalNewPriceInput.value;
-
                     if (newPrice === "" || isNaN(newPrice) || Number(newPrice) < 0) {
                         alert("유효한 금액을 입력해주세요.");
                         return;
                     }
-
                     const confirmedPrice = Number(newPrice);
                     console.log("새로운 금액:", confirmedPrice);
                     alert(`금액이 ${confirmedPrice}원으로 조절되었습니다. (실제 서버 통신 필요)`);
 
-                    fetch('/api/chat/adjust-price', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ roomId: roomId, newPrice: confirmedPrice })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('금액 조절 성공:', data);
-                            // UI 업데이트 (예: 채팅방의 렌탈 정보 금액 업데이트)
-                        })
-                        .catch(error => {
-                            console.error('금액 조절 실패:', error);
-                            alert('금액 조절에 실패했습니다.');
-                        });
-
+                    // fetch('/api/chat/adjust-price', { /* ... */ }); // 서버 통신 코드
                     togglePriceAdjustmentModal(false);
                 });
             }
-
-
-            // 💰 금액 조절 모달 내 '취소' 버튼 이벤트
-            if (modalCancelBtn) { // modalCancelBtn이 null이 아닌지 확인
+            if (modalCancelBtn) {
                 modalCancelBtn.addEventListener('click', function() {
                     togglePriceAdjustmentModal(false);
                 });
             }
-
-            // 💰 금액 조절 모달 'X' 닫기 버튼 이벤트
-            if (modalCloseBtn) { // modalCloseBtn이 null이 아닌지 확인
+            if (modalCloseBtn) {
                 modalCloseBtn.addEventListener('click', function() {
                     togglePriceAdjustmentModal(false);
                 });
             }
-
-            // 💰 금액 조절 모달 외부 클릭 시 닫기 이벤트
-            if (priceAdjustmentModalOverlay) { // priceAdjustmentModalOverlay가 null이 아닌지 확인
+            // 모달 오버레이 배경 클릭 시 닫기
+            if (priceAdjustmentModalOverlay) {
                 priceAdjustmentModalOverlay.addEventListener('click', function(event) {
                     if (event.target === priceAdjustmentModalOverlay) {
                         togglePriceAdjustmentModal(false);
@@ -857,19 +1036,13 @@
                 });
             }
 
-            // '거래 완료' 버튼 이벤트
-            document.getElementById('innerButton3').addEventListener('click', function() {
-                alert('거래 완료 로직을 여기에 구현하세요!');
-                toggleExpandedPanel();
-            });
-
-            // 채팅 메시지 영역의 하단 패딩 설정 (입력창과 겹치지 않도록)
+            // 채팅 메시지 영역의 하단 패딩 설정 (기존과 동일)
             const initialInputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
-            if (chatMessagesDiv) { // chatMessagesDiv가 null이 아닌지 확인
+            if (chatMessagesDiv) {
                 chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
             }
 
-            // 윈도우 크기 변경 시 패널 높이 및 패딩 재조정
+            // 윈도우 크기 변경 시 패널 높이 및 패딩 재조정 (기존과 동일)
             window.addEventListener('resize', function() {
                 const inputArea = document.querySelector('.chat-input-area');
                 const chatContainer = document.querySelector('.chat-container');
@@ -881,12 +1054,12 @@
                 if (expandedPanel && expandedPanel.classList.contains('active')) {
                     expandedPanel.style.height = `${targetPanelHeight}px`;
                     if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
-                } else if (chatMessagesDiv) { // expandedPanel이 active가 아닐 때만 chatMessagesDiv 패딩 조절
+                } else if (chatMessagesDiv) {
                     chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
                 }
             });
+
         }); // DOMContentLoaded 닫는 괄호
-        /*]]>*/
     </script>
 </body>
 </html>
