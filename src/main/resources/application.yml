@@ -26,6 +26,15 @@ spring:
       ddl-auto: update  # create, update, none ? ?? ??
     show-sql: true
     database-platform: org.hibernate.dialect.OracleDialect
+
+  servlet:
+    multipart:
+      enabled: true
+      location: C:/YomoProject/uploads
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+
   security:
     oauth2:
       client:
@@ -112,7 +121,6 @@ naver:
 file:
   upload-dir: C:/YomoProject/uploads
 
-  servlet:
-    multipart:
-      enabled: true
-      location: C:/YomoProject/uploads
+server:
+  tomcat:
+    max-swallow-size: 100MB
