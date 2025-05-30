@@ -21,13 +21,13 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
-public class Securityconfig {
+public class SecurityConfig {
 
 
 
     private final OAuth2LoginSuccessHandler successHandler;
 
-    public Securityconfig(OAuth2LoginSuccessHandler successHandler) {
+    public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
         this.successHandler = successHandler;
     }
 
