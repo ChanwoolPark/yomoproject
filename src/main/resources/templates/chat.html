@@ -177,18 +177,6 @@
             text-align: center;
             margin: 0;
         }
-
-        /* 렌탈 정보 영역 스타일 추가 */
-        .rental-info-area {
-            padding: 15px;
-            background-color: #f8f9fa; /* 밝은 배경색 */
-            border-bottom: 1px solid #eee;
-            font-size: 0.9rem;
-            color: #555;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* 약간의 그림자 */
-            margin-bottom: 10px; /* 채팅 메시지와의 간격 */
-        }
-
         .rental-info-area h4 {
             margin-top: 0;
             margin-bottom: 8px;
@@ -379,6 +367,81 @@
             margin-bottom: 5px; /* 텍스트와의 간격 */
         }
 
+        .price-adjustment-section h3 {
+            margin-top: 0;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .price-adjustment-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .price-adjustment-section input[type="number"] {
+            width: 80%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .price-adjustment-section .panel-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .price-adjustment-section .panel-buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-grow: 1; /* 버튼이 동일 너비로 확장 */
+            height: auto; /* 기존 버튼 높이 설정 제거 */
+            min-height: 0; /* 기존 버튼 최소 높이 제거 */
+            flex-direction: row; /* 텍스트와 아이콘이 가로로 */
+            gap: 8px; /* 아이콘과 텍스트 간격 */
+        }
+        .price-adjustment-section .panel-buttons button .icon {
+            font-size: 1em; /* 아이콘 크기 원래대로 */
+            margin-bottom: 0; /* 텍스트와 간격 제거 */
+        }
+
+
+        #confirmPriceBtn {
+            background-color: #28a745; /* 녹색 계열 */
+            color: white;
+        }
+        #confirmPriceBtn:hover {
+            background-color: #218838;
+        }
+
+        #cancelPriceBtn {
+            background-color: #dc3545; /* 빨간색 계열 */
+            color: white;
+        }
+        #cancelPriceBtn:hover {
+            background-color: #c82333;
+        }
+
+        /* 확장 패널 - 내부 버튼 그리드 (금액 조절 패널이 활성화되면 숨기도록) */
+        .inner-buttons-grid {
+            /* 기존 스타일 */
+            transition: opacity 0.3s ease-out; /* 부드러운 전환 */
+            z-index: 1; /* 금액 조절 패널보다 아래에 */
+        }
+        .expanded-panel.price-active .inner-buttons-grid {
+            opacity: 0;
+            pointer-events: none; /* 클릭 이벤트 막기 */
+        }
+
     </style>
 </head>
 <body>
@@ -419,27 +482,63 @@
                 <button id="innerButton2" title="금액 조절"><span class="icon">💰</span>금액 조절</button>
             </div>
             <div class="grid-item-half">
-                <button id="innerButton3" title="거래 완료"><span class="icon">✅</span>거래 완료</button>
+                <button id="innerButton3" title="거래 완료"><span class="icon">💸</span>결재창</button>
+
             </div>
         </div>
     </div>
+    <div id="priceAdjustmentModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <button id="modalCloseBtn" class="modal-close-btn">✖</button>
+            <h3>금액 조절</h3>
+            <label for="modalNewPriceInput">새로운 금액을 입력하세요:</label>
+            <input type="number" id="modalNewPriceInput" name="newPrice" min="0" placeholder="예: 25000">
+
+            <div class="modal-buttons">
+                <button id="modalConfirmBtn">확인</button>
+                <button id="modalCancelBtn">취소</button>
+            </div>
+        </div>
+    </div>
+
 
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
 
+        // =======================================================
+        // 1. 전역 변수 선언 영역: 모든 함수에서 접근할 수 있도록 가장 위에 선언
+        // =======================================================
         var stompClient = null;
-        var username = /*[[${username}]]*/ 'defaultUser'; // 현재 사용자 이름
-        var targetUsername = /*[[${targetUsername}]]*/ 'defaultTarget'; // 대화 상대 이름
-        var roomId = /*[[${roomId}]]*/ 'defaultRoom'; // 채팅방 ID
-        var expandedPanel = document.getElementById('expandedPanel');
-        var chatMessagesDiv = document.getElementById('chatMessages');
-        var messageInput = document.getElementById('messageInput');
-        const myUserProfileImage = document.getElementById('myUserProfileImage');
-        const targetUserProfileImage = document.getElementById('targetUserProfileImage'); // 상대방 프로필 이미지 요소
+        var username = /*[[${username}]]*/ 'defaultUser';
+        var targetUsername = /*[[${targetUsername}]]*/ 'defaultTarget';
+        var roomId = /*[[${roomId}]]*/ 'defaultRoom';
 
-        // 1. WebSocket 연결 함수
+        // NOTE: 이 변수들은 전역적으로 선언되지만 (let 사용),
+        // 실제 HTML 요소를 할당받는 것은 DOMContentLoaded 이벤트 리스너 내부에서 이루어집니다.
+        // 이렇게 하면 아래 함수들이 전역적으로 정의될 수 있으면서도,
+        // DOM이 준비되었을 때만 요소를 선택하도록 보장합니다.
+        let expandedPanel;
+        let chatMessagesDiv;
+        let messageInput;
+        let myUserProfileImage;
+        let targetUserProfileImage;
+
+        // 💰 금액 조절 모달 관련 DOM 요소 (여기에 선언, DOMContentLoaded에서 초기화)
+        let priceAdjustmentButton;
+        let priceAdjustmentModalOverlay;
+        let modalCloseBtn;
+        let modalConfirmBtn;
+        let modalCancelBtn;
+        let modalNewPriceInput;
+
+        // =======================================================
+        // 2. 함수 정의 영역: 모든 이벤트 리스너에서 호출될 수 있도록 미리 정의
+        //    이 함수들은 DOMContentLoaded 이벤트 리스너 이전에 정의됩니다.
+        // =======================================================
+
+        // WebSocket 연결 함수
         function connect() {
             if (!username || username === 'defaultUser') {
                 console.error("서버로부터 유저네임을 가져오지 못했습니다. 기본값으로 'defaultUser'를 사용합니다.");
@@ -456,50 +555,48 @@
             stompClient.connect({}, onConnected, onError);
         }
 
-        // 2. WebSocket 연결 성공 시 호출되는 함수
+        // WebSocket 연결 성공 시 호출되는 함수
         function onConnected() {
-            // 이제 /topic/public 대신 특정 roomId의 토픽을 구독합니다.
             stompClient.subscribe('/topic/chat/room/' + roomId, onMessageReceived);
             console.log("구독 채널: " + '/topic/chat/room/' + roomId);
 
-            // 입장 메시지 전송 시 roomId와 receiver 정보 포함
             var joinMessage = {
                 sender: username,
-                receiver: targetUsername, // 입장 메시지에도 수신자 명시 (선택 사항)
+                receiver: targetUsername,
                 type: 'JOIN',
-                roomId: roomId // Room ID 추가
+                roomId: roomId
             };
             stompClient.send("/app/chat.addUser", {}, JSON.stringify(joinMessage));
             console.log("WebSocket에 연결되었습니다. 사용자: " + username + ", 대화 상대: " + targetUsername + ", Room ID: " + roomId);
         }
 
-        // 3. WebSocket 연결 실패 시 호출되는 함수
+        // WebSocket 연결 실패 시 호출되는 함수
         function onError(error) {
             console.error('WebSocket 서버에 연결할 수 없습니다. 페이지를 새로고침하여 다시 시도하세요!', error);
             alert('채팅 서버 연결에 실패했습니다. 다시 시도해 주세요. 개발자 도구 콘솔을 확인하세요.');
         }
 
-        // 4. 메시지 전송 함수
+        // 메시지 전송 함수
         function sendMessage() {
-            var messageContent = messageInput.value.trim();
+            var messageContent = messageInput.value.trim(); // messageInput은 DOMContentLoaded 내에서 초기화됨
 
             if (messageContent && stompClient) {
                 var chatMessage = {
                     sender: username,
-                    receiver: targetUsername, // 메시지 수신자 명시
+                    receiver: targetUsername,
                     content: messageContent,
                     type: 'CHAT',
-                    roomId: roomId // Room ID 포함
+                    roomId: roomId
                 };
                 stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
                 messageInput.value = '';
             }
         }
 
-        // 5. 메시지 수신 시 호출되는 함수
+        // 메시지 수신 시 호출되는 함수
         function onMessageReceived(payload) {
             var message = JSON.parse(payload.body);
-            var chatMessagesDiv = document.getElementById('chatMessages');
+            // var chatMessagesDiv = document.getElementById('chatMessages'); // <-- 이 라인은 이제 필요 없음, 전역 변수 chatMessagesDiv 사용
 
             var messageWrapper = document.createElement('div');
             messageWrapper.classList.add('message-wrapper');
@@ -522,49 +619,52 @@
                 messageContent.textContent = message.content;
                 messageTime.textContent = message.time || '시간 없음';
 
-                // 메시지 보낸 사람이 현재 사용자인지, 상대방인지에 따라 스타일 적용
                 if (message.sender === username) {
                     messageWrapper.classList.add('sent');
-                } else if (message.sender === targetUsername) { // 상대방 메시지
+                } else if (message.sender === targetUsername) {
                     messageWrapper.classList.add('received');
                 }
-                // 그 외의 경우 (예: 다른 방의 메시지 또는 잘못된 sender)는 처리하지 않거나 기본 스타일 적용
 
                 messageWrapper.appendChild(messageContent);
                 messageWrapper.appendChild(messageTime);
             }
 
-            chatMessagesDiv.appendChild(messageWrapper);
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+            // chatMessagesDiv는 DOMContentLoaded에서 초기화됩니다.
+            if (chatMessagesDiv) { // chatMessagesDiv가 null이 아닌지 확인
+                chatMessagesDiv.appendChild(messageWrapper);
+                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+            } else {
+                console.error("chatMessagesDiv 요소를 찾을 수 없습니다.");
+            }
         }
 
-        // 6. 확장 패널 토글 함수
+        // 확장 패널 토글 함수
         function toggleExpandedPanel() {
-            // 입력 영역의 현재 높이를 가져옵니다.
-            const inputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
-            // 채팅 컨테이너의 현재 높이를 가져옵니다.
-            const chatContainerHeight = document.querySelector('.chat-container').offsetHeight;
-            // 패널이 활성화될 때의 목표 높이를 설정합니다 (채팅 컨테이너의 절반).
+            const inputArea = document.querySelector('.chat-input-area'); // QuerySelector는 DOMContentLoaded 내에서 수행
+            const inputAreaHeight = inputArea ? inputArea.offsetHeight : 0; // null 체크
+            const chatContainer = document.querySelector('.chat-container'); // QuerySelector는 DOMContentLoaded 내에서 수행
+            const chatContainerHeight = chatContainer ? chatContainer.offsetHeight : 0; // null 체크
             const targetPanelHeight = chatContainerHeight / 2;
 
-            if (expandedPanel.classList.contains('active')) {
-                // 패널이 활성화되어 있다면 비활성화하고, 채팅 메시지 영역의 패딩을 원래대로 돌립니다.
-                expandedPanel.classList.remove('active');
-                chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
+            if (expandedPanel) { // expandedPanel이 null이 아닌지 확인
+                if (expandedPanel.classList.contains('active')) {
+                    expandedPanel.classList.remove('active');
+                    if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`; // chatMessagesDiv null 체크
+                } else { // if (expandedPanel)
+                    expandedPanel.classList.add('active');
+                    if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`; // chatMessagesDiv null 체크
+                }
+                if (chatMessagesDiv) chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // chatMessagesDiv null 체크
             } else {
-                // 패널이 비활성화되어 있다면 활성화하고, 채팅 메시지 영역의 패딩을 늘립니다.
-                expandedPanel.classList.add('active');
-                chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
+                console.error("expandedPanel 요소를 찾을 수 없습니다.");
             }
-            // 메시지 영역을 항상 최하단으로 스크롤합니다.
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
-        // 7. 내 프로필 이미지 로드 함수
+        // 내 프로필 이미지 로드 함수
         function loadMyUserProfileImage() {
             if (!username || username === 'defaultUser') {
                 console.warn("내 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
-                myUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                if (myUserProfileImage) myUserProfileImage.src = "/images/default-profile.png"; // null 체크
                 return;
             }
 
@@ -577,23 +677,23 @@
                 })
                 .then(userProfile => {
                     if (userProfile && userProfile.profileImageUrl) {
-                        myUserProfileImage.src = userProfile.profileImageUrl;
+                        if (myUserProfileImage) myUserProfileImage.src = userProfile.profileImageUrl; // null 체크
                     } else {
                         console.warn("내 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
-                        myUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                        if (myUserProfileImage) myUserProfileImage.src = "/images/default-profile.png"; // null 체크
                     }
                 })
                 .catch(error => {
                     console.error('내 프로필 이미지 로드 중 오류 발생:', error);
-                    myUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                    if (myUserProfileImage) myUserProfileImage.src = "/images/default-profile.png"; // null 체크
                 });
         }
 
-        // 8. 상대방 프로필 이미지 로드 함수 (추가)
+        // 상대방 프로필 이미지 로드 함수
         function loadTargetUserProfileImage() {
             if (!targetUsername || targetUsername === 'defaultTarget') {
                 console.warn("상대방 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
-                targetUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                if (targetUserProfileImage) targetUserProfileImage.src = "/images/default-profile.png"; // null 체크
                 return;
             }
 
@@ -606,25 +706,63 @@
                 })
                 .then(userProfile => {
                     if (userProfile && userProfile.profileImageUrl) {
-                        targetUserProfileImage.src = userProfile.profileImageUrl;
+                        if (targetUserProfileImage) targetUserProfileImage.src = userProfile.profileImageUrl; // null 체크
                     } else {
                         console.warn("상대방 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
-                        targetUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                        if (targetUserProfileImage) targetUserProfileImage.src = "/images/default-profile.png"; // null 체크
                     }
                 })
                 .catch(error => {
                     console.error('상대방 프로필 이미지 로드 중 오류 발생:', error);
-                    targetUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                    if (targetUserProfileImage) targetUserProfileImage.src = "/images/default-profile.png"; // null 체크
                 });
         }
 
+        // 💰 금액 조절 모달 표시/숨김 함수 (가장 중요: 이 함수는 다른 함수 안에 중첩되면 안 됩니다.)
+        function togglePriceAdjustmentModal(show) {
+            if (priceAdjustmentModalOverlay) { // <--- 중요: 요소가 존재하는지 확인
+                if (show) {
+                    priceAdjustmentModalOverlay.classList.add('active');
+                    if (modalNewPriceInput) { // <--- modalNewPriceInput도 확인
+                        modalNewPriceInput.value = '';
+                        modalNewPriceInput.focus();
+                    }
+                } else {
+                    priceAdjustmentModalOverlay.classList.remove('active');
+                }
+            } else {
+                console.error("오류: priceAdjustmentModalOverlay 요소를 찾을 수 없습니다!");
+            }
+        }
 
-        // DOMContentLoaded 이벤트 리스너: 페이지 로드 후 실행될 코드
+
+        // =======================================================
+        // 3. DOMContentLoaded 이벤트 리스너: 페이지 로드 후, DOM 요소 준비 완료 시 실행
+        //    모든 DOM 요소 선택 및 이벤트 리스너 등록은 이 블록 안에서 이루어져야 합니다.
+        // =======================================================
         document.addEventListener('DOMContentLoaded', function() {
-            connect();
-            loadMyUserProfileImage();     // 내 프로필 이미지 로드 함수 호출
-            loadTargetUserProfileImage(); // 상대방 프로필 이미지 로드 함수 호출 (추가)
+            // 모든 DOM 요소들을 이 시점에서 선택하여 변수에 할당합니다.
+            // 이렇게 하면 HTML 파싱이 완료된 후에 요소에 접근할 수 있습니다.
+            expandedPanel = document.getElementById('expandedPanel');
+            chatMessagesDiv = document.getElementById('chatMessages');
+            messageInput = document.getElementById('messageInput');
+            myUserProfileImage = document.getElementById('myUserProfileImage');
+            targetUserProfileImage = document.getElementById('targetUserProfileImage');
 
+            // 💰 금액 조절 모달 관련 DOM 요소 초기화
+            priceAdjustmentButton = document.getElementById('innerButton2');
+            priceAdjustmentModalOverlay = document.getElementById('priceAdjustmentModalOverlay');
+            modalCloseBtn = document.getElementById('modalCloseBtn');
+            modalConfirmBtn = document.getElementById('modalConfirmBtn');
+            modalCancelBtn = document.getElementById('modalCancelBtn');
+            modalNewPriceInput = document.getElementById('modalNewPriceInput');
+
+            // 초기 연결 및 프로필 이미지 로드
+            connect();
+            loadMyUserProfileImage();
+            loadTargetUserProfileImage();
+
+            // 채팅 메시지 입력 및 전송 이벤트
             document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
             document.getElementById('messageInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
@@ -632,38 +770,123 @@
                 }
             });
 
+            // 확장 패널 토글 버튼 이벤트
             document.getElementById('togglePanelBtn').addEventListener('click', toggleExpandedPanel);
             document.getElementById('closePanelBtn').addEventListener('click', toggleExpandedPanel);
 
+            // 기타 기능 버튼 이벤트
             document.getElementById('button2').addEventListener('click', function() {
-                alert('파일 첨부 버튼 클릭됨!'); // 메시지 수정
+                alert('파일 첨부 버튼 클릭됨!');
             });
             document.getElementById('button3').addEventListener('click', function() {
-                alert('달력/일정 버튼 클릭됨!'); // 메시지 수정
+                alert('달력/일정 버튼 클릭됨!');
             });
             document.getElementById('button4').addEventListener('click', function() {
-                alert('신고 / 문의 버튼 클릭됨!'); // 메시지 수정
+                alert('신고 / 문의 버튼 클릭됨!');
             });
 
-            // 변경된 inner 버튼 ID와 기능에 맞게 수정
+            // 확장 패널 내부 버튼 이벤트
             document.getElementById('innerButton1').addEventListener('click', function() {
                 alert('거래 시작 로직을 여기에 구현하세요!');
+                toggleExpandedPanel();
             });
 
-            document.getElementById('innerButton2').addEventListener('click', function() {
-                alert('금액 조절 로직을 여기에 구현하세요!');
-            });
+            // 💰 금액 조절 버튼 (innerButton2) 클릭 시 모달 띄우기
+            if (priceAdjustmentButton) { // priceAdjustmentButton이 null이 아닌지 확인
+                priceAdjustmentButton.addEventListener('click', function() {
+                    togglePriceAdjustmentModal(true);
+                    toggleExpandedPanel();
+                });
+            }
 
+
+            // 💰 금액 조절 모달 내 '확인' 버튼 이벤트
+            if (modalConfirmBtn) { // modalConfirmBtn이 null이 아닌지 확인
+                modalConfirmBtn.addEventListener('click', function() {
+                    const newPrice = modalNewPriceInput.value;
+
+                    if (newPrice === "" || isNaN(newPrice) || Number(newPrice) < 0) {
+                        alert("유효한 금액을 입력해주세요.");
+                        return;
+                    }
+
+                    const confirmedPrice = Number(newPrice);
+                    console.log("새로운 금액:", confirmedPrice);
+                    alert(`금액이 ${confirmedPrice}원으로 조절되었습니다. (실제 서버 통신 필요)`);
+
+                    fetch('/api/chat/adjust-price', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ roomId: roomId, newPrice: confirmedPrice })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('금액 조절 성공:', data);
+                            // UI 업데이트 (예: 채팅방의 렌탈 정보 금액 업데이트)
+                        })
+                        .catch(error => {
+                            console.error('금액 조절 실패:', error);
+                            alert('금액 조절에 실패했습니다.');
+                        });
+
+                    togglePriceAdjustmentModal(false);
+                });
+            }
+
+
+            // 💰 금액 조절 모달 내 '취소' 버튼 이벤트
+            if (modalCancelBtn) { // modalCancelBtn이 null이 아닌지 확인
+                modalCancelBtn.addEventListener('click', function() {
+                    togglePriceAdjustmentModal(false);
+                });
+            }
+
+            // 💰 금액 조절 모달 'X' 닫기 버튼 이벤트
+            if (modalCloseBtn) { // modalCloseBtn이 null이 아닌지 확인
+                modalCloseBtn.addEventListener('click', function() {
+                    togglePriceAdjustmentModal(false);
+                });
+            }
+
+            // 💰 금액 조절 모달 외부 클릭 시 닫기 이벤트
+            if (priceAdjustmentModalOverlay) { // priceAdjustmentModalOverlay가 null이 아닌지 확인
+                priceAdjustmentModalOverlay.addEventListener('click', function(event) {
+                    if (event.target === priceAdjustmentModalOverlay) {
+                        togglePriceAdjustmentModal(false);
+                    }
+                });
+            }
+
+            // '거래 완료' 버튼 이벤트
             document.getElementById('innerButton3').addEventListener('click', function() {
-                alert('거래 완료 로직을 여기에 구현하세요!'); // Alert 메시지 변경
-                // window.location.href = '/report'; // 완료 버튼이 report로 가는 것은 일반적으로 적절하지 않으므로 주석 처리
-                // 만약 '완료' 버튼 클릭 시 수행할 특정 서버 로직(예: 거래 상태 변경)이 있다면, 여기에 해당 API 호출 코드를 작성해야 합니다.
+                alert('거래 완료 로직을 여기에 구현하세요!');
+                toggleExpandedPanel();
             });
 
             // 채팅 메시지 영역의 하단 패딩 설정 (입력창과 겹치지 않도록)
             const initialInputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
-            chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
-        });
+            if (chatMessagesDiv) { // chatMessagesDiv가 null이 아닌지 확인
+                chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
+            }
+
+            // 윈도우 크기 변경 시 패널 높이 및 패딩 재조정
+            window.addEventListener('resize', function() {
+                const inputArea = document.querySelector('.chat-input-area');
+                const chatContainer = document.querySelector('.chat-container');
+
+                const inputAreaHeight = inputArea ? inputArea.offsetHeight : 0;
+                const chatContainerHeight = chatContainer ? chatContainer.offsetHeight : 0;
+                const targetPanelHeight = chatContainerHeight / 2;
+
+                if (expandedPanel && expandedPanel.classList.contains('active')) {
+                    expandedPanel.style.height = `${targetPanelHeight}px`;
+                    if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
+                } else if (chatMessagesDiv) { // expandedPanel이 active가 아닐 때만 chatMessagesDiv 패딩 조절
+                    chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
+                }
+            });
+        }); // DOMContentLoaded 닫는 괄호
+        /*]]>*/
     </script>
 </body>
 </html>
