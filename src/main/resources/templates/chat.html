@@ -403,14 +403,14 @@
 
         /* 현재 활성화된 패널 섹션만 보이도록 합니다. */
         .panel-content-section.active-panel-section {
-            display: block; /* 요소를 보이게 함 */
-            opacity: 1; /* 완전히 보이게 함 */
-            pointer-events: auto; /* 활성화된 동안 클릭 이벤트 허용 */
+            display: block; /* 또는 flex, grid 등 해당 섹션에 맞는 display 속성 */
+            opacity: 1;
+            pointer-events: auto;
         }
 
         /* 기본 패널 콘텐츠 스타일 */
         #defaultPanelContent {
-            display: block; /* 초기 로드 시 기본 콘텐츠는 보이도록 설정 */
+            display: block;
             opacity: 1;
             pointer-events: auto;
         }
@@ -617,315 +617,209 @@
         </div>
     </div>
 
-    <div class="expanded-panel" id="expandedPanel">
-        <div class="panel-header">
-            <button id="closePanelBtn">✖</button>
+    <div class="panel-header">
+        <button id="closePanelBtn">✖</button>
+    </div>
+    <div class="inner-buttons-grid">
+        <div class="grid-item-full">
+            <button id="innerButton1" title="거래 시작"><span class="icon">📝</span>거래 시작</button>
         </div>
-        <div class="inner-buttons-grid">
-            <div class="grid-item-full">
-                <button id="innerButton1" title="거래 시작"><span class="icon">📝</span>거래 시작</button>
-            </div>
-            <div class="grid-item-half">
-                <button id="innerButton2" title="금액 조절"><span class="icon">💰</span>금액 조절</button>
-            </div>
-            <div class="grid-item-half">
-                <button id="innerButton3" title="거래 완료"><span class="icon">💸</span>결재창</button>
-            </div>
+        <div class="grid-item-half">
+            <button id="innerButton2" title="금액 조절"><span class="icon">💰</span>금액 조절</button>
         </div>
-        <div class="panel-content-wrapper">
-            <div id="defaultPanelContent" class="panel-content-section active-panel-section">
-                <p>확장 패널의 기본 콘텐츠입니다.</p>
-                <p>위 버튼을 눌러 다른 기능을 사용해보세요.</p>
-            </div>
-            <div id="paymentPanelContent" class="panel-content-section">
-                <h4>결재 정보 입력</h4>
-                <p>여기에 결재에 필요한 입력 필드나 정보가 들어갑니다.</p>
-                <label for="paymentAmount">결재 금액:</label>
-                <input type="number" id="paymentAmount" value="0">
-                <button id="processPaymentBtn">결재 진행</button>
+        <div class="grid-item-half">
+            <button id="innerButton3" title="거래 완료"><span class="icon">💸</span>결재창</button>
+        </div>
+    </div>
+
+    <div class="panel-content-wrapper">
+        <div id="defaultPanelContent" class="panel-content-section active-panel-section">
+            <p>확장 패널의 기본 콘텐츠입니다.</p>
+            <p>위 버튼을 눌러 다른 기능을 사용해보세요.</p>
+        </div>
+        <div id="paymentPanelContent" class="panel-content-section">
+            <h4>결재 정보 입력</h4>
+            <p>여기에 결재에 필요한 입력 필드나 정보가 들어갑니다.</p>
+            <label for="paymentAmount">결재 금액:</label>
+            <input type="number" id="paymentAmount" value="0">
+            <button id="processPaymentBtn">결재 진행</button>
+        </div>
+        <div id="priceAdjustmentPanelContent" class="panel-content-section">
+            <h4>금액 조절</h4>
+            <label for="newPriceInputPanel">새로운 금액을 입력하세요:</label>
+            <input type="number" id="newPriceInputPanel" name="newPrice" min="0" placeholder="예: 25000">
+            <div class="panel-buttons">
+                <button id="confirmPricePanelBtn">확인</button>
+                <button id="cancelPricePanelBtn">취소</button>
             </div>
         </div>
     </div>
-</div> <div id="priceAdjustmentModalOverlay" class="modal-overlay">
-    <div class="modal-content">
-        <button id="modalCloseBtn" class="modal-close-btn">✖</button>
-        <h3>금액 조절</h3>
-        <label for="modalNewPriceInput">새로운 금액을 입력하세요:</label>
-        <input type="number" id="modalNewPriceInput" name="newPrice" min="0" placeholder="예: 25000">
-        <div class="modal-buttons">
-            <button id="modalConfirmBtn">확인</button>
-            <button id="modalCancelBtn">취소</button>
-        </div>
-    </div>
-</div>
+
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
 
-        // =======================================================
-        // 1. 전역 변수 선언 영역: 모든 함수에서 접근할 수 있도록 가장 위에 선언
-        // =======================================================
-        var stompClient = null;
-        var username = /*[[${username}]]*/ 'defaultUser';
-        var targetUsername = /*[[${targetUsername}]]*/ 'defaultTarget';
-        var roomId = /*[[${roomId}]]*/ 'defaultRoom';
+        // =========================================================
+        // 1. 전역 변수 선언 (DOM 요소 변수들은 DOMContentLoaded 내에서 초기화)
+        // =========================================================
+        let stompClient = null;
+        let currentRentalId = null;
+        let chatMessagesDiv = null;
+        let messageInput = null;
+        let sendMessageBtn = null;
+        let togglePanelBtn = null;
+        let closePanelBtn = null;
+        let expandedPanel = null;
+        let defaultPanelContent = null;
+        let paymentPanelContent = null;
+        let processPaymentBtn = null;
+        let paymentAmountInput = null;
 
-        // NOTE: 이 변수들은 전역적으로 선언되지만 (let 사용),
-        // 실제 HTML 요소를 할당받는 것은 DOMContentLoaded 이벤트 리스너 내부에서 이루어집니다.
-        // 이렇게 하면 아래 함수들이 전역적으로 정의될 수 있으면서도,
-        // DOM이 준비되었을 때만 요소를 선택하도록 보장합니다.
-        let expandedPanel;
-        let chatMessagesDiv;
-        let messageInput;
-        let myUserProfileImage;
-        let targetUserProfileImage;
+        let priceAdjustmentPanelContent = null; // 금액 조절 패널 섹션 요소
+        let newPriceInputPanel = null; // 패널 내 금액 입력 필드
+        let confirmPricePanelBtn = null; // 패널 내 확인 버튼
+        let cancelPricePanelBtn = null; // 패널 내 취소 버튼
 
-        // 💰 금액 조절 모달 관련 DOM 요소 (여기에 선언, DOMContentLoaded에서 초기화)
-        let priceAdjustmentButton;
-        let priceAdjustmentModalOverlay;
-        let modalCloseBtn;
-        let modalConfirmBtn;
-        let modalCancelBtn;
-        let modalNewPriceInput;
 
-        // =======================================================
-        // 2. 함수 정의 영역: 모든 이벤트 리스너에서 호출될 수 있도록 미리 정의
-        //    이 함수들은 DOMContentLoaded 이벤트 리스너 이전에 정의됩니다.
-        // =======================================================
+        // =========================================================
+        // 2. 헬퍼 함수 정의 (⭐ 여기가 중요! DOMContentLoaded 블록 외부에 정의되어야 합니다 ⭐)
+        // =========================================================
+
+        // 패널 내 섹션 표시/숨김 함수
+        function showPanelSection(sectionToShow) {
+            const sections = document.querySelectorAll('.panel-content-section');
+            sections.forEach(section => {
+                section.classList.remove('active-panel-section');
+            });
+            if (sectionToShow) {
+                sectionToShow.classList.add('active-panel-section');
+            }
+        }
+
+        // 확장 패널 열고 닫는 함수
+        function toggleExpandedPanel(show) {
+            if (show === undefined) {
+                expandedPanel.classList.toggle('active');
+            } else if (show) {
+                expandedPanel.classList.add('active');
+            } else {
+                expandedPanel.classList.remove('active');
+            }
+
+            const inputAreaHeight = document.querySelector('.chat-input-area') ? document.querySelector('.chat-input-area').offsetHeight : 0;
+            const chatContainerHeight = document.querySelector('.chat-container') ? document.querySelector('.chat-container').offsetHeight : 0;
+            const targetPanelHeight = chatContainerHeight / 2;
+
+            if (expandedPanel && expandedPanel.classList.contains('active')) {
+                if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
+            } else {
+                if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
+            }
+            if (chatMessagesDiv) chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+
+        // 금액 조절 모달 열고 닫는 함수
+
 
         // WebSocket 연결 함수
         function connect() {
-            if (!username || username === 'defaultUser') {
-                console.error("서버로부터 유저네임을 가져오지 못했습니다. 기본값으로 'defaultUser'를 사용합니다.");
-            }
-            if (!targetUsername || targetUsername === 'defaultTarget') {
-                console.error("서버로부터 상대방 유저네임을 가져오지 못했습니다. 기본값으로 'defaultTarget'를 사용합니다.");
-            }
-            if (!roomId || roomId === 'defaultRoom') {
-                console.error("서버로부터 roomId를 가져오지 못했습니다. 기본값으로 'defaultRoom'를 사용합니다.");
-            }
-
-            var socket = new SockJS('/ws');
+            console.log("Connecting to WebSocket...");
+            const socket = new SockJS('/ws');
             stompClient = Stomp.over(socket);
-            stompClient.connect({}, onConnected, onError);
+            // ⭐ onConnected 호출 시 rentalId를 함께 넘겨줍니다. ⭐
+            stompClient.connect({}, function() {
+                onConnected(currentRentalId); // connect 성공 시 rentalId 전달
+            }, onError);
         }
 
-        // WebSocket 연결 성공 시 호출되는 함수
-        function onConnected() {
-            stompClient.subscribe('/topic/chat/room/' + roomId, onMessageReceived);
-            console.log("구독 채널: " + '/topic/chat/room/' + roomId);
 
-            var joinMessage = {
-                sender: username,
-                receiver: targetUsername,
-                type: 'JOIN',
-                roomId: roomId
-            };
-            stompClient.send("/app/chat.addUser", {}, JSON.stringify(joinMessage));
-            console.log("WebSocket에 연결되었습니다. 사용자: " + username + ", 대화 상대: " + targetUsername + ", Room ID: " + roomId);
+        function onConnected(rentalId) {
+            console.log("Connected to WebSocket.");
+            if (rentalId) {
+                // ⭐ Room ID를 포함하여 /topic/public/{roomId} 구독 ⭐
+                stompClient.subscribe('/topic/public/' + rentalId, onMessageReceived);
+                // ⭐ Room ID를 포함하여 addUser 메시지 전송 ⭐
+                stompClient.send("/app/chat.addUser", {}, JSON.stringify({
+                    sender: '사용자ID', // 실제 사용자 ID로 변경해야 합니다.
+                    type: 'JOIN',
+                    roomId: rentalId // ⭐ 여기에 Room ID를 추가합니다! ⭐
+                }));
+            } else {
+                console.error("Error: Room ID is missing for subscription or add user message!");
+                // Room ID가 없는 경우 사용자에게 알리거나 다른 처리
+            }
         }
-
-        // WebSocket 연결 실패 시 호출되는 함수
         function onError(error) {
-            console.error('WebSocket 서버에 연결할 수 없습니다. 페이지를 새로고침하여 다시 시도하세요!', error);
-            alert('채팅 서버 연결에 실패했습니다. 다시 시도해 주세요. 개발자 도구 콘솔을 확인하세요.');
+            console.error('Could not connect to WebSocket server. Please refresh this page to try again!', error);
         }
-
-        // 메시지 전송 함수
         function sendMessage() {
-            var messageContent = messageInput.value.trim(); // messageInput은 DOMContentLoaded 내에서 초기화됨
-
-            if (messageContent && stompClient) {
-                var chatMessage = {
-                    sender: username,
-                    receiver: targetUsername,
+            const messageContent = messageInput.value.trim();
+            if (messageContent && stompClient && currentRentalId) { // currentRentalId 확인 추가
+                const chatMessage = {
+                    sender: '사용자ID', // 실제 사용자 ID로 변경
                     content: messageContent,
                     type: 'CHAT',
-                    roomId: roomId
+                    roomId: currentRentalId // ⭐ 여기에 Room ID를 추가합니다! ⭐
                 };
                 stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
                 messageInput.value = '';
+            } else {
+                console.warn("메시지를 보낼 수 없습니다. 내용이 없거나 WebSocket 연결 또는 Room ID가 누락되었습니다.");
             }
         }
 
-        // 메시지 수신 시 호출되는 함수
+
         function onMessageReceived(payload) {
-            var message = JSON.parse(payload.body);
-            // var chatMessagesDiv = document.getElementById('chatMessages'); // <-- 이 라인은 이제 필요 없음, 전역 변수 chatMessagesDiv 사용
+            const message = JSON.parse(payload.body);
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
 
-            var messageWrapper = document.createElement('div');
-            messageWrapper.classList.add('message-wrapper');
-
-            var messageContent = document.createElement('div');
-            messageContent.classList.add('message-content');
-
-            var messageTime = document.createElement('div');
-            messageTime.classList.add('message-time');
-
-            if (message.type === 'JOIN' || message.type === 'LEAVE') {
-                messageWrapper.classList.add('event-message');
-                messageContent.textContent = `${message.sender} 님이 ${message.type === 'JOIN' ? '입장' : '퇴장'}하셨습니다.`;
-                messageWrapper.appendChild(messageContent);
-                if (message.time) {
-                    messageTime.textContent = message.time;
-                    messageWrapper.appendChild(messageTime);
-                }
-            } else { // 'CHAT' 메시지
-                messageContent.textContent = message.content;
-                messageTime.textContent = message.time || '시간 없음';
-
-                if (message.sender === username) {
-                    messageWrapper.classList.add('sent');
-                } else if (message.sender === targetUsername) {
-                    messageWrapper.classList.add('received');
-                }
-
-                messageWrapper.appendChild(messageContent);
-                messageWrapper.appendChild(messageTime);
+            if (message.type === 'JOIN') {
+                messageElement.classList.add('event-message');
+                messageElement.textContent = message.sender + ' 님이 입장했습니다.';
+            } else if (message.type === 'LEAVE') {
+                messageElement.classList.add('event-message');
+                messageElement.textContent = message.sender + ' 님이 나갔습니다.';
+            } else {
+                messageElement.textContent = message.sender + ': ' + message.content;
             }
-
-            // chatMessagesDiv는 DOMContentLoaded에서 초기화됩니다.
-            if (chatMessagesDiv) { // chatMessagesDiv가 null이 아닌지 확인
-                chatMessagesDiv.appendChild(messageWrapper);
+            if (chatMessagesDiv) {
+                chatMessagesDiv.appendChild(messageElement);
                 chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-            } else {
-                console.error("chatMessagesDiv 요소를 찾을 수 없습니다.");
             }
         }
 
-        // 확장 패널 토글 함수
-        function toggleExpandedPanel() {
-            const inputArea = document.querySelector('.chat-input-area'); // QuerySelector는 DOMContentLoaded 내에서 수행
-            const inputAreaHeight = inputArea ? inputArea.offsetHeight : 0; // null 체크
-            const chatContainer = document.querySelector('.chat-container'); // QuerySelector는 DOMContentLoaded 내에서 수행
-            const chatContainerHeight = chatContainer ? chatContainer.offsetHeight : 0; // null 체크
-            const targetPanelHeight = chatContainerHeight / 2;
-
-            if (expandedPanel) { // expandedPanel이 null이 아닌지 확인
-                if (expandedPanel.classList.contains('active')) {
-                    expandedPanel.classList.remove('active');
-                    if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`; // chatMessagesDiv null 체크
-                } else { // if (expandedPanel)
-                    expandedPanel.classList.add('active');
-                    if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`; // chatMessagesDiv null 체크
-                }
-                if (chatMessagesDiv) chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // chatMessagesDiv null 체크
-            } else {
-                console.error("expandedPanel 요소를 찾을 수 없습니다.");
-            }
-        }
-
-        // 내 프로필 이미지 로드 함수
         function loadMyUserProfileImage() {
-            if (!username || username === 'defaultUser') {
-                console.warn("내 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
-                if (myUserProfileImage) myUserProfileImage.src = "/images/default-profile.png"; // null 체크
-                return;
-            }
-
-            fetch('/api/users/' + username + '/profile')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP 오류! 상태: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(userProfile => {
-                    if (userProfile && userProfile.profileImageUrl) {
-                        if (myUserProfileImage) myUserProfileImage.src = userProfile.profileImageUrl; // null 체크
-                    } else {
-                        console.warn("내 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
-                        if (myUserProfileImage) myUserProfileImage.src = "/images/default-profile.png"; // null 체크
-                    }
-                })
-                .catch(error => {
-                    console.error('내 프로필 이미지 로드 중 오류 발생:', error);
-                    if (myUserProfileImage) myUserProfileImage.src = "/images/default-profile.png"; // null 체크
-                });
+            // 여기에 내 프로필 이미지 로드 로직 추가
         }
 
-        // 상대방 프로필 이미지 로드 함수
         function loadTargetUserProfileImage() {
-            if (!targetUsername || targetUsername === 'defaultTarget') {
-                console.warn("상대방 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
-                if (targetUserProfileImage) targetUserProfileImage.src = "/images/default-profile.png"; // null 체크
-                return;
-            }
-
-            fetch('/api/users/' + targetUsername + '/profile')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP 오류! 상태: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(userProfile => {
-                    if (userProfile && userProfile.profileImageUrl) {
-                        if (targetUserProfileImage) targetUserProfileImage.src = userProfile.profileImageUrl; // null 체크
-                    } else {
-                        console.warn("상대방 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
-                        if (targetUserProfileImage) targetUserProfileImage.src = "/images/default-profile.png"; // null 체크
-                    }
-                })
-                .catch(error => {
-                    console.error('상대방 프로필 이미지 로드 중 오류 발생:', error);
-                    if (targetUserProfileImage) targetUserProfileImage.src = "/images/default-profile.png"; // null 체크
-                });
-        }
-
-        // 💰 금액 조절 모달 표시/숨김 함수 (가장 중요: 이 함수는 다른 함수 안에 중첩되면 안 됩니다.)
-        function togglePriceAdjustmentModal(show) {
-            if (priceAdjustmentModalOverlay) { // <--- 중요: 요소가 존재하는지 확인
-                if (show) {
-                    priceAdjustmentModalOverlay.classList.add('active');
-                    if (modalNewPriceInput) { // <--- modalNewPriceInput도 확인
-                        modalNewPriceInput.value = '';
-                        modalNewPriceInput.focus();
-                    }
-                } else {
-                    priceAdjustmentModalOverlay.classList.remove('active');
-                }
-            } else {
-                console.error("오류: priceAdjustmentModalOverlay 요소를 찾을 수 없습니다!");
-            }
+            // 여기에 상대방 프로필 이미지 로드 로직 추가
         }
 
 
-        // =======================================================
-        // ... (기존 JavaScript 코드 - 변수 선언, 함수 정의 등) ...
-
-
-        // ... (기존 전역 변수 선언 및 헬퍼 함수 showPanelSection, togglePriceAdjustmentModal 등) ...
-
-        // ... (기존 전역 변수 선언 및 헬퍼 함수 showPanelSection, togglePriceAdjustmentModal 등) ...
-
-        // DOMContentLoaded 이벤트 리스너 내부
+        // =========================================================
+        // 3. DOMContentLoaded 이벤트 리스너 (DOM 요소 초기화 및 이벤트 등록)
+        // =========================================================
         document.addEventListener('DOMContentLoaded', function() {
-            // DOM 요소 초기화 (변수명이 올바른지 다시 확인하세요)
+            // DOM 요소 초기화 (여기서 document.getElementById 등을 사용합니다.)
             chatMessagesDiv = document.getElementById('chatMessages');
             messageInput = document.getElementById('messageInput');
             sendMessageBtn = document.getElementById('sendMessageBtn');
-            togglePanelBtn = document.getElementById('togglePanelBtn'); // '거래 메뉴' 버튼
+            togglePanelBtn = document.getElementById('togglePanelBtn');
             closePanelBtn = document.getElementById('closePanelBtn');
             expandedPanel = document.getElementById('expandedPanel');
 
-            // 💰 금액 조절 모달 관련 DOM 요소 초기화
-            const innerButton2 = document.getElementById('innerButton2'); // innerButton2는 '금액 조절' 버튼
-            priceAdjustmentModalOverlay = document.getElementById('priceAdjustmentModalOverlay'); // 모달 오버레이
-            modalCloseBtn = document.getElementById('modalCloseBtn');
-            modalConfirmBtn = document.getElementById('modalConfirmBtn');
-            modalCancelBtn = document.getElementById('modalCancelBtn');
-            modalNewPriceInput = document.getElementById('modalNewPriceInput');
-
-            // 패널 내 섹션 DOM 요소 초기화
             defaultPanelContent = document.getElementById('defaultPanelContent');
-            paymentPanelContent = document.getElementById('paymentPanelContent'); // '결재창' 섹션
+            paymentPanelContent = document.getElementById('paymentPanelContent');
             processPaymentBtn = document.getElementById('processPaymentBtn');
             paymentAmountInput = document.getElementById('paymentAmount');
 
-            // ⚠️ 불필요한 변수 제거:
-            // const priceAdjustmentSection = document.getElementById('priceAdjustmentSection'); // 이 변수는 사용되지 않으므로 제거
+            priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
+            newPriceInputPanel = document.getElementById('newPriceInputPanel');
+            confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
+            cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn')
 
             // 초기 연결 및 프로필 이미지 로드
             connect();
@@ -933,26 +827,29 @@
             loadTargetUserProfileImage();
 
             // 채팅 메시지 입력 및 전송 이벤트
-            sendMessageBtn.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
+            if (sendMessageBtn) {
+                sendMessageBtn.addEventListener('click', sendMessage);
+            }
+            if (messageInput) {
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
 
             // 확장 패널 토글 버튼 이벤트 ('거래 메뉴' 버튼)
             if (togglePanelBtn) {
                 togglePanelBtn.addEventListener('click', function() {
-                    toggleExpandedPanel(); // 패널 열고 닫는 함수
-                    // 패널이 열릴 때 defaultPanelContent가 보이도록 합니다.
-                    if (expandedPanel.classList.contains('active')) {
-                        showPanelSection(defaultPanelContent);
+                    toggleExpandedPanel();
+                    if (expandedPanel && expandedPanel.classList.contains('active')) {
+                        showPanelSection(defaultPanelContent); // 패널 열릴 때 기본 콘텐츠 보이도록
                     }
                 });
             }
             if (closePanelBtn) {
                 closePanelBtn.addEventListener('click', function() {
-                    toggleExpandedPanel(false); // 패널 닫는 함수 (닫을 때는 명시적으로 false 전달)
+                    toggleExpandedPanel(false);
                 });
             }
 
@@ -961,30 +858,35 @@
             if (innerButton1) {
                 innerButton1.addEventListener('click', function() {
                     alert('거래 시작 로직을 여기에 구현하세요!');
-                    // '거래 시작' 후에는 패널 닫고 기본 콘텐츠로 돌아오기 (선택 사항)
-                    toggleExpandedPanel(false); // 닫기
-                    showPanelSection(defaultPanelContent); // 기본 콘텐츠
+                    toggleExpandedPanel(false); // 일반적으로 거래 시작 후 패널 닫음
+                    showPanelSection(defaultPanelContent); // 기본 콘텐츠로 돌아옴
                 });
             }
 
-            // ⭐ innerButton2 ('금액 조절') 클릭 시 로직 (금액 조절 모달 띄우기) ⭐
+            // ⭐ innerButton2 ('금액 조절') 클릭 시 로직 (모달 띄우기) ⭐
+            // 이전에 요청하셨던 'innerButton3'으로 금액 조절 모달을 띄우는 로직으로 변경했습니다.
+            // 따라서 innerButton2는 원래 기능(금액 조절 모달)을 수행하거나, 비워두거나, 다른 용도로 변경하세요.
+            const innerButton2 = document.getElementById('innerButton2');
             if (innerButton2) {
                 innerButton2.addEventListener('click', function() {
-                    togglePriceAdjustmentModal(true); // 금액 조절 모달 띄우기
-                    toggleExpandedPanel(false); // 모달이 뜨면 확장 패널은 닫도록 (일반적인 UI 흐름)
-                    showPanelSection(defaultPanelContent); // 패널 닫으면 기본 콘텐츠로 돌아오도록
+                    console.log('innerButton2 클릭됨! 금액 조절 패널 섹션 표시 시도.'); // ⭐ 이 로그가 콘솔에 뜨는지 확인 ⭐
+                    toggleExpandedPanel(true); // 확장 패널 열기
+                    showPanelSection(priceAdjustmentPanelContent); // ⭐ 여기가 중요! 올바른 요소를 넘겨주는지 확인 ⭐
+                    if (newPriceInputPanel) {
+                        newPriceInputPanel.value = ''; // 입력 필드 초기화
+                    }
                 });
             }
 
-            // ⭐ innerButton3 ('결재창') 클릭 시 로직 (패널 내 '결재창' 섹션 표시) ⭐
+
+            // ⭐ innerButton3 ('결재창' -> 이제 '금액 조절' 모달 띄우기) 클릭 시 로직 ⭐
             const innerButton3 = document.getElementById('innerButton3');
             if (innerButton3) {
                 innerButton3.addEventListener('click', function() {
-                    showPanelSection(paymentPanelContent); // '결재창' 섹션 표시
-                    // 만약 패널이 닫혀있다면, '결재창'을 누름과 동시에 패널을 열어줍니다.
-                    if (!expandedPanel.classList.contains('active')) {
-                        toggleExpandedPanel(true);
-                    }
+                    console.log('innerButton3 클릭됨! 결재창 섹션 표시 시도.');
+                    toggleExpandedPanel(true); // ⭐ 확장 패널 열기 ⭐
+                    showPanelSection(paymentPanelContent); // ⭐ 결재창 패널 섹션 표시 ⭐
+                    // paymentAmountInput.value = ''; // 필요하면 결재 금액 입력 필드 초기화
                 });
             }
 
@@ -997,54 +899,40 @@
                         return;
                     }
                     alert(`결재 금액: ${amount}원으로 결재를 진행합니다! (실제 결재 로직 필요)`);
-                    // 결재 완료 후 다시 기본 패널 콘텐츠로 돌아오고 패널 닫기 (선택 사항)
-                    showPanelSection(defaultPanelContent);
-                    toggleExpandedPanel(false);
+                    showPanelSection(defaultPanelContent); // 처리 후 기본 콘텐츠로 돌아오기
+                    toggleExpandedPanel(false); // 처리 후 패널 닫기
                 });
             }
 
-            // 금액 조절 모달 확인/취소/닫기 버튼 이벤트 (기존과 동일)
-            if (modalConfirmBtn) {
-                modalConfirmBtn.addEventListener('click', function() {
-                    const newPrice = modalNewPriceInput.value;
+            // 금액 조절 모달 확인/취소/닫기 버튼 이벤트
+            if (confirmPricePanelBtn) {
+                confirmPricePanelBtn.addEventListener('click', function() {
+                    const newPrice = newPriceInputPanel ? newPriceInputPanel.value : '';
                     if (newPrice === "" || isNaN(newPrice) || Number(newPrice) < 0) {
                         alert("유효한 금액을 입력해주세요.");
                         return;
                     }
                     const confirmedPrice = Number(newPrice);
-                    console.log("새로운 금액:", confirmedPrice);
+                    console.log("새로운 금액 (패널):", confirmedPrice);
                     alert(`금액이 ${confirmedPrice}원으로 조절되었습니다. (실제 서버 통신 필요)`);
-
-                    // fetch('/api/chat/adjust-price', { /* ... */ }); // 서버 통신 코드
-                    togglePriceAdjustmentModal(false);
+                    showPanelSection(defaultPanelContent); // 처리 후 기본 콘텐츠로 돌아오기
+                    toggleExpandedPanel(false); // 처리 후 패널 닫기
                 });
             }
-            if (modalCancelBtn) {
-                modalCancelBtn.addEventListener('click', function() {
-                    togglePriceAdjustmentModal(false);
-                });
-            }
-            if (modalCloseBtn) {
-                modalCloseBtn.addEventListener('click', function() {
-                    togglePriceAdjustmentModal(false);
-                });
-            }
-            // 모달 오버레이 배경 클릭 시 닫기
-            if (priceAdjustmentModalOverlay) {
-                priceAdjustmentModalOverlay.addEventListener('click', function(event) {
-                    if (event.target === priceAdjustmentModalOverlay) {
-                        togglePriceAdjustmentModal(false);
-                    }
+            if (cancelPricePanelBtn) {
+                cancelPricePanelBtn.addEventListener('click', function() {
+                    showPanelSection(defaultPanelContent); // 취소 후 기본 콘텐츠로 돌아오기
+                    toggleExpandedPanel(false); // 취소 후 패널 닫기
                 });
             }
 
-            // 채팅 메시지 영역의 하단 패딩 설정 (기존과 동일)
-            const initialInputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
+            // 채팅 메시지 영역의 하단 패딩 설정
+            const initialInputAreaHeight = document.querySelector('.chat-input-area') ? document.querySelector('.chat-input-area').offsetHeight : 0;
             if (chatMessagesDiv) {
                 chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
             }
 
-            // 윈도우 크기 변경 시 패널 높이 및 패딩 재조정 (기존과 동일)
+            // 윈도우 크기 변경 시 패널 높이 및 패딩 재조정
             window.addEventListener('resize', function() {
                 const inputArea = document.querySelector('.chat-input-area');
                 const chatContainer = document.querySelector('.chat-container');
