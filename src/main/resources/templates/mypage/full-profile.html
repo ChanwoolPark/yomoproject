@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${user.nickname + '의 프로필'}">프로필</title>
+  <link rel="stylesheet" th:href="@{/css/profile.css}">
+  <style>
+    body {
+      background: #f4f6fa;
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    .profile-wrapper {
+      max-width: 600px;
+      margin: 40px auto 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px 0 rgba(0,0,0,0.06);
+      padding: 40px 32px;
+    }
+    .card-box {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 16px;
+      background: #fafbfc;
+      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
+    }
+    .list-title {
+      font-size: 17px;
+      margin-bottom: 10px;
+      margin-top: 22px;
+      font-weight: 600;
+      color: #24355a;
+    }
+    .card-link {
+      color: #4a90e2;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .profile-header img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 20px;
+      border: 2px solid #e0e6ed;
+    }
+    .profile-header h2 {
+      margin-bottom: 6px;
+      font-size: 22px;
+      color: #24355a;
+    }
+    .profile-rating span {
+      font-size: 17px;
+      font-weight: bold;
+      color: #ff9800;
+    }
+    .profile-stats p {
+      font-size: 15px;
+      margin-bottom: 4px;
+      color: #666;
+    }
+    /* 리뷰 스타일 */
+    .profile-reviews small {
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="profile-wrapper">
+
+  <div th:replace="~{mypage/fragments/profile :: profile}"></div>
+
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
+

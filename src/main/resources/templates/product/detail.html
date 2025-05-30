@@ -49,6 +49,35 @@
       background: #999 !important;
     }
 
+    /*사용자의 다른 상품글*/
+    .seller-other-products {
+      margin-top: 40px;
+    }
+
+    .product-scroll-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 16px;
+      padding: 10px 0;
+    }
+
+    .product-item {
+      flex: 0 0 auto;
+      width: 140px;
+      text-align: center;
+    }
+
+    .product-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .product-item p {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #333;
+    }
   </style>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
@@ -79,6 +108,7 @@
 
       <!-- 페이지네이션 점 -->
       <div class="swiper-pagination"></div>
+
     </div>
 
     <div class="seller-box">
@@ -89,9 +119,9 @@
           <span th:text="${seller.grade}">등급</span>
         </div>
       </div>
-      <div class="map-placeholder">
-        <div id="map" style="width:100%; height:300px;"></div>
-      </div>
+    </div>
+    <div class="map-placeholder">
+      <div id="map" style="width:100%; height:300px;"></div>
     </div>
   </div>
 
@@ -118,7 +148,7 @@
     <hr/>
 
     <p>
-      관심 <span>0</span> · 조회수 <span th:text="${product.count != null ? product.count : 0}">0</span>
+      찜 개수 <span th:text="${wishlistCount}">0</span>명 · 조회수 <span th:text="${product.count != null ? product.count : 0}">0</span>
     </p>
 
     <!-- 버튼 -->
@@ -155,10 +185,26 @@
   </span>
 
       <!-- 항상 보이는 목록 버튼 -->
+      <button type="button" onclick="alert('신고 기능은 준비 중입니다.')">신고하기</button>
       <a th:href="@{'/category/' + ${product.subCategory.category.categoryId}}" style="margin-left: auto;">
         <button type="button">목록</button>
       </a>
     </div>
+
+
+    <!--사용자의 다른 판매글-->
+    <div class="seller-other-products">
+      <h3>판매자의 다른 상품</h3>
+      <div class="product-scroll-container">
+        <div class="product-item" th:each="p : ${otherProducts}">
+          <a th:href="@{'/product/' + ${p.productId}}">
+            <img th:src="@{${p.thumbnailUrl}}" alt="상품 이미지" />
+            <p th:text="${p.title}">상품 제목</p>
+          </a>
+        </div>
+      </div>
+    </div>
+
 
     <!-- 삭제 확인 스크립트 -->
     <script>
@@ -167,8 +213,9 @@
       }
     </script>
 
-    </div>
   </div>
+
+</div>
 </div>
 
 
@@ -207,7 +254,7 @@
 <script th:inline="javascript">
   document.addEventListener("DOMContentLoaded", function () {
     const sellerAddress = /*[[${seller.address}]]*/ "";
-    const rentalId = document.getElementById('currentRentalId').value; // Rental ID (Long)
+
     const mapContainer = document.getElementById('map');
     const mapOption = {
       center: new kakao.maps.LatLng(37.5665, 126.9780),
@@ -284,20 +331,6 @@
                   } else {
                     alert(data.message || '요청 실패');
                   }
-                });
-      .then(response => {
-          if (!response.ok) {
-            throw new Error('채팅방 생성/조회 실패: ' + response.statusText);
-          }
-          return response.json(); // Long 타입의 roomId를 JSON으로 반환받음
-        })
-                .then(roomId => { // roomId가 Long 타입
-                  console.log('생성/조회된 채팅방 ID:', rental_id);
-                  window.location.href = '/chat/' + roomId; // Long 타입 roomId를 URL에 포함
-                })
-                .catch(error => {
-                  console.error('채팅 시작 중 오류 발생:', error);
-                  alert('채팅을 시작할 수 없습니다. 다시 시도해 주세요.');
                 });
       });
     }

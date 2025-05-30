@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-
-    <link rel="stylesheet" href="/css/header.css">
+    <meta charset="UTF-8">
+    <title th:text="${subCategory.name} + ' 상품 목록'">서브카테고리</title>
     <style>
         .container { display: flex; gap: 20px; padding: 20px; }
         .left, .right { width: 20%; }
@@ -31,17 +31,19 @@
     </style>
 </head>
 <body>
+<!-- 헤더 -->
 <div th:replace="fragments/header :: header"></div>
 
 <div class="container">
 
-    <!-- 왼쪽: 서브카테고리 -->
+    <!-- 왼쪽: 서브카테고리 목록 -->
     <div class="left">
         <h3>서브 카테고리</h3>
         <ul>
             <li th:each="sub : ${subCategories}">
-                <a th:href="@{'/category/' + ${sub.category.categoryId} + '/subcategory/' + ${sub.subCategoryId}}"
-                   th:text="${sub.name}" style="text-decoration:none; color:black;"></a>
+                <a th:href="@{'/subcategory/' + ${sub.subCategoryId}}"
+                   th:text="${sub.name}"
+                   style="text-decoration:none; color:black;"></a>
             </li>
         </ul>
     </div>
@@ -49,15 +51,20 @@
     <!-- 중앙: 상품 리스트 -->
     <div class="center">
 
-        <!-- 상품 올리기 -->
+        <!-- 제목 -->
+        <div style="grid-column: 1 / -1;">
+            <h2 th:text="${subCategory.name} + ' 상품 목록'"></h2>
+        </div>
+
+        <!-- 상품 올리기 버튼 -->
         <div style="grid-column: 1 / -1; text-align: right; margin-bottom: 10px;">
-            <a th:href="@{'/product/write?categoryId=' + ${category.categoryId}}"
+            <a th:href="@{'/product/write?subCategoryId=' + ${subCategory.subCategoryId}}"
                style="padding: 8px 16px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
                 상품 글쓰기
             </a>
         </div>
 
-
+        <!-- 상품 목록 -->
         <div th:each="product : ${products}" class="product-box-wrapper">
             <a th:href="@{'/product/' + ${product.productId}}" class="product-box-link">
                 <div class="product-box">
@@ -80,6 +87,7 @@
                 <a th:href="@{'/product/' + ${item.product.productId}}" th:text="${item.product.title}" style="font-size: 14px;"></a>
             </div>
         </div>
+
         <div class="wishlist-box">
             <h4>관심목록</h4>
             <div class="wishlist-items">

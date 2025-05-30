@@ -50,6 +50,7 @@ public class ProductController {
         List<ProductImage> imageList = productDetailService.getProductImages(productId);
         User seller = product.getSeller();
 
+
         String formattedDate = product.getCreatedAt() != null
                 ? product.getCreatedAt().toInstant()
                 .atZone(ZoneId.systemDefault())
@@ -62,12 +63,17 @@ public class ProductController {
             isWished = productDetailService.isProductWishedByUser(productId, userId);
         }
 
+        int wishlistCount = productDetailService.getWishlistCount(productId);
+        List<Product> otherProducts = productDetailService.getOtherProductsBySeller(seller.getId(), productId);
+
         model.addAttribute("product", product);
         model.addAttribute("imageList", imageList);
         model.addAttribute("seller", seller);
         model.addAttribute("createdAt", formattedDate);
         model.addAttribute("wished", isWished);
         model.addAttribute("userId", userId);
+        model.addAttribute("wishlistCount", wishlistCount);
+        model.addAttribute("otherProducts", otherProducts);
 
         return "product/detail";
     }

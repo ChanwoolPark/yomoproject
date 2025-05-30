@@ -149,36 +149,25 @@
     };
 
 
-    // layout.html 스크립트에 붙이는 예시
+    let nicknameValid = true; // 본인 정보 그대로면 true!
+    let emailValid = true;
+    let phoneValid = true;
 
-    let nicknameValid = false;
-    let emailValid = false;
-    let phoneValid = false;
-
-    function loadContent(menuName) {
-        history.pushState({ menu: menuName }, '', `/mypage?menu=${menuName}`);
-
-        fetch(`/mypage/${menuName}`)
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('content').innerHTML = html;
-                if(menuName === 'edit-info') {
-                    bindEditInfoEvents();
-                }
-            });
-    }
-
-    // 전역 함수로 등록!
     window.checkNickname = function() {
-        const nickname = document.getElementById('nickname').value.trim();
+        const nicknameInput = document.getElementById('nickname');
+        const nickname = nicknameInput.value.trim();
+        const original = nicknameInput.getAttribute('data-original-nickname');
         const msg = document.getElementById('nickname-check-msg');
-        nicknameValid = false;
-        msg.textContent = "";
-        if (!nickname) {
-            msg.textContent = "닉네임을 입력하세요!";
-            msg.className = "input-msg";
+
+        // 본인 닉네임 그대로면 PASS
+        if (nickname === original) {
+            msg.textContent = "현재 사용중인 닉네임입니다.";
+            msg.className = "input-msg ok";
+            nicknameValid = true;
             return;
         }
+
+        // 이하는 기존과 동일
         fetch('/mypage/check-nickname?nickname=' + encodeURIComponent(nickname))
             .then(response => response.json())
             .then(isDuplicate => {
@@ -197,16 +186,20 @@
             nicknameValid = false;
         });
     }
+
     window.checkEmail = function() {
-        const email = document.getElementById('email').value.trim();
+        const emailInput = document.getElementById('email');
+        const email = emailInput.value.trim();
+        const original = emailInput.getAttribute('data-original-email');
         const msg = document.getElementById('email-check-msg');
-        emailValid = false;
-        msg.textContent = "";
-        if (!email) {
-            msg.textContent = "이메일을 입력하세요!";
-            msg.className = "input-msg";
+
+        if (email === original) {
+            msg.textContent = "현재 사용중인 이메일입니다.";
+            msg.className = "input-msg ok";
+            emailValid = true;
             return;
         }
+
         fetch('/mypage/check-email?email=' + encodeURIComponent(email))
             .then(response => response.json())
             .then(isDuplicate => {
@@ -227,16 +220,26 @@
     }
 
     function bindEditInfoEvents() {
-        // 휴대폰 input 이벤트
+        // 휴대폰 실시간 중복
         const phoneInput = document.getElementById('phone');
         if(phoneInput) {
             phoneInput.addEventListener('input', function () {
                 const phone = this.value.trim();
+                const original = phoneInput.getAttribute('data-original-phone');
                 const msg = document.getElementById('phone-check-msg');
+
+                // 본인 폰 그대로면 PASS
+                if(phone === original) {
+                    msg.textContent = "현재 사용중인 번호입니다.";
+                    msg.className = "input-msg ok";
+                    phoneValid = true;
+                    return;
+                }
+
                 phoneValid = false;
                 msg.textContent = "";
                 if (!phone) return;
-                fetch('/mypage/check-phone?phone=' + encodeURIComponent(phone))
+                fetch('/mypage/check-phone?phone=' + encodeURIComponent(콜))
                     .then(response => response.json())
                     .then(isDuplicate => {
                         if (isDuplicate) {
@@ -244,7 +247,7 @@
                             msg.className = "input-msg";
                             phoneValid = false;
                         } else {
-                            msg.textContent = "";
+                            msg.textContent = "사용 가능한 번호입니다!";
                             msg.className = "input-msg ok";
                             phoneValid = true;
                         }
@@ -255,7 +258,8 @@
                 });
             });
         }
-        // 폼 제출
+
+        // 폼 제출 시
         const form = document.getElementById('edit-info-form');
         if(form) {
             form.onsubmit = function(e) {
@@ -280,6 +284,7 @@
             }
         }
     }
+
 
 
     // ---- 카카오 주소 검색 ----

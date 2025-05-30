@@ -126,7 +126,7 @@
         <div class="form-row">
             <label for="nickname">닉네임</label>
             <div class="btn-row">
-                <input type="text" id="nickname" name="nickname" th:value="${user.nickname}" autocomplete="off">
+                <input type="text" id="nickname" name="nickname" th:value="${user.nickname}" data-original-nickname="${user.nickname}" autocomplete="off">
                 <button type="button" onclick="checkNickname()">중복 확인</button>
             </div>
             <div id="nickname-check-msg" class="input-msg"></div>
@@ -136,7 +136,7 @@
         <div class="form-row">
             <label for="email">이메일</label>
             <div class="btn-row">
-                <input type="email" id="email" name="email" th:value="${user.email}" autocomplete="off">
+                <input type="email" id="email" name="email" th:value="${user.email}" data-original-email="${user.eamil}" autocomplete="off">
                 <button type="button" onclick="checkEmail()">중복 확인</button>
             </div>
             <div id="email-check-msg" class="input-msg"></div>
@@ -145,7 +145,7 @@
         <!-- 휴대폰번호(실시간 중복확인) -->
         <div class="form-row">
             <label for="phone">휴대폰 번호</label>
-            <input type="text" id="phone" name="phone" th:value="${user.phone}" maxlength="13" autocomplete="off">
+            <input type="text" id="phone" name="phone" th:value="${user.phone}" data-original-phone="${user.phone}" maxlength="13" autocomplete="off">
             <div id="phone-check-msg" class="input-msg"></div>
         </div>
 
