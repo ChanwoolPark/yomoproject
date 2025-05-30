@@ -13,7 +13,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,11 +32,15 @@ public class HomeController {
         model.addAttribute("categories", categories);
 
         // 배너 이미지 리스트
-        List<String> imageList = List.of(
+        /*List<String> imageList = List.of(
                 "banner1.png",
                 "banner2.png",
                 "banner3.png"
-        );
+        );*/
+        List<Map<String, String>> imageList = new ArrayList<>();
+        imageList.add(Map.of("file", "banner1.png", "url", "https://www.youtube.com/watch?v=c_l1ZwJbAnc"));
+        imageList.add(Map.of("file", "banner2.png", "url", "https://www.youtube.com/watch?v=x9mLLDcBmU0"));
+        imageList.add(Map.of("file", "banner3.png", "url", "https://www.youtube.com/watch?v=RudIRwJwdAg"));
         model.addAttribute("imageList", imageList);
 
         return "index";

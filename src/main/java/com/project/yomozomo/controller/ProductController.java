@@ -64,6 +64,7 @@ public class ProductController {
         }
 
         int wishlistCount = productDetailService.getWishlistCount(productId);
+        List<Product> otherProducts = productDetailService.getOtherProductsBySeller(seller.getId(), productId);
 
         model.addAttribute("product", product);
         model.addAttribute("imageList", imageList);
@@ -72,6 +73,7 @@ public class ProductController {
         model.addAttribute("wished", isWished);
         model.addAttribute("userId", userId);
         model.addAttribute("wishlistCount", wishlistCount);
+        model.addAttribute("otherProducts", otherProducts);
 
         return "product/detail";
     }

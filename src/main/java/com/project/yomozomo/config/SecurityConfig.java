@@ -81,6 +81,7 @@ public class SecurityConfig {
 
     /**
      * 네이버가 반환하는 JSON 구조(response 안에 id, name, email 등 있음)를
+     * 
      * 언팩해서 DefaultOAuth2User를 만들어줍니다.
      */
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> naverOAuth2UserService() {
@@ -89,6 +90,9 @@ public class SecurityConfig {
             OAuth2User oauth2User = delegate.loadUser(userRequest);
             @SuppressWarnings("unchecked")
             Map<String, Object> resp = oauth2User.getAttribute("response");
+
+
+
             return new DefaultOAuth2User(
                     oauth2User.getAuthorities(),
                     resp,
