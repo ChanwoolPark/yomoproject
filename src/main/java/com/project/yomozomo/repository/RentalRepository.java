@@ -2,8 +2,6 @@ package com.project.yomozomo.repository;
 
 import com.project.yomozomo.domain.Rental;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 
 import java.util.List;
