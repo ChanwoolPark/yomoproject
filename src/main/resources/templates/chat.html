@@ -60,9 +60,18 @@
             object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
             border: 2px solid white; /* 흰색 테두리 */
             flex-shrink: 0; /* 크기가 줄어들지 않도록 */
-            margin-right: 10px; /* 제목과의 간격 */
             /* order: 1; 제거: 이제 이미지 하나이므로 순서 지정이 덜 중요 */
         }
+        /* 이미지의 순서를 명시적으로 지정 */
+        .profile-image-header.left {
+            margin-right: 10px;
+            order: 1;
+        }
+        .profile-image-header.right {
+            margin-left: 10px;
+            order: 3;
+        }
+
         /* 프로필 이미지 로드 실패 시 또는 src가 없을 때 */
         .profile-image-header:not([src]):before {
             content: "👤"; /* 사용자 아이콘 */
@@ -332,8 +341,6 @@
 
         .expanded-panel .inner-buttons-grid {
             display: grid;
-            /* 기존: grid-template-columns: repeat(2, 1fr); */
-            /* 이제 각 버튼이 감싸진 div에 클래스를 부여하여 제어합니다. */
             grid-template-columns: 1fr 1fr; /* 두 번째 줄부터 1:1 비율 */
             gap: 15px; /* 버튼 사이의 간격 */
             width: 100%;
@@ -344,11 +351,6 @@
         .expanded-panel .grid-item-full {
             grid-column: 1 / span 2; /* 1번 컬럼부터 2칸(전체) 차지 */
         }
-        /* 절반 너비를 차지하는 버튼 컨테이너 (이전 button 스타일을 재활용할 수도 있습니다) */
-        .expanded-panel .grid-item-half {
-            /* 이 안에 있는 button은 기존 button 스타일을 따릅니다. */
-        }
-
 
         /* 확장 패널 내부 버튼 (기존 스타일 유지, 상위 div가 크기를 조절) */
         .expanded-panel .inner-buttons-grid button {
@@ -371,30 +373,37 @@
             width: 100%; /* 부모 grid-item-half의 너비를 꽉 채움 */
             box-sizing: border-box; /* padding이 너비에 포함되도록 */
         }
+        /* 버튼 내부 아이콘 스타일 */
+        .expanded-panel .inner-buttons-grid button .icon {
+            font-size: 1.8em; /* 아이콘 크기 키우기 */
+            margin-bottom: 5px; /* 텍스트와의 간격 */
+        }
+
     </style>
 </head>
 <body>
 
 <div class="chat-container">
     <div class="chat-header">
+        <img id="targetUserProfileImage" class="profile-image-header left" src="/images/default-profile.png" alt="상대 프로필">
         <h3 id="chatHeader">
             <p>렌탈 ID: <span th:text="${currentRental?.rentalId}">[렌탈 ID]</span></p>
         </h3>
-        <img id="myUserProfileImage" class="profile-image-header" src="/images/default-profile.png" alt="내 프로필">
+        <img id="myUserProfileImage" class="profile-image-header right" src="/images/default-profile.png" alt="내 프로필">
     </div>
     <div class="chat-messages" id="chatMessages">
     </div>
     <div class="chat-input-area">
         <div class="input-and-send">
-            <input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
+            <label for="messageInput"></label><input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
             <button id="sendMessageBtn" class="send-button">▲</button>
         </div>
 
         <div class="input-toolbar">
             <button id="togglePanelBtn" title="거래 메뉴">😊</button>
             <button id="button2" title="파일 첨부">📎</button>
-            <button id="button3" title="일정">📅</button>
-            <button id="button4" title="신고창">🚨</button>
+            <button id="button3" title="달력 / 일정">📅</button>
+            <button id="button4" title="신고 / 문의">🚨</button>
         </div>
     </div>
 
@@ -402,7 +411,7 @@
         <div class="panel-header">
             <button id="closePanelBtn">✖</button>
         </div>
-         <div class="inner-buttons-grid">
+        <div class="inner-buttons-grid">
             <div class="grid-item-full">
                 <button id="innerButton1" title="거래 시작"><span class="icon">📝</span>거래 시작</button>
             </div>
@@ -410,214 +419,251 @@
                 <button id="innerButton2" title="금액 조절"><span class="icon">💰</span>금액 조절</button>
             </div>
             <div class="grid-item-half">
-                <button id="innerButton3" title="완료"><span class="icon">✅</span>완료</button>
+                <button id="innerButton3" title="거래 완료"><span class="icon">✅</span>거래 완료</button>
             </div>
-         </div>
+        </div>
     </div>
 
-<script src="/webjars/sockjs-client/sockjs.min.js"></script>
-<script src="/webjars/stomp-websocket/stomp.min.js"></script>
-<script th:inline="javascript">
-    /*<![CDATA[*/
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
 
-    var stompClient = null;
-    var username = /*[[${username}]]*/ 'defaultUser'; // 현재 사용자 이름
-    var targetUsername = /*[[${targetUsername}]]*/ 'defaultTarget'; // 대화 상대 이름
-    var roomId = /*[[${roomId}]]*/ 'defaultRoom'; // 채팅방 ID
-    var expandedPanel = document.getElementById('expandedPanel');
-    var chatMessagesDiv = document.getElementById('chatMessages');
-    var messageInput = document.getElementById('messageInput');
-    const myUserProfileImage = document.getElementById('myUserProfileImage'); // 새로 추가된 이미지 요소
-    // 1. WebSocket 연결 함수
-    function connect() {
-        if (!username || username === 'defaultUser') {
-            console.error("서버로부터 유저네임을 가져오지 못했습니다. 기본값으로 'defaultUser'를 사용합니다.");
-        }
-        if (!targetUsername || targetUsername === 'defaultTarget') {
-            console.error("서버로부터 상대방 유저네임을 가져오지 못했습니다. 기본값으로 'defaultTarget'를 사용합니다.");
-        }
-        if (!roomId || roomId === 'defaultRoom') {
-            console.error("서버로부터 roomId를 가져오지 못했습니다. 기본값으로 'defaultRoom'를 사용합니다.");
-        }
-
-        var socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, onConnected, onError);
-    }
-
-    // 2. WebSocket 연결 성공 시 호출되는 함수
-    function onConnected() {
-        // 이제 /topic/public 대신 특정 roomId의 토픽을 구독합니다.
-        stompClient.subscribe('/topic/chat/room/' + roomId, onMessageReceived);
-        console.log("구독 채널: " + '/topic/chat/room/' + roomId);
-
-        // 입장 메시지 전송 시 roomId와 receiver 정보 포함
-        var joinMessage = {
-            sender: username,
-            receiver: targetUsername, // 입장 메시지에도 수신자 명시 (선택 사항)
-            type: 'JOIN',
-            roomId: roomId // Room ID 추가
-        };
-        stompClient.send("/app/chat.addUser", {}, JSON.stringify(joinMessage));
-        console.log("WebSocket에 연결되었습니다. 사용자: " + username + ", 대화 상대: " + targetUsername + ", Room ID: " + roomId);
-    }
-
-    // 3. WebSocket 연결 실패 시 호출되는 함수
-    function onError(error) {
-        console.error('WebSocket 서버에 연결할 수 없습니다. 페이지를 새로고침하여 다시 시도하세요!', error);
-        alert('채팅 서버 연결에 실패했습니다. 다시 시도해 주세요. 개발자 도구 콘솔을 확인하세요.');
-    }
-
-    // 4. 메시지 전송 함수
-    function sendMessage() {
-        var messageContent = messageInput.value.trim();
-
-        if (messageContent && stompClient) {
-            var chatMessage = {
-                sender: username,
-                receiver: targetUsername, // 메시지 수신자 명시
-                content: messageContent,
-                type: 'CHAT',
-                roomId: roomId // Room ID 포함
-            };
-            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
-            messageInput.value = '';
-        }
-    }
-
-    // 5. 메시지 수신 시 호출되는 함수
-    function onMessageReceived(payload) {
-        var message = JSON.parse(payload.body);
+        var stompClient = null;
+        var username = /*[[${username}]]*/ 'defaultUser'; // 현재 사용자 이름
+        var targetUsername = /*[[${targetUsername}]]*/ 'defaultTarget'; // 대화 상대 이름
+        var roomId = /*[[${roomId}]]*/ 'defaultRoom'; // 채팅방 ID
+        var expandedPanel = document.getElementById('expandedPanel');
         var chatMessagesDiv = document.getElementById('chatMessages');
+        var messageInput = document.getElementById('messageInput');
+        const myUserProfileImage = document.getElementById('myUserProfileImage');
+        const targetUserProfileImage = document.getElementById('targetUserProfileImage'); // 상대방 프로필 이미지 요소
 
-        var messageWrapper = document.createElement('div');
-        messageWrapper.classList.add('message-wrapper');
+        // 1. WebSocket 연결 함수
+        function connect() {
+            if (!username || username === 'defaultUser') {
+                console.error("서버로부터 유저네임을 가져오지 못했습니다. 기본값으로 'defaultUser'를 사용합니다.");
+            }
+            if (!targetUsername || targetUsername === 'defaultTarget') {
+                console.error("서버로부터 상대방 유저네임을 가져오지 못했습니다. 기본값으로 'defaultTarget'를 사용합니다.");
+            }
+            if (!roomId || roomId === 'defaultRoom') {
+                console.error("서버로부터 roomId를 가져오지 못했습니다. 기본값으로 'defaultRoom'를 사용합니다.");
+            }
 
-        var messageContent = document.createElement('div');
-        messageContent.classList.add('message-content');
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, onConnected, onError);
+        }
 
-        var messageTime = document.createElement('div');
-        messageTime.classList.add('message-time');
+        // 2. WebSocket 연결 성공 시 호출되는 함수
+        function onConnected() {
+            // 이제 /topic/public 대신 특정 roomId의 토픽을 구독합니다.
+            stompClient.subscribe('/topic/chat/room/' + roomId, onMessageReceived);
+            console.log("구독 채널: " + '/topic/chat/room/' + roomId);
 
-        if (message.type === 'JOIN' || message.type === 'LEAVE') {
-            messageWrapper.classList.add('event-message');
-            messageContent.textContent = `${message.sender} 님이 ${message.type === 'JOIN' ? '입장' : '퇴장'}하셨습니다.`;
-            messageWrapper.appendChild(messageContent);
-            if (message.time) {
-                messageTime.textContent = message.time;
+            // 입장 메시지 전송 시 roomId와 receiver 정보 포함
+            var joinMessage = {
+                sender: username,
+                receiver: targetUsername, // 입장 메시지에도 수신자 명시 (선택 사항)
+                type: 'JOIN',
+                roomId: roomId // Room ID 추가
+            };
+            stompClient.send("/app/chat.addUser", {}, JSON.stringify(joinMessage));
+            console.log("WebSocket에 연결되었습니다. 사용자: " + username + ", 대화 상대: " + targetUsername + ", Room ID: " + roomId);
+        }
+
+        // 3. WebSocket 연결 실패 시 호출되는 함수
+        function onError(error) {
+            console.error('WebSocket 서버에 연결할 수 없습니다. 페이지를 새로고침하여 다시 시도하세요!', error);
+            alert('채팅 서버 연결에 실패했습니다. 다시 시도해 주세요. 개발자 도구 콘솔을 확인하세요.');
+        }
+
+        // 4. 메시지 전송 함수
+        function sendMessage() {
+            var messageContent = messageInput.value.trim();
+
+            if (messageContent && stompClient) {
+                var chatMessage = {
+                    sender: username,
+                    receiver: targetUsername, // 메시지 수신자 명시
+                    content: messageContent,
+                    type: 'CHAT',
+                    roomId: roomId // Room ID 포함
+                };
+                stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+                messageInput.value = '';
+            }
+        }
+
+        // 5. 메시지 수신 시 호출되는 함수
+        function onMessageReceived(payload) {
+            var message = JSON.parse(payload.body);
+            var chatMessagesDiv = document.getElementById('chatMessages');
+
+            var messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('message-wrapper');
+
+            var messageContent = document.createElement('div');
+            messageContent.classList.add('message-content');
+
+            var messageTime = document.createElement('div');
+            messageTime.classList.add('message-time');
+
+            if (message.type === 'JOIN' || message.type === 'LEAVE') {
+                messageWrapper.classList.add('event-message');
+                messageContent.textContent = `${message.sender} 님이 ${message.type === 'JOIN' ? '입장' : '퇴장'}하셨습니다.`;
+                messageWrapper.appendChild(messageContent);
+                if (message.time) {
+                    messageTime.textContent = message.time;
+                    messageWrapper.appendChild(messageTime);
+                }
+            } else { // 'CHAT' 메시지
+                messageContent.textContent = message.content;
+                messageTime.textContent = message.time || '시간 없음';
+
+                // 메시지 보낸 사람이 현재 사용자인지, 상대방인지에 따라 스타일 적용
+                if (message.sender === username) {
+                    messageWrapper.classList.add('sent');
+                } else if (message.sender === targetUsername) { // 상대방 메시지
+                    messageWrapper.classList.add('received');
+                }
+                // 그 외의 경우 (예: 다른 방의 메시지 또는 잘못된 sender)는 처리하지 않거나 기본 스타일 적용
+
+                messageWrapper.appendChild(messageContent);
                 messageWrapper.appendChild(messageTime);
             }
-        } else { // 'CHAT' 메시지
-            messageContent.textContent = message.content;
-            messageTime.textContent = message.time || '시간 없음';
 
-            // 메시지 보낸 사람이 현재 사용자인지, 상대방인지에 따라 스타일 적용
-            if (message.sender === username) {
-                messageWrapper.classList.add('sent');
-            } else if (message.sender === targetUsername) { // 상대방 메시지
-                messageWrapper.classList.add('received');
-            }
-            // 그 외의 경우 (예: 다른 방의 메시지 또는 잘못된 sender)는 처리하지 않거나 기본 스타일 적용
-
-            messageWrapper.appendChild(messageContent);
-            messageWrapper.appendChild(messageTime);
+            chatMessagesDiv.appendChild(messageWrapper);
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
-        chatMessagesDiv.appendChild(messageWrapper);
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-    }
-
-    // 6. 확장 패널 토글 함수
-    function toggleExpandedPanel() {
-        const inputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
-
-        if (expandedPanel.classList.contains('active')) {
-            expandedPanel.classList.remove('active');
-            chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
-        } else {
-            expandedPanel.classList.add('active');
+        // 6. 확장 패널 토글 함수
+        function toggleExpandedPanel() {
+            // 입력 영역의 현재 높이를 가져옵니다.
+            const inputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
+            // 채팅 컨테이너의 현재 높이를 가져옵니다.
             const chatContainerHeight = document.querySelector('.chat-container').offsetHeight;
+            // 패널이 활성화될 때의 목표 높이를 설정합니다 (채팅 컨테이너의 절반).
             const targetPanelHeight = chatContainerHeight / 2;
 
-            chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
-        }
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-    }
-
-    // 7. 내 프로필 이미지 로드 함수 (이것만 사용)
-    function loadMyUserProfileImage() {
-        if (!username || username === 'defaultUser') {
-            console.warn("내 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
-            return;
-        }
-
-        fetch('/api/users/' + username + '/profile')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP 오류! 상태: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(userProfile => {
-                if (userProfile && userProfile.profileImageUrl) {
-                    myUserProfileImage.src = userProfile.profileImageUrl;
-                } else {
-                    console.warn("내 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
-                    myUserProfileImage.src = "/images/default_profile.png";
-                }
-            })
-            .catch(error => {
-                console.error('내 프로필 이미지 로드 중 오류 발생:', error);
-                myUserProfileImage.src = "/images/default_profile.png";
-            });
-    }
-
-
-    // DOMContentLoaded 이벤트 리스너: 페이지 로드 후 실행될 코드
-    document.addEventListener('DOMContentLoaded', function() {
-        connect();
-        // loadTargetUserProfileImage(); // 상대방 프로필 이미지 로드 함수 호출 제거
-        loadMyUserProfileImage();     // 내 프로필 이미지 로드 함수만 호출
-
-        document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
+            if (expandedPanel.classList.contains('active')) {
+                // 패널이 활성화되어 있다면 비활성화하고, 채팅 메시지 영역의 패딩을 원래대로 돌립니다.
+                expandedPanel.classList.remove('active');
+                chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
+            } else {
+                // 패널이 비활성화되어 있다면 활성화하고, 채팅 메시지 영역의 패딩을 늘립니다.
+                expandedPanel.classList.add('active');
+                chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
             }
-        });
+            // 메시지 영역을 항상 최하단으로 스크롤합니다.
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
 
-        document.getElementById('togglePanelBtn').addEventListener('click', toggleExpandedPanel);
-        document.getElementById('closePanelBtn').addEventListener('click', toggleExpandedPanel);
+        // 7. 내 프로필 이미지 로드 함수
+        function loadMyUserProfileImage() {
+            if (!username || username === 'defaultUser') {
+                console.warn("내 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
+                myUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                return;
+            }
 
-        document.getElementById('button2').addEventListener('click', function() {
-            alert('달력/일정 버튼 클릭됨!');
-        });
-        document.getElementById('button3').addEventListener('click', function() {
-            alert('시간/알림 버튼 클릭됨!');
-        });
-        document.getElementById('button4').addEventListener('click', function() {
-            alert('문서/파일 첨부 버튼 클릭됨!');
-        });
+            fetch('/api/users/' + username + '/profile')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP 오류! 상태: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(userProfile => {
+                    if (userProfile && userProfile.profileImageUrl) {
+                        myUserProfileImage.src = userProfile.profileImageUrl;
+                    } else {
+                        console.warn("내 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
+                        myUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                    }
+                })
+                .catch(error => {
+                    console.error('내 프로필 이미지 로드 중 오류 발생:', error);
+                    myUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                });
+        }
 
-        // 변경된 inner 버튼 ID와 기능에 맞게 수정
-        document.getElementById('innerButton1').addEventListener('click', function() {
-            alert('거래 시작 로직을 여기에 구현하세요!');
-        });
+        // 8. 상대방 프로필 이미지 로드 함수 (추가)
+        function loadTargetUserProfileImage() {
+            if (!targetUsername || targetUsername === 'defaultTarget') {
+                console.warn("상대방 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
+                targetUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                return;
+            }
 
-        document.getElementById('innerButton2').addEventListener('click', function() {
-            alert('금액 조절 로직을 여기에 구현하세요!');
-        });
+            fetch('/api/users/' + targetUsername + '/profile')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP 오류! 상태: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(userProfile => {
+                    if (userProfile && userProfile.profileImageUrl) {
+                        targetUserProfileImage.src = userProfile.profileImageUrl;
+                    } else {
+                        console.warn("상대방 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
+                        targetUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                    }
+                })
+                .catch(error => {
+                    console.error('상대방 프로필 이미지 로드 중 오류 발생:', error);
+                    targetUserProfileImage.src = "/images/default-profile.png"; // 경로 수정
+                });
+        }
 
-        document.getElementById('innerButton3').addEventListener('click', function() {
-            alert('완료 로직을 여기에 구현하세요!'); // Alert 메시지 변경
-            // window.location.href = '/report'; // 완료 버튼이 report로 가는 것은 일반적으로 적절하지 않으므로 주석 처리
-            // 만약 '완료' 버튼 클릭 시 수행할 특정 서버 로직(예: 거래 상태 변경)이 있다면, 여기에 해당 API 호출 코드를 작성해야 합니다.
-        });
 
-        // 채팅 메시지 영역의 하단 패딩 설정 (입력창과 겹치지 않도록)
-        const initialInputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
-        chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
-    });
-</script>
+        // DOMContentLoaded 이벤트 리스너: 페이지 로드 후 실행될 코드
+        document.addEventListener('DOMContentLoaded', function() {
+            connect();
+            loadMyUserProfileImage();     // 내 프로필 이미지 로드 함수 호출
+            loadTargetUserProfileImage(); // 상대방 프로필 이미지 로드 함수 호출 (추가)
+
+            document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            document.getElementById('togglePanelBtn').addEventListener('click', toggleExpandedPanel);
+            document.getElementById('closePanelBtn').addEventListener('click', toggleExpandedPanel);
+
+            document.getElementById('button2').addEventListener('click', function() {
+                alert('파일 첨부 버튼 클릭됨!'); // 메시지 수정
+            });
+            document.getElementById('button3').addEventListener('click', function() {
+                alert('달력/일정 버튼 클릭됨!'); // 메시지 수정
+            });
+            document.getElementById('button4').addEventListener('click', function() {
+                alert('신고 / 문의 버튼 클릭됨!'); // 메시지 수정
+            });
+
+            // 변경된 inner 버튼 ID와 기능에 맞게 수정
+            document.getElementById('innerButton1').addEventListener('click', function() {
+                alert('거래 시작 로직을 여기에 구현하세요!');
+            });
+
+            document.getElementById('innerButton2').addEventListener('click', function() {
+                alert('금액 조절 로직을 여기에 구현하세요!');
+            });
+
+            document.getElementById('innerButton3').addEventListener('click', function() {
+                alert('거래 완료 로직을 여기에 구현하세요!'); // Alert 메시지 변경
+                // window.location.href = '/report'; // 완료 버튼이 report로 가는 것은 일반적으로 적절하지 않으므로 주석 처리
+                // 만약 '완료' 버튼 클릭 시 수행할 특정 서버 로직(예: 거래 상태 변경)이 있다면, 여기에 해당 API 호출 코드를 작성해야 합니다.
+            });
+
+            // 채팅 메시지 영역의 하단 패딩 설정 (입력창과 겹치지 않도록)
+            const initialInputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
+            chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
+        });
+    </script>
 </body>
 </html>
