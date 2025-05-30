@@ -10,7 +10,9 @@ import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonIgnore;//패스워드는 민감한 자료여서
 @Entity
 @Table(name = "USERS")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 public class User {
 

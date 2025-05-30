@@ -6,6 +6,7 @@ import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ChatRepository;       // 변경
 import com.project.yomozomo.repository.ChatRoomRepository;   // 변경
+import com.project.yomozomo.repository.RentalRepository;
 import com.project.yomozomo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,12 +23,13 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository usersRepository;
-
+    private final RentalRepository rentalRepository;
     @Autowired
-    public ChatService(ChatRepository chatRepository, ChatRoomRepository chatRoomRepository, UserRepository usersRepository) {
+    public ChatService(ChatRepository chatRepository, ChatRoomRepository chatRoomRepository, UserRepository usersRepository, RentalRepository rentalRepository) {
         this.chatRepository = chatRepository;
         this.chatRoomRepository = chatRoomRepository;
         this.usersRepository = usersRepository;
+        this.rentalRepository = rentalRepository;
     }
 
     // --- 채팅방 관리 ---
