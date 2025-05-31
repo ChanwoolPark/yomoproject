@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>1:1 실시간 채팅</title>
     <style>
+        /* =================================================== */
+        /* 기본 레이아웃 및 컨테이너 스타일 */
+        /* =================================================== */
         html, body {
             height: 100%; /* HTML, BODY가 전체 높이를 차지하도록 */
             margin: 0;
@@ -34,7 +37,9 @@
             z-index: 10; /* 모달보다는 아래, body 콘텐츠보다는 위에 */
         }
 
-        /* chat-header 수정: Flexbox를 사용하여 제목과 이미지를 정렬 */
+        /* =================================================== */
+        /* 채팅 헤더 스타일 */
+        /* =================================================== */
         .chat-header {
             display: flex; /* Flexbox로 변경 */
             align-items: center; /* 세로 중앙 정렬 */
@@ -64,7 +69,6 @@
             object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
             border: 2px solid white; /* 흰색 테두리 */
             flex-shrink: 0; /* 크기가 줄어들지 않도록 */
-            /* order: 1; 제거: 이제 이미지 하나이므로 순서 지정이 덜 중요 */
         }
         /* 이미지의 순서를 명시적으로 지정 */
         .profile-image-header.left {
@@ -94,8 +98,9 @@
             content: none;
         }
 
-
-
+        /* =================================================== */
+        /* 채팅 메시지 영역 스타일 */
+        /* =================================================== */
         .chat-messages {
             flex-grow: 1;
             padding: 15px;
@@ -104,7 +109,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            transition: padding-bottom 0.3s ease-out;
+            transition: padding-bottom 0.3s ease-out; /* 패딩 변화 시 애니메이션 */
             scroll-behavior: smooth;
             position: relative;
             z-index: 1;
@@ -181,19 +186,23 @@
             text-align: center;
             margin: 0;
         }
-        .rental-info-area h4 {
+        /* rental-info-area는 삭제되므로 관련 CSS도 제거 가능 */
+        /* .rental-info-area h4 {
             margin-top: 0;
             margin-bottom: 8px;
             color: #333;
             font-size: 1rem;
-            border-bottom: 1px dashed #ddd; /* 구분선 */
+            border-bottom: 1px dashed #ddd;
             padding-bottom: 5px;
         }
 
         .rental-info-area p {
-            margin: 4px 0; /* 단락 간 간격 */
-        }
+            margin: 4px 0;
+        } */
 
+        /* =================================================== */
+        /* 채팅 입력 영역 스타일 */
+        /* =================================================== */
         .chat-input-area {
             display: flex;
             flex-direction: column;
@@ -285,25 +294,31 @@
         }
 
 
-        /* 확장 패널 - 채팅창 하단 1/2만 덮도록 수정 */
+        /* =================================================== */
+        /* 확장 패널 스타일 (핵심 변경 부분) */
+        /* =================================================== */
         .expanded-panel {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 0; /* 초기 높이 0 (숨김) */
+            /* ⚠️ 핵심 변경: 초기 높이를 0으로 설정하여 기본적으로 숨겨둡니다. */
+            height: 0;
             background-color: #f8f9fa;
             border-top: 1px solid #eee;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            /* ⚠️ 핵심 변경: 높이와 패딩에 트랜지션 적용 */
             transition: height 0.3s ease-out, padding 0.3s ease-out;
             overflow: hidden; /* 내부 콘텐츠가 넘치면 숨김 */
-            display: flex;
+            display: flex; /* Flexbox 레이아웃 유지 */
             flex-direction: column; /* 자식 요소들을 세로로 정렬 */
             justify-content: flex-start;
             align-items: center;
-            padding: 0 15px; /* 초기 패딩 0 */
+            /* ⚠️ 핵심 변경: 초기 패딩을 0으로 설정 */
+            padding: 0 15px;
             box-sizing: border-box;
             z-index: 15;
+            /* JavaScript에서 active 클래스 토글 시 height, padding 변경 */
         }
 
         .expanded-panel.active {
@@ -312,14 +327,31 @@
             overflow-y: auto; /* 패널 내부 내용이 길어지면 스크롤바 생성 */
         }
 
-        .expanded-panel .panel-header {
+        /* 패널 내부의 각 컨테이너 (기본적으로는 expanded-panel에 의해 숨겨짐) */
+        /* expanded-panel이 active일 때 display: flex/grid/block이 되도록 설정 */
+        .panel-header {
+            display: flex; /* flex로 설정 */
+            justify-content: flex-end; /* 닫기 버튼을 오른쪽으로 */
             width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-            padding-top: 10px;
-            flex-shrink: 0; /* 헤더 높이 고정 */
+            padding-bottom: 10px; /* 아래 그리드와의 간격 */
+            flex-shrink: 0; /* 크기 고정 */
         }
+        .inner-buttons-grid {
+            display: grid; /* grid로 설정 */
+            grid-template-columns: 1fr 1fr; /* 두 번째 줄부터 1:1 비율 */
+            gap: 15px; /* 버튼 사이의 간격 */
+            width: 100%;
+            max-width: 400px;
+            flex-shrink: 0; /* 버튼 그리드 높이 고정 */
+            margin-bottom: 20px; /* 섹션과의 간격 */
+        }
+        .panel-content-wrapper {
+            width: 100%;
+            flex-grow: 1; /* 남은 공간을 모두 차지하도록 */
+            position: relative; /* 자식 섹션의 absolute 위치를 위한 기준 */
+            overflow: hidden; /* 내부 섹션의 전환을 위해 오버플로우 숨김 */
+        }
+
 
         .expanded-panel .panel-header button {
             background: none;
@@ -331,16 +363,6 @@
         }
         .expanded-panel .panel-header button:hover {
             color: #333;
-        }
-
-        .expanded-panel .inner-buttons-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* 두 번째 줄부터 1:1 비율 */
-            gap: 15px; /* 버튼 사이의 간격 */
-            width: 100%;
-            max-width: 400px;
-            flex-shrink: 0; /* 버튼 그리드 높이 고정 */
-            margin-bottom: 20px; /* 섹션과의 간격 */
         }
 
         /* 첫 번째 버튼이 전체 너비를 차지하도록 하는 스타일 */
@@ -378,13 +400,6 @@
         /* =================================================== */
         /* 패널 내 콘텐츠 섹션 스타일 (새로 추가/수정) */
         /* =================================================== */
-        .panel-content-wrapper {
-            width: 100%;
-            flex-grow: 1; /* 남은 공간을 모두 차지하도록 */
-            position: relative; /* 자식 섹션의 absolute 위치를 위한 기준 */
-            overflow: hidden; /* 내부 섹션의 전환을 위해 오버플로우 숨김 */
-        }
-
         .panel-content-section {
             position: absolute; /* 모든 섹션을 겹쳐 놓습니다. */
             top: 0;
@@ -404,13 +419,6 @@
         /* 현재 활성화된 패널 섹션만 보이도록 합니다. */
         .panel-content-section.active-panel-section {
             display: block; /* 또는 flex, grid 등 해당 섹션에 맞는 display 속성 */
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* 기본 패널 콘텐츠 스타일 */
-        #defaultPanelContent {
-            display: block;
             opacity: 1;
             pointer-events: auto;
         }
@@ -460,7 +468,7 @@
         }
 
 
-        /* 💰 금액 조절 모달 스타일 (기존 유지) */
+        /* 💰 금액 조절 모달 스타일 (기존 유지) - 이 부분은 확장 패널 내부가 아닌 별도의 모달이므로 독립적임 */
         .modal-overlay {
             display: none; /* 기본적으로 숨김 */
             position: fixed;
@@ -469,8 +477,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
+            justify-content: center; /* flex로 변경 후 중앙 정렬 */
             align-items: center;
             z-index: 1000; /* 다른 모든 요소 위에 표시 */
         }
@@ -558,47 +565,17 @@
         #modalCancelBtn:hover {
             background-color: #5a6268;
         }
-        /* 확장 패널 - 채팅창 하단 1/2만 덮도록 수정 */
-        .expanded-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            /* ⚠️ 핵심 변경: 초기 높이를 0으로 설정하여 기본적으로 숨겨둡니다. */
-            height: 0;
-            background-color: #f8f9fa;
-            border-top: 1px solid #eee;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            /* ⚠️ 핵심 변경: 높이와 패딩에 트랜지션 적용 */
-            transition: height 0.3s ease-out, padding 0.3s ease-out;
-            overflow: hidden; /* 내부 콘텐츠가 넘치면 숨김 */
-            display: flex; /* Flexbox 레이아웃 유지 */
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            /* ⚠️ 핵심 변경: 초기 패딩을 0으로 설정 */
-            padding: 0 15px;
-            box-sizing: border-box;
-            z-index: 15;
-        }
 
-        .expanded-panel.active {
-            /* ⚠️ 핵심 변경: .active 클래스 있을 때만 높이와 패딩을 설정하여 보이게 합니다. */
-            height: calc(70vh / 2); /* 채팅창 높이의 1/2 */
-            padding: 15px; /* 활성화 시 패딩 추가 */
-            overflow-y: auto; /* 패널 내부 내용이 길어지면 스크롤바 생성 */
-        }
     </style>
 </head>
 <body>
-
 <div class="chat-container">
     <div class="chat-header">
-        <img id="targetUserProfileImage" class="profile-image-header left" src="/images/default-profile.png" alt="상대 프로필">
+        <img id="targetUserProfileImage" class="profile-image-header left" th:src="${chatimgeurl}" alt="상대 프로필">
         <h3 id="chatHeader">
             <p>렌탈 ID: <span th:text="${currentRental?.rentalId}">[렌탈 ID]</span></p>
         </h3>
-        <img id="myUserProfileImage" class="profile-image-header right" src="/images/default-profile.png" alt="내 프로필">
+        <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserProfileImage}" alt="내 프로필">
     </div>
 
     <div class="chat-messages" id="chatMessages">
@@ -617,339 +594,346 @@
         </div>
     </div>
 
-    <div class="panel-header">
-        <button id="closePanelBtn">✖</button>
-    </div>
-    <div class="inner-buttons-grid">
-        <div class="grid-item-full">
-            <button id="innerButton1" title="거래 시작"><span class="icon">📝</span>거래 시작</button>
+    <div class="expanded-panel">
+        <div class="panel-header">
+            <button id="closePanelBtn">✖</button>
         </div>
-        <div class="grid-item-half">
-            <button id="innerButton2" title="금액 조절"><span class="icon">💰</span>금액 조절</button>
+        <div class="inner-buttons-grid">
+            <div class="grid-item-full">
+                <button id="innerButton1" title="거래 시작"><span class="icon">📝</span>거래 시작</button>
+            </div>
+            <div class="grid-item-half">
+                <button id="innerButton2" title="금액 조절"><span class="icon">💰</span>금액 조절</button>
+            </div>
+            <div class="grid-item-half">
+                <button id="innerButton3" title="거래 완료"><span class="icon">💸</span>결재창</button>
+            </div>
         </div>
-        <div class="grid-item-half">
-            <button id="innerButton3" title="거래 완료"><span class="icon">💸</span>결재창</button>
-        </div>
-    </div>
 
-    <div class="panel-content-wrapper">
-        <div id="defaultPanelContent" class="panel-content-section active-panel-section">
-            <p>확장 패널의 기본 콘텐츠입니다.</p>
-            <p>위 버튼을 눌러 다른 기능을 사용해보세요.</p>
-        </div>
-        <div id="paymentPanelContent" class="panel-content-section">
-            <h4>결재 정보 입력</h4>
-            <p>여기에 결재에 필요한 입력 필드나 정보가 들어갑니다.</p>
-            <label for="paymentAmount">결재 금액:</label>
-            <input type="number" id="paymentAmount" value="0">
-            <button id="processPaymentBtn">결재 진행</button>
-        </div>
-        <div id="priceAdjustmentPanelContent" class="panel-content-section">
-            <h4>금액 조절</h4>
-            <label for="newPriceInputPanel">새로운 금액을 입력하세요:</label>
-            <input type="number" id="newPriceInputPanel" name="newPrice" min="0" placeholder="예: 25000">
-            <div class="panel-buttons">
-                <button id="confirmPricePanelBtn">확인</button>
-                <button id="cancelPricePanelBtn">취소</button>
+        <div class="panel-content-wrapper">
+            <div id="defaultPanelContent" class="panel-content-section">
+                <p>확장 패널의 기본 콘텐츠입니다.</p>
+                <p>위 버튼을 눌러 다른 기능을 사용해보세요.</p>
+            </div>
+            <div id="paymentPanelContent" class="panel-content-section">
+                <h4>결재 정보 입력</h4>
+                <p>여기에 결재에 필요한 입력 필드나 정보가 들어갑니다.</p>
+                <label for="paymentAmount">결재 금액:</label>
+                <input type="number" id="paymentAmount" value="0">
+                <button id="processPaymentBtn">결재 진행</button>
+            </div>
+            <div id="priceAdjustmentPanelContent" class="panel-content-section">
+                <h4>금액 조절</h4>
+                <label for="newPriceInputPanel">새로운 금액을 입력하세요:</label>
+                <input type="number" id="newPriceInputPanel" name="newPrice" min="0" placeholder="예: 25000">
+                <div class="panel-buttons">
+                    <button id="confirmPricePanelBtn">확인</button>
+                    <button id="cancelPricePanelBtn">취소</button>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
-    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-    <script th:inline="javascript">
-        /*<![CDATA[*/
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script th:inline="javascript">
+    // =========================================================
+    // 1. 전역 변수 선언
+    // =========================================================
+    let stompClient = null;
+    let chatMessagesDiv = null;
+    let messageInput = null;
+    let sendMessageBtn = null;
+    let togglePanelBtn = null;
+    let closePanelBtn = null;
 
-        // =========================================================
-        // 1. 전역 변수 선언 (DOM 요소 변수들은 DOMContentLoaded 내에서 초기화)
-        // =========================================================
-        let stompClient = null;
-        let currentRentalId = null;
-        let chatMessagesDiv = null;
-        let messageInput = null;
-        let sendMessageBtn = null;
-        let togglePanelBtn = null;
-        let closePanelBtn = null;
-        let expandedPanel = null;
-        let defaultPanelContent = null;
-        let paymentPanelContent = null;
-        let processPaymentBtn = null;
-        let paymentAmountInput = null;
+    // ⭐ 변경: expandedPanel이 이제 패널 전체를 감싸는 부모 요소입니다.
+    let expandedPanel = null;
 
-        let priceAdjustmentPanelContent = null; // 금액 조절 패널 섹션 요소
-        let newPriceInputPanel = null; // 패널 내 금액 입력 필드
-        let confirmPricePanelBtn = null; // 패널 내 확인 버튼
-        let cancelPricePanelBtn = null; // 패널 내 취소 버튼
+    let defaultPanelContent = null;
+    let paymentPanelContent = null;
+    let processPaymentBtn = null;
+    let paymentAmountInput = null;
+
+    let priceAdjustmentPanelContent = null;
+    let newPriceInputPanel = null;
+    let confirmPricePanelBtn = null;
+    let cancelPricePanelBtn = null;
+
+    // 패널 내의 기능 버튼
+    let innerButton1 = null; // 거래 시작 버튼
+    let innerButton2 = null; // 금액 조절 버튼
+    let innerButton3 = null; // 결재창 버튼
+
+    // Thymeleaf에서 주입될 값 (전역 변수)
+    const chatRoomId = /*[[${chatRoomId}]]*/ 0;
+    const currentUserId = /*[[${currentUserId}]]*/ 0;
+    const currentRentalId = /*[[${currentRental?.rentalId}]]*/ 0; // chatHeader에서 가져오는 rentalId
+    const chatPartnerId = /*[[${chatPartnerId}]]*/ 0; // ChatController에서 상대방 ID를 추가했다면
 
 
-        // =========================================================
-        // 2. 헬퍼 함수 정의 (⭐ 여기가 중요! DOMContentLoaded 블록 외부에 정의되어야 합니다 ⭐)
-        // =========================================================
+    // =========================================================
+    // 2. 헬퍼 함수 정의
+    // =========================================================
 
-        // 패널 내 섹션 표시/숨김 함수
-        function showPanelSection(sectionToShow) {
-            const sections = document.querySelectorAll('.panel-content-section');
-            sections.forEach(section => {
-                section.classList.remove('active-panel-section');
-            });
-            if (sectionToShow) {
-                sectionToShow.classList.add('active-panel-section');
-            }
+    /**
+     * 특정 패널 섹션을 표시하고 다른 섹션은 숨깁니다.
+     * @param {HTMLElement | null} sectionToShow - 활성화할 패널 섹션 DOM 요소 (null이면 모든 섹션 숨김)
+     */
+    function showPanelSection(sectionToShow) {
+        const sections = document.querySelectorAll('.panel-content-section');
+        sections.forEach(section => {
+            section.classList.remove('active-panel-section');
+            // CSS의 display: none; 에 의존하므로 JS에서 직접 style.display는 조작하지 않습니다.
+        });
+        if (sectionToShow) {
+            sectionToShow.classList.add('active-panel-section');
+        }
+    }
+
+    /**
+     * 확장 패널의 전체 가시성을 토글합니다.
+     * ⭐ expandedPanel (최상위 부모)의 'active' 클래스를 제어합니다.
+     * @param {boolean} [show] - true면 표시, false면 숨김. undefined면 현재 상태 토글.
+     */
+    function toggleExpandedPanel(show) {
+        const isPanelCurrentlyActive = expandedPanel.classList.contains('active');
+        const shouldShow = show === undefined ? !isPanelCurrentlyActive : show;
+
+        if (shouldShow) {
+            expandedPanel.classList.add('active');
+            // ⭐ 패널이 열릴 때 항상 기본 콘텐츠 섹션을 보여줍니다. ⭐
+            showPanelSection(defaultPanelContent);
+        } else {
+            expandedPanel.classList.remove('active');
+            // 패널 닫을 때 모든 콘텐츠 섹션을 숨김 (초기화)
+            showPanelSection(null);
         }
 
-        // 확장 패널 열고 닫는 함수
-        function toggleExpandedPanel(show) {
-            if (show === undefined) {
-                expandedPanel.classList.toggle('active');
-            } else if (show) {
-                expandedPanel.classList.add('active');
-            } else {
-                expandedPanel.classList.remove('active');
-            }
+        // 메시지 영역 하단 패딩 및 스크롤 조절
+        const inputAreaHeight = messageInput ? messageInput.offsetHeight : 0;
+        // 패널이 보일 때만 패널 높이를 계산에 포함
+        const panelHeight = shouldShow ? expandedPanel.offsetHeight : 0; // expandedPanel 자체의 높이를 사용
+        const totalBottomPadding = inputAreaHeight + panelHeight + 15; // 15px는 여유 공간
 
-            const inputAreaHeight = document.querySelector('.chat-input-area') ? document.querySelector('.chat-input-area').offsetHeight : 0;
-            const chatContainerHeight = document.querySelector('.chat-container') ? document.querySelector('.chat-container').offsetHeight : 0;
-            const targetPanelHeight = chatContainerHeight / 2;
+        if (chatMessagesDiv) {
+            chatMessagesDiv.style.paddingBottom = `${totalBottomPadding}px`;
+            // 패널 상태 변화 시 메시지 영역 하단으로 스크롤
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+    }
 
-            if (expandedPanel && expandedPanel.classList.contains('active')) {
-                if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
-            } else {
-                if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
-            }
-            if (chatMessagesDiv) chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+    // WebSocket 연결 및 메시지 송수신 관련 함수들 (기존 코드 유지)
+    function connect() {
+        console.log("Connecting to WebSocket...");
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, onConnected, onError);
+    }
+
+    function onConnected() {
+        console.log("Connected to WebSocket.");
+        if (chatRoomId) { // chatRoomId를 사용
+            stompClient.subscribe('/topic/public/' + chatRoomId, onMessageReceived);
+            stompClient.send("/app/chat.addUser", {}, JSON.stringify({
+                sender: currentUserId, // 실제 사용자 ID
+                type: 'JOIN',
+                roomId: chatRoomId
+            }));
+        } else {
+            console.error("Error: Room ID is missing for subscription or add user message!");
+        }
+    }
+
+    function onError(error) {
+        console.error('Could not connect to WebSocket server. Please refresh this page to try again!', error);
+    }
+
+    function sendMessage() {
+        const messageContent = messageInput.value.trim();
+        if (messageContent && stompClient && chatRoomId) { // chatRoomId 확인
+            const chatMessage = {
+                roomId: chatRoomId,
+                senderId: currentUserId, // 실제 사용자 ID
+                message: messageContent,
+                messageType: 'TEXT' // 기본 메시지 타입
+            };
+            stompClient.send("/app/chat/message", {}, JSON.stringify(chatMessage));
+            messageInput.value = '';
+        } else {
+            console.warn("메시지를 보낼 수 없습니다. 내용이 없거나 WebSocket 연결 또는 Room ID가 누락되었습니다.");
+        }
+    }
+
+    function onMessageReceived(payload) {
+        const message = JSON.parse(payload.body);
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message-wrapper'); // 래퍼 클래스 추가
+
+        if (message.senderId === currentUserId) {
+            messageElement.classList.add('sent'); // 본인 메시지
+        } else {
+            messageElement.classList.add('received'); // 상대방 메시지
         }
 
-        // 금액 조절 모달 열고 닫는 함수
-
-
-        // WebSocket 연결 함수
-        function connect() {
-            console.log("Connecting to WebSocket...");
-            const socket = new SockJS('/ws');
-            stompClient = Stomp.over(socket);
-            // ⭐ onConnected 호출 시 rentalId를 함께 넘겨줍니다. ⭐
-            stompClient.connect({}, function() {
-                onConnected(currentRentalId); // connect 성공 시 rentalId 전달
-            }, onError);
+        let messageContentHtml = '';
+        if (message.messageType === 'JOIN' || message.messageType === 'LEAVE') {
+            messageElement.classList.remove('sent', 'received'); // 이벤트 메시지는 일반 메시지 스타일 제거
+            messageElement.classList.add('event-message');
+            messageContentHtml = `<div class="message-content">${message.message}</div>`; // 서버에서 생성된 메시지
+        } else {
+            messageContentHtml = `<div class="message-content">${message.message}</div>`;
         }
 
-
-        function onConnected(rentalId) {
-            console.log("Connected to WebSocket.");
-            if (rentalId) {
-                // ⭐ Room ID를 포함하여 /topic/public/{roomId} 구독 ⭐
-                stompClient.subscribe('/topic/public/' + rentalId, onMessageReceived);
-                // ⭐ Room ID를 포함하여 addUser 메시지 전송 ⭐
-                stompClient.send("/app/chat.addUser", {}, JSON.stringify({
-                    sender: '사용자ID', // 실제 사용자 ID로 변경해야 합니다.
-                    type: 'JOIN',
-                    roomId: rentalId // ⭐ 여기에 Room ID를 추가합니다! ⭐
-                }));
-            } else {
-                console.error("Error: Room ID is missing for subscription or add user message!");
-                // Room ID가 없는 경우 사용자에게 알리거나 다른 처리
-            }
-        }
-        function onError(error) {
-            console.error('Could not connect to WebSocket server. Please refresh this page to try again!', error);
-        }
-        function sendMessage() {
-            const messageContent = messageInput.value.trim();
-            if (messageContent && stompClient && currentRentalId) { // currentRentalId 확인 추가
-                const chatMessage = {
-                    sender: '사용자ID', // 실제 사용자 ID로 변경
-                    content: messageContent,
-                    type: 'CHAT',
-                    roomId: currentRentalId // ⭐ 여기에 Room ID를 추가합니다! ⭐
-                };
-                stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
-                messageInput.value = '';
-            } else {
-                console.warn("메시지를 보낼 수 없습니다. 내용이 없거나 WebSocket 연결 또는 Room ID가 누락되었습니다.");
-            }
-        }
+        const timestamp = new Date(message.sendTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // 시:분 형식
+        messageElement.innerHTML = `${messageContentHtml}<span class="message-time">${timestamp}</span>`;
+        chatMessagesDiv.appendChild(messageElement);
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    }
 
 
-        function onMessageReceived(payload) {
-            const message = JSON.parse(payload.body);
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
+    // =========================================================
+    // 3. DOMContentLoaded 이벤트 리스너 (페이지 로드 후 실행)
+    // =========================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM 요소 초기화
+        chatMessagesDiv = document.getElementById('chatMessages');
+        messageInput = document.getElementById('messageInput');
+        sendMessageBtn = document.getElementById('sendMessageBtn');
+        togglePanelBtn = document.getElementById('togglePanelBtn');
+        closePanelBtn = document.getElementById('closePanelBtn');
 
-            if (message.type === 'JOIN') {
-                messageElement.classList.add('event-message');
-                messageElement.textContent = message.sender + ' 님이 입장했습니다.';
-            } else if (message.type === 'LEAVE') {
-                messageElement.classList.add('event-message');
-                messageElement.textContent = message.sender + ' 님이 나갔습니다.';
-            } else {
-                messageElement.textContent = message.sender + ': ' + message.content;
-            }
-            if (chatMessagesDiv) {
-                chatMessagesDiv.appendChild(messageElement);
-                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-            }
+        // ⭐ 변경: expandedPanel이 이제 패널 전체를 감싸는 부모 요소입니다. ⭐
+        expandedPanel = document.querySelector('.expanded-panel');
+
+        // 패널 내부의 콘텐츠 섹션 요소들 선택
+        defaultPanelContent = document.getElementById('defaultPanelContent');
+        paymentPanelContent = document.getElementById('paymentPanelContent');
+        priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
+
+        // 패널 내 특정 버튼/입력 필드 선택
+        processPaymentBtn = document.getElementById('processPaymentBtn');
+        paymentAmountInput = document.getElementById('paymentAmount');
+        newPriceInputPanel = document.getElementById('newPriceInputPanel');
+        confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
+        cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn');
+
+        // 패널 내의 핵심 기능 버튼들 선택
+        innerButton1 = document.getElementById('innerButton1'); // 거래 시작
+        innerButton2 = document.getElementById('innerButton2'); // 금액 조절
+        innerButton3 = document.getElementById('innerButton3'); // 결재창
+
+
+        // ⭐ 핵심: 페이지 로드 시 패널을 초기화 (숨김)합니다.
+        //      CSS의 `height: 0; padding: 0;`으로 기본적으로 숨겨져 있습니다.
+        //      여기서는 명시적으로 'active' 클래스를 제거하여 초기 상태를 보장합니다.
+        if (expandedPanel) {
+            expandedPanel.classList.remove('active');
         }
 
-        function loadMyUserProfileImage() {
-            // 여기에 내 프로필 이미지 로드 로직 추가
+        // ⭐ 초기 로드 시 기본 패널 콘텐츠가 활성화되도록 설정합니다.
+        //    (전체 패널은 숨겨져 있어도, 내부 콘텐츠의 초기 상태를 올바르게 설정)
+        showPanelSection(defaultPanelContent);
+
+
+        // === 이벤트 리스너 설정 ===
+
+        // 메시지 전송 버튼 및 Enter 키
+        if (sendMessageBtn) {
+            sendMessageBtn.addEventListener('click', sendMessage);
         }
-
-        function loadTargetUserProfileImage() {
-            // 여기에 상대방 프로필 이미지 로드 로직 추가
-        }
-
-
-        // =========================================================
-        // 3. DOMContentLoaded 이벤트 리스너 (DOM 요소 초기화 및 이벤트 등록)
-        // =========================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            // DOM 요소 초기화 (여기서 document.getElementById 등을 사용합니다.)
-            chatMessagesDiv = document.getElementById('chatMessages');
-            messageInput = document.getElementById('messageInput');
-            sendMessageBtn = document.getElementById('sendMessageBtn');
-            togglePanelBtn = document.getElementById('togglePanelBtn');
-            closePanelBtn = document.getElementById('closePanelBtn');
-            expandedPanel = document.getElementById('expandedPanel');
-
-            defaultPanelContent = document.getElementById('defaultPanelContent');
-            paymentPanelContent = document.getElementById('paymentPanelContent');
-            processPaymentBtn = document.getElementById('processPaymentBtn');
-            paymentAmountInput = document.getElementById('paymentAmount');
-
-            priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
-            newPriceInputPanel = document.getElementById('newPriceInputPanel');
-            confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
-            cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn')
-
-            // 초기 연결 및 프로필 이미지 로드
-            connect();
-            loadMyUserProfileImage();
-            loadTargetUserProfileImage();
-
-            // 채팅 메시지 입력 및 전송 이벤트
-            if (sendMessageBtn) {
-                sendMessageBtn.addEventListener('click', sendMessage);
-            }
-            if (messageInput) {
-                messageInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        sendMessage();
-                    }
-                });
-            }
-
-            // 확장 패널 토글 버튼 이벤트 ('거래 메뉴' 버튼)
-            if (togglePanelBtn) {
-                togglePanelBtn.addEventListener('click', function() {
-                    toggleExpandedPanel();
-                    if (expandedPanel && expandedPanel.classList.contains('active')) {
-                        showPanelSection(defaultPanelContent); // 패널 열릴 때 기본 콘텐츠 보이도록
-                    }
-                });
-            }
-            if (closePanelBtn) {
-                closePanelBtn.addEventListener('click', function() {
-                    toggleExpandedPanel(false);
-                });
-            }
-
-            // innerButton1 ('거래 시작') 클릭 시 로직
-            const innerButton1 = document.getElementById('innerButton1');
-            if (innerButton1) {
-                innerButton1.addEventListener('click', function() {
-                    alert('거래 시작 로직을 여기에 구현하세요!');
-                    toggleExpandedPanel(false); // 일반적으로 거래 시작 후 패널 닫음
-                    showPanelSection(defaultPanelContent); // 기본 콘텐츠로 돌아옴
-                });
-            }
-
-            // ⭐ innerButton2 ('금액 조절') 클릭 시 로직 (모달 띄우기) ⭐
-            // 이전에 요청하셨던 'innerButton3'으로 금액 조절 모달을 띄우는 로직으로 변경했습니다.
-            // 따라서 innerButton2는 원래 기능(금액 조절 모달)을 수행하거나, 비워두거나, 다른 용도로 변경하세요.
-            const innerButton2 = document.getElementById('innerButton2');
-            if (innerButton2) {
-                innerButton2.addEventListener('click', function() {
-                    console.log('innerButton2 클릭됨! 금액 조절 패널 섹션 표시 시도.'); // ⭐ 이 로그가 콘솔에 뜨는지 확인 ⭐
-                    toggleExpandedPanel(true); // 확장 패널 열기
-                    showPanelSection(priceAdjustmentPanelContent); // ⭐ 여기가 중요! 올바른 요소를 넘겨주는지 확인 ⭐
-                    if (newPriceInputPanel) {
-                        newPriceInputPanel.value = ''; // 입력 필드 초기화
-                    }
-                });
-            }
-
-
-            // ⭐ innerButton3 ('결재창' -> 이제 '금액 조절' 모달 띄우기) 클릭 시 로직 ⭐
-            const innerButton3 = document.getElementById('innerButton3');
-            if (innerButton3) {
-                innerButton3.addEventListener('click', function() {
-                    console.log('innerButton3 클릭됨! 결재창 섹션 표시 시도.');
-                    toggleExpandedPanel(true); // ⭐ 확장 패널 열기 ⭐
-                    showPanelSection(paymentPanelContent); // ⭐ 결재창 패널 섹션 표시 ⭐
-                    // paymentAmountInput.value = ''; // 필요하면 결재 금액 입력 필드 초기화
-                });
-            }
-
-            // '결재 진행' 버튼 (paymentPanelContent 내) 이벤트 리스너
-            if (processPaymentBtn) {
-                processPaymentBtn.addEventListener('click', function() {
-                    const amount = paymentAmountInput ? paymentAmountInput.value : 0;
-                    if (amount <= 0 || isNaN(amount)) {
-                        alert("유효한 결재 금액을 입력해주세요.");
-                        return;
-                    }
-                    alert(`결재 금액: ${amount}원으로 결재를 진행합니다! (실제 결재 로직 필요)`);
-                    showPanelSection(defaultPanelContent); // 처리 후 기본 콘텐츠로 돌아오기
-                    toggleExpandedPanel(false); // 처리 후 패널 닫기
-                });
-            }
-
-            // 금액 조절 모달 확인/취소/닫기 버튼 이벤트
-            if (confirmPricePanelBtn) {
-                confirmPricePanelBtn.addEventListener('click', function() {
-                    const newPrice = newPriceInputPanel ? newPriceInputPanel.value : '';
-                    if (newPrice === "" || isNaN(newPrice) || Number(newPrice) < 0) {
-                        alert("유효한 금액을 입력해주세요.");
-                        return;
-                    }
-                    const confirmedPrice = Number(newPrice);
-                    console.log("새로운 금액 (패널):", confirmedPrice);
-                    alert(`금액이 ${confirmedPrice}원으로 조절되었습니다. (실제 서버 통신 필요)`);
-                    showPanelSection(defaultPanelContent); // 처리 후 기본 콘텐츠로 돌아오기
-                    toggleExpandedPanel(false); // 처리 후 패널 닫기
-                });
-            }
-            if (cancelPricePanelBtn) {
-                cancelPricePanelBtn.addEventListener('click', function() {
-                    showPanelSection(defaultPanelContent); // 취소 후 기본 콘텐츠로 돌아오기
-                    toggleExpandedPanel(false); // 취소 후 패널 닫기
-                });
-            }
-
-            // 채팅 메시지 영역의 하단 패딩 설정
-            const initialInputAreaHeight = document.querySelector('.chat-input-area') ? document.querySelector('.chat-input-area').offsetHeight : 0;
-            if (chatMessagesDiv) {
-                chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
-            }
-
-            // 윈도우 크기 변경 시 패널 높이 및 패딩 재조정
-            window.addEventListener('resize', function() {
-                const inputArea = document.querySelector('.chat-input-area');
-                const chatContainer = document.querySelector('.chat-container');
-
-                const inputAreaHeight = inputArea ? inputArea.offsetHeight : 0;
-                const chatContainerHeight = chatContainer ? chatContainer.offsetHeight : 0;
-                const targetPanelHeight = chatContainerHeight / 2;
-
-                if (expandedPanel && expandedPanel.classList.contains('active')) {
-                    expandedPanel.style.height = `${targetPanelHeight}px`;
-                    if (chatMessagesDiv) chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
-                } else if (chatMessagesDiv) {
-                    chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
+        if (messageInput) {
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
                 }
             });
+        }
 
-        }); // DOMContentLoaded 닫는 괄호
-    </script>
+        // 확장 패널 토글 버튼 (😊)
+        if (togglePanelBtn) {
+            togglePanelBtn.addEventListener('click', function() {
+                toggleExpandedPanel(); // 인자 없이 호출하여 토글
+            });
+        }
+
+        // 확장 패널 닫기 버튼 (✖)
+        if (closePanelBtn) {
+            closePanelBtn.addEventListener('click', function() {
+                toggleExpandedPanel(false); // 명시적으로 닫기
+            });
+        }
+
+        // 패널 내 기능 버튼 이벤트
+        if (innerButton1) { // 거래 시작 버튼
+            innerButton1.addEventListener('click', function() {
+                // 본인 상품에 대한 거래 시작 방지 (클라이언트 측 검증)
+                // chatPartnerId가 상대방의 ID라고 가정합니다.
+                // 만약 현재 사용자(currentUserId)가 렌탈의 판매자(currentRental.seller.id)라면
+                // ChatController에서 `sellerId`를 모델에 추가했다면 더 정확합니다.
+                // 예시: const sellerIdFromModel = /*[[${sellerId}]]*/ 0;
+                // if (currentUserId === sellerIdFromModel) {
+                //    alert('자신이 등록한 상품에는 거래를 시작할 수 없습니다. 구매자와 대화하여 거래를 시작하세요.');
+                //    toggleExpandedPanel(false);
+                //    return;
+                // }
+
+                // 거래 시작 로직 (현재 페이지의 렌탈 ID 사용)
+                if (currentRentalId) {
+                    toggleExpandedPanel(false); // 패널 닫기
+                    console.log("거래 시작 버튼 클릭! 렌탈 ID:", currentRentalId);
+                    window.location.href = '/chat/start/' + currentRentalId;
+                } else {
+                    alert('렌탈 정보를 찾을 수 없어 거래를 시작할 수 없습니다.');
+                    console.error("currentRentalId가 유효하지 않습니다:", currentRentalId);
+                }
+            });
+        }
+
+        if (innerButton2) { // 금액 조절 버튼
+            innerButton2.addEventListener('click', function() {
+                showPanelSection(priceAdjustmentPanelContent);
+            });
+        }
+
+        if (innerButton3) { // 결재창 버튼
+            innerButton3.addEventListener('click', function() {
+                showPanelSection(paymentPanelContent);
+            });
+        }
+
+        // 결재 진행 버튼 (예시)
+        if (processPaymentBtn) {
+            processPaymentBtn.addEventListener('click', function() {
+                const amount = paymentAmountInput.value;
+                alert(`결재 금액: ${amount}원 (실제 결재 로직 필요)`);
+                // 실제 결재 로직 호출
+                toggleExpandedPanel(false); // 결재 후 패널 닫기
+            });
+        }
+
+        // 금액 조절 확인/취소 버튼 (예시)
+        if (confirmPricePanelBtn) {
+            confirmPricePanelBtn.addEventListener('click', function() {
+                const newPrice = newPriceInputPanel.value;
+                alert(`새로운 금액 제안: ${newPrice}원 (메시지 전송 로직 필요)`);
+                // 메시지로 금액 제안 전송 등
+                toggleExpandedPanel(false); // 패널 닫기
+            });
+        }
+        if (cancelPricePanelBtn) {
+            cancelPricePanelBtn.addEventListener('click', function() {
+                showPanelSection(defaultPanelContent); // 취소 시 기본 패널로 돌아감
+                // toggleExpandedPanel(false); // 필요하다면 패널 닫기
+            });
+        }
+
+
+        // 초기 웹소켓 연결
+        connect();
+    });
+</script>
 </body>
 </html>
