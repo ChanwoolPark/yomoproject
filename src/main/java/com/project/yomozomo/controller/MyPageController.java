@@ -1,16 +1,14 @@
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Product;
+import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.domain.UserWallet;
 import com.project.yomozomo.domain.ViewedProduct;
 import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.dto.UserEditForm;
 import com.project.yomozomo.entity.Review;
 import com.project.yomozomo.entity.User;
-import com.project.yomozomo.repository.ProductRepository;
-import com.project.yomozomo.repository.ReviewRepository;
-import com.project.yomozomo.repository.UserRepository;
-import com.project.yomozomo.repository.UserWalletRepository;
+import com.project.yomozomo.repository.*;
 import com.project.yomozomo.service.ProductListService;
 import com.project.yomozomo.service.UserService;
 import com.project.yomozomo.service.WalletService;
@@ -28,7 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Controller
@@ -36,6 +36,7 @@ import java.util.List;
 public class MyPageController {
 
     private final UserRepository usersRepository;
+    private final RentalRepository rentalRepository;
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
     private final UserService userService;
@@ -81,20 +82,29 @@ public class MyPageController {
         String username = principal.getName();
         User user = usersRepository.findByUsername(username).orElseThrow();
 
-        // 평점 평균과 리뷰 개수
+        // [핵심] 내가 올린 모든 상품 (상태 관계없이)
+        List<Product> allMyProducts = productRepository.findBySeller_Id((long) user.getId().intValue());
+
+        // 상태별로 나누고 싶으면 아래처럼 따로도 뽑을 수 있음
+        List<Product> sellingList = productRepository.findBySeller_IdAndStatus(user.getId().intValue(), "판매중");
+        List<Product> reservedList = productRepository.findBySeller_IdAndStatus(user.getId().intValue(), "예약중");
+        List<Product> rentedList = productRepository.findBySeller_IdAndStatus(user.getId().intValue(), "대여중");
+
+
+        // 예시 코드
+        List<String> statusList = Arrays.asList("예약", "대여중");
+        List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList);
+
+// myRentalList를 마이페이지에 넘겨줌
+        model.addAttribute("myRentalList", myRentalList);
+
+
+        // 나머지는 그대로!
         double avgRating = reviewRepository.findAverageRatingByTargetId(user.getId()).orElse(0.0);
         int reviewCount = reviewRepository.countByTarget_Id(user.getId());
-
-        user.setRating(BigDecimal.valueOf(avgRating));  // ← 이 한 줄만 추가!
-
-        // 재거래 희망률, 응답률 - 임시 하드코딩 또는 나중에 계산 로직 추가
-        int reDealRate = 91; // 예시
+        user.setRating(BigDecimal.valueOf(avgRating));
+        int reDealRate = 91;
         int responseRate = 95;
-
-        // 내가 판매중인 상품 목록
-        List<Product> myProducts = productRepository.findBySeller_IdAndStatus(user.getId().intValue(), "판매중");
-
-        // 내가 받은 리뷰 목록
         List<Review> reviews = reviewRepository.findByTargetId(user.getId());
 
         model.addAttribute("user", user);
@@ -102,11 +112,21 @@ public class MyPageController {
         model.addAttribute("reviewCount", reviewCount);
         model.addAttribute("reDealRate", reDealRate);
         model.addAttribute("responseRate", responseRate);
-        model.addAttribute("products", myProducts);
+
+        // 한 번에 다 보여줄 때
+        model.addAttribute("myProductList", allMyProducts);
+
+        // 상태별로 구분해서 보여주고 싶으면 아래도 추가!
+        model.addAttribute("sellingList", sellingList);      // 판매중
+        model.addAttribute("reservedList", reservedList);    // 예약중
+        model.addAttribute("rentedList", rentedList);        // 대여중
+
         model.addAttribute("reviews", reviews);
 
         return "mypage/fragments/profile";
     }
+
+
 
     /*@GetMapping("/yomopay")
     public String yomopayFragment() {
@@ -258,6 +278,27 @@ public class MyPageController {
     }
 
 
+    @GetMapping("/profile/{username}")
+    public String showProfile(@PathVariable String username, Model model) {
+        System.out.println("🔥🔥🔥 프로필 진입: " + username);
+        User user = usersRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return "error/404";
+        }
+        List<String> statusList = Arrays.asList("대여중", "예약");
+
+        List<Product> myProductList = productRepository.findBySeller_Id(user.getId());
+        List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList); // statusList는 예약/대여중 등등
+        List<Review> reviews = reviewRepository.findByReviewer(user);
+
+        // model에 담아서 thymeleaf로 보냄
+        model.addAttribute("user", user);
+        model.addAttribute("myProductList", myProductList);
+        model.addAttribute("myRentalList", myRentalList);
+        model.addAttribute("reviews", reviews);
+
+        return "mypage/full-profile"; // 마이페이지 상세 html 위치!
+    }
 
 
 

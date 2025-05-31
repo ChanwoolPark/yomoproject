@@ -103,4 +103,16 @@ public class ProductDetailService {
         }
     }
 
+    // 상품 찜 개수
+    @Transactional(readOnly = true)
+    public int getWishlistCount(int productId) {
+        return wishlistRepo.countByProduct_ProductId(productId);
+    }
+
+    // 사용자의 다른 글 목록
+    @Transactional(readOnly = true)
+    public List<Product> getOtherProductsBySeller(Long sellerId, int excludeProductId) {
+        return productRepo.findBySeller_IdAndIsDeletedAndProductIdNot(sellerId, "N", excludeProductId);
+    }
+
 }

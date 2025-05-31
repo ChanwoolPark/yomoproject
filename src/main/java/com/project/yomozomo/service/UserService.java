@@ -56,7 +56,7 @@ public class UserService {
     public boolean existsByNickname(String nickname) {
         return userRepo.existsByNickname(nickname);
     }
-
+    @Transactional
     public User registerNewUser(SignupForm form) {
         User u = new User();
         u.setUsername(form.getUsername());
@@ -74,9 +74,6 @@ public class UserService {
         u.setZipNo(form.getZipNo());                 // 우편번호
         u.setAddress(form.getAddress());             // 도로명 주소
         u.setAddressDetail(form.getAddressDetail()); // 상세 주소
-
-        u.setReferral(form.getReferral());
-        u.setProfileImageUrl(form.getProfileImageUrl());
 
         userRepo.save(u);
 

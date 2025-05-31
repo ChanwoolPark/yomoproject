@@ -1,11 +1,10 @@
-package com.project.yomozomo.Config;
+package com.project.yomozomo.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Configuration // Spring 설정 클래스임을 명시
 @EnableWebSocketMessageBroker // STOMP 기반 WebSocket 메시징 활성화
