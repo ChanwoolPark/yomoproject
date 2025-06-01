@@ -186,8 +186,9 @@
             text-align: center;
             margin: 0;
         }
-        /* rental-info-area는 삭제되므로 관련 CSS도 제거 가능 */
-        /* .rental-info-area h4 {
+        /* 렌탈 정보 영역 스타일 (이제 사용되지 않음) */
+        /*
+        .rental-info-area h4 {
             margin-top: 0;
             margin-bottom: 8px;
             color: #333;
@@ -198,7 +199,8 @@
 
         .rental-info-area p {
             margin: 4px 0;
-        } */
+        }
+        */
 
         /* =================================================== */
         /* 채팅 입력 영역 스타일 */
@@ -302,20 +304,17 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            /* ⚠️ 핵심 변경: 초기 높이를 0으로 설정하여 기본적으로 숨겨둡니다. */
-            height: 0;
+            height: 0; /* 초기 높이를 0으로 설정하여 기본적으로 숨겨둡니다. */
             background-color: #f8f9fa;
             border-top: 1px solid #eee;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            /* ⚠️ 핵심 변경: 높이와 패딩에 트랜지션 적용 */
             transition: height 0.3s ease-out, padding 0.3s ease-out;
             overflow: hidden; /* 내부 콘텐츠가 넘치면 숨김 */
             display: flex; /* Flexbox 레이아웃 유지 */
             flex-direction: column; /* 자식 요소들을 세로로 정렬 */
             justify-content: flex-start;
             align-items: center;
-            /* ⚠️ 핵심 변경: 초기 패딩을 0으로 설정 */
-            padding: 0 15px;
+            padding: 0 15px; /* 초기 패딩을 0으로 설정 */
             box-sizing: border-box;
             z-index: 15;
             /* JavaScript에서 active 클래스 토글 시 height, padding 변경 */
@@ -571,11 +570,10 @@
 <body>
 <div class="chat-container">
     <div class="chat-header">
-        <img id="targetUserProfileImage" class="profile-image-header left" th:src="${chatimgeurl}" alt="상대 프로필">
         <h3 id="chatHeader">
             <p>렌탈 ID: <span th:text="${currentRental?.rentalId}">[렌탈 ID]</span></p>
         </h3>
-        <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserProfileImage}" alt="내 프로필">
+        <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserprofile_image}" alt="내 프로필">
     </div>
 
     <div class="chat-messages" id="chatMessages">
@@ -681,118 +679,96 @@
      * 특정 패널 섹션을 표시하고 다른 섹션은 숨깁니다.
      * @param {HTMLElement | null} sectionToShow - 활성화할 패널 섹션 DOM 요소 (null이면 모든 섹션 숨김)
      */
-    function showPanelSection(sectionToShow) {
+    function showPanelSection(sectionToShow, hideButtons = false) {
         const sections = document.querySelectorAll('.panel-content-section');
         sections.forEach(section => {
             section.classList.remove('active-panel-section');
-            // CSS의 display: none; 에 의존하므로 JS에서 직접 style.display는 조작하지 않습니다.
         });
+
         if (sectionToShow) {
             sectionToShow.classList.add('active-panel-section');
         }
+
+        // 버튼 그리드 표시 여부 제어
+        if (innerButtonsGrid) {
+            if (hideButtons) {
+                innerButtonsGrid.style.display = 'none'; // 버튼 그리드 숨기기
+            } else {
+                innerButtonsGrid.style.display = 'grid'; // 기본적으로는 보이도록 (CSS에 'grid'로 설정되어 있으니)
+            }
+        }
     }
 
-    /**
-     * 확장 패널의 전체 가시성을 토글합니다.
-     * ⭐ expandedPanel (최상위 부모)의 'active' 클래스를 제어합니다.
-     * @param {boolean} [show] - true면 표시, false면 숨김. undefined면 현재 상태 토글.
-     */
+    // toggleExpandedPanel 함수는 그대로 두되, 패널 열릴 때 기본 콘텐츠를 보여주므로,
+    // 이때는 버튼 그리드가 보이도록 해야 합니다.
     function toggleExpandedPanel(show) {
         const isPanelCurrentlyActive = expandedPanel.classList.contains('active');
         const shouldShow = show === undefined ? !isPanelCurrentlyActive : show;
 
         if (shouldShow) {
             expandedPanel.classList.add('active');
-            // ⭐ 패널이 열릴 때 항상 기본 콘텐츠 섹션을 보여줍니다. ⭐
-            showPanelSection(defaultPanelContent);
+            // ⭐ 패널이 열릴 때 항상 기본 콘텐츠 섹션을 보여주고 버튼 그리드를 보이도록 합니다. ⭐
+            showPanelSection(defaultPanelContent, false); // hideButtons=false로 전달
         } else {
             expandedPanel.classList.remove('active');
-            // 패널 닫을 때 모든 콘텐츠 섹션을 숨김 (초기화)
-            showPanelSection(null);
+            showPanelSection(null); // 패널 닫을 때 모든 콘텐츠 섹션을 숨김 (초기화)
+            if (innerButtonsGrid) {
+                innerButtonsGrid.style.display = 'grid'; // 패널 닫을 때 혹시 숨겨져 있었다면 다시 보이도록
+            }
         }
 
-        // 메시지 영역 하단 패딩 및 스크롤 조절
+        // 메시지 영역 하단 패딩 및 스크롤 조절 (기존 로직 유지)
         const inputAreaHeight = messageInput ? messageInput.offsetHeight : 0;
-        // 패널이 보일 때만 패널 높이를 계산에 포함
-        const panelHeight = shouldShow ? expandedPanel.offsetHeight : 0; // expandedPanel 자체의 높이를 사용
-        const totalBottomPadding = inputAreaHeight + panelHeight + 15; // 15px는 여유 공간
+        const panelHeight = shouldShow ? expandedPanel.offsetHeight : 0;
+        const totalBottomPadding = inputAreaHeight + panelHeight + 15;
 
         if (chatMessagesDiv) {
             chatMessagesDiv.style.paddingBottom = `${totalBottomPadding}px`;
-            // 패널 상태 변화 시 메시지 영역 하단으로 스크롤
             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
     }
 
 
-    // WebSocket 연결 및 메시지 송수신 관련 함수들 (기존 코드 유지)
-    function connect() {
-        console.log("Connecting to WebSocket...");
-        const socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, onConnected, onError);
+
+    // 패널 내 기능 버튼 이벤트 수정 (이제 특정 섹션을 활성화할 때 버튼 그리드를 숨김)
+    if (innerButton2) { // 금액 조절 버튼
+        innerButton2.addEventListener('click', function() {
+            showPanelSection(priceAdjustmentPanelContent, true); // true를 전달하여 버튼 그리드 숨김
+        });
     }
 
-    function onConnected() {
-        console.log("Connected to WebSocket.");
-        if (chatRoomId) { // chatRoomId를 사용
-            stompClient.subscribe('/topic/public/' + chatRoomId, onMessageReceived);
-            stompClient.send("/app/chat.addUser", {}, JSON.stringify({
-                sender: currentUserId, // 실제 사용자 ID
-                type: 'JOIN',
-                roomId: chatRoomId
-            }));
-        } else {
-            console.error("Error: Room ID is missing for subscription or add user message!");
-        }
+    if (innerButton3) { // 결재창 버튼
+        innerButton3.addEventListener('click', function() {
+            showPanelSection(paymentPanelContent, true); // true를 전달하여 버튼 그리드 숨김
+        });
     }
 
-    function onError(error) {
-        console.error('Could not connect to WebSocket server. Please refresh this page to try again!', error);
+    // 💡 중요: 결재창/금액조절 창에서 "취소" 또는 "완료" 후에는 다시 기본 버튼 그리드가 보여야 합니다.
+    // 현재 코드에서는 패널을 닫고 있으므로 다시 열면 기본 상태가 됩니다.
+    // 만약 패널을 닫지 않고 버튼 그리드를 다시 보이게 하려면 `showPanelSection(defaultPanelContent, false)`를 호출해야 합니다.
+
+    if (processPaymentBtn) {
+        processPaymentBtn.addEventListener('click', function() {
+            const amount = paymentAmountInput.value;
+            alert(`결재 금액: ${amount}원 (실제 결재 로직 필요)`);
+            toggleExpandedPanel(false); // 패널 닫기 -> 이 경우 패널 다시 열면 버튼 그리드 보임
+        });
     }
 
-    function sendMessage() {
-        const messageContent = messageInput.value.trim();
-        if (messageContent && stompClient && chatRoomId) { // chatRoomId 확인
-            const chatMessage = {
-                roomId: chatRoomId,
-                senderId: currentUserId, // 실제 사용자 ID
-                message: messageContent,
-                messageType: 'TEXT' // 기본 메시지 타입
-            };
-            stompClient.send("/app/chat/message", {}, JSON.stringify(chatMessage));
-            messageInput.value = '';
-        } else {
-            console.warn("메시지를 보낼 수 없습니다. 내용이 없거나 WebSocket 연결 또는 Room ID가 누락되었습니다.");
-        }
+    if (confirmPricePanelBtn) {
+        confirmPricePanelBtn.addEventListener('click', function() {
+            const newPrice = newPriceInputPanel.value;
+            alert(`새로운 금액 제안: ${newPrice}원 (메시지 전송 로직 필요)`);
+            toggleExpandedPanel(false); // 패널 닫기
+        });
     }
 
-    function onMessageReceived(payload) {
-        const message = JSON.parse(payload.body);
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message-wrapper'); // 래퍼 클래스 추가
-
-        if (message.senderId === currentUserId) {
-            messageElement.classList.add('sent'); // 본인 메시지
-        } else {
-            messageElement.classList.add('received'); // 상대방 메시지
-        }
-
-        let messageContentHtml = '';
-        if (message.messageType === 'JOIN' || message.messageType === 'LEAVE') {
-            messageElement.classList.remove('sent', 'received'); // 이벤트 메시지는 일반 메시지 스타일 제거
-            messageElement.classList.add('event-message');
-            messageContentHtml = `<div class="message-content">${message.message}</div>`; // 서버에서 생성된 메시지
-        } else {
-            messageContentHtml = `<div class="message-content">${message.message}</div>`;
-        }
-
-        const timestamp = new Date(message.sendTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // 시:분 형식
-        messageElement.innerHTML = `${messageContentHtml}<span class="message-time">${timestamp}</span>`;
-        chatMessagesDiv.appendChild(messageElement);
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    if (cancelPricePanelBtn) {
+        cancelPricePanelBtn.addEventListener('click', function() {
+            showPanelSection(defaultPanelContent, false); // 금액 조절 취소 시 다시 기본 패널과 버튼 그리드 보이기
+        });
     }
-
+    });
 
     // =========================================================
     // 3. DOMContentLoaded 이벤트 리스너 (페이지 로드 후 실행)
