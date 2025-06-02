@@ -675,7 +675,34 @@
     const currentRentalId = /*[[${currentRental?.rentalId}]]*/ 0; // chatHeader에서 가져오는 rentalId
     const chatPartnerId = /*[[${chatPartnerId}]]*/ 0; // ChatController에서 상대방 ID를 추가했다면
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // ...
+        chatMessagesDiv = document.getElementById('chatMessages');
+        messageInput = document.getElementById('messageInput');
+        sendMessageBtn = document.getElementById('sendMessageBtn');
+        togglePanelBtn = document.getElementById('togglePanelBtn');
+        closePanelBtn = document.getElementById('closePanelBtn');
+        expandedPanel = document.querySelector('.expanded-panel'); // querySelector로 가져옴
+        defaultPanelContent = document.getElementById('defaultPanelContent');
+        paymentPanelContent = document.getElementById('paymentPanelContent');
+        priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
+        processPaymentBtn = document.getElementById('processPaymentBtn');
+        paymentAmountInput = document.getElementById('paymentAmount');
+        newPriceInputPanel = document.getElementById('newPriceInputPanel');
+        confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
+        cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn');
+        innerButton1 = document.getElementById('innerButton1');
+        innerButton2 = document.getElementById('innerButton2');
+        innerButton3 = document.getElementById('innerButton3');
+        innerButtonsGrid = document.querySelector('.inner-buttons-grid'); // querySelector로 가져옴
 
+        // ⭐ 중요: 이전에 const로 되어 있었던 부분들을
+        // ⭐ 전역 변수에 할당하는 것이므로 'const' 키워드를 제거해야 합니다!
+        attachmentButton = document.getElementById('button2');
+        reportButton = document.getElementById('button3');
+        fileInput = document.getElementById('fileInput');
+        // ...
+    });
     // =========================================================
     // 2. 헬퍼 함수 정의
     // =========================================================
@@ -737,19 +764,31 @@
     }
 
     // ⭐ TODO: sendMessage 및 connect 함수는 코드에 없으므로, 필요하다면 추가해야 합니다.
-    function sendMessage() {
-        // 메시지 전송 로직 구현 (STOMP를 사용하여 서버로 메시지 전송)
-        const messageContent = messageInput.value.trim();
+    function sendMessage(customMessageContent = null) { // ⭐ 인자를 받도록 수정 ⭐
+        let messageContent;
+
+        if (customMessageContent) {
+            // 파일 첨부 등 특정 메시지를 보낼 때 (인자가 넘어온 경우)
+            messageContent = customMessageContent.trim();
+        } else {
+            // 일반 채팅 메시지를 보낼 때 (인자가 넘어오지 않은 경우, messageInput 사용)
+            messageContent = messageInput.value.trim();
+        }
+
         if (messageContent) {
             const chatMessage = {
                 roomId: chatRoomId,
                 senderId: currentUserId,
                 message: messageContent,
-                messageType: 'TALK' // 또는 'CHAT'
+                // 파일 첨부 메시지인 경우, messageType을 'FILE' 등으로 다르게 설정할 수도 있습니다.
+                // 서버에서 이 타입을 처리하도록 로직을 추가해야 합니다.
+                messageType: 'TALK' // 일단 'TALK'로 유지하거나, 'FILE' 등으로 변경 고려
             };
             if (stompClient && stompClient.connected) {
                 stompClient.send(`/pub/chat.sendMessage/${chatRoomId}`, {}, JSON.stringify(chatMessage));
-                messageInput.value = ''; // 입력 필드 초기화
+                if (!customMessageContent) { // 일반 메시지 전송 후에만 입력 필드 초기화
+                    messageInput.value = '';
+                }
             } else {
                 console.error('STOMP 클라이언트가 연결되지 않았습니다.');
                 alert('채팅 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
@@ -874,7 +913,7 @@
             sendMessageBtn.addEventListener('click', sendMessage);
         }
         if (messageInput) {
-            messageInput.addEventListener('keypress', function(e) {
+            messageInput.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     sendMessage();
                 }
@@ -883,36 +922,32 @@
 
         // 확장 패널 토글 버튼 (😊)
         if (togglePanelBtn) {
-            togglePanelBtn.addEventListener('click', function() {
+            togglePanelBtn.addEventListener('click', function () {
                 toggleExpandedPanel(); // 인자 없이 호출하여 토글
             });
         }
 
         // 확장 패널 닫기 버튼 (✖)
         if (closePanelBtn) {
-            closePanelBtn.addEventListener('click', function() {
+            closePanelBtn.addEventListener('click', function () {
                 toggleExpandedPanel(false); // 명시적으로 닫기
             });
         }
+        // 📎 버튼 (파일 첨부) - button2
+        // ⭐⭐ 이 'if (attachmentButton) { ... }' 블록만 남기고, 바로 위에 있는 똑같은 블록은 삭제하세요. ⭐⭐
         if (attachmentButton) {
-            attachmentButton.addEventListener('click', function() {
+            attachmentButton.addEventListener('click', function () {
                 if (fileInput) {
                     fileInput.click(); // 숨겨진 파일 입력 필드 클릭
-                }
-            });
-        }
-        // 파일 선택 시 이벤트 처리
-        if (attachmentButton) {
-            attachmentButton.addEventListener('click', function() {
-                if (fileInput) {
-                    fileInput.click(); // 숨겨진 파일 입력 필드 클릭
+                } else {
+                    console.error("오류: fileInput 요소가 초기화되지 않았거나 HTML에 없습니다.");
                 }
             });
         }
 
-        // 파일 선택 시 이벤트 처리
+        // 파일 선택 시 이벤트 처리 (fileInput에 change 이벤트 리스너를 붙이는 부분)
         if (fileInput) {
-            fileInput.addEventListener('change', function() {
+            fileInput.addEventListener('change', function () {
                 if (this.files && this.files[0]) {
                     const selectedFile = this.files[0];
 
@@ -928,6 +963,7 @@
             });
         }
 
+
         // 📅 버튼 (리포트 전송) - button3
         if (reportButton) {
             reportButton.addEventListener('click', function() {
@@ -936,6 +972,7 @@
                 alert(`리포트 전송 (URL: ${reportUrl})`);
             });
         }
+
 
 
         // 패널 내 기능 버튼 이벤트
