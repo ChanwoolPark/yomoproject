@@ -2,11 +2,10 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.User;
-import com.project.yomozomo.domain.Rental; // 혹은 com.project.yomozomo.entity.Rental
+import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.RentalService;
 import com.project.yomozomo.service.UserService;
-import lombok.RequiredArgsConstructor; // 만약 @RequiredArgsConstructor 사용한다면
 import org.springframework.beans.factory.annotation.Autowired; // 만약 @Autowired 생성자 주입 사용한다면
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

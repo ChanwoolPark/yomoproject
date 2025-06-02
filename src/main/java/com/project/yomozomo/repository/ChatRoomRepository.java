@@ -13,7 +13,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> { // r
     Optional<ChatRoom> findByRentalAndSellerAndBuyer(Rental rental, User seller, User buyer);
 
     // 필요하다면 특정 판매자, 구매자 간의 채팅방을 찾는 쿼리 (Rental 없이)
-    Optional<ChatRoom> findBySellerAndBuyer(User seller, User buyer);
+    Optional<ChatRoom> findByBuyerAndSellerAndRental(User buyer, User seller, Rental rental);
 
     // roomId로 채팅방을 찾는 것은 JpaRepository의 findById가 처리
 }

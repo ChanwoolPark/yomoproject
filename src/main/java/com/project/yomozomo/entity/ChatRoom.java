@@ -1,16 +1,24 @@
 // src/main/java/com/chat/entity/ChatRoom.java
 package com.project.yomozomo.entity;
 
+import lombok.Builder;
 import com.project.yomozomo.domain.Rental;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor; // 필요하다면 추가
+import lombok.AllArgsConstructor; // 필요하다면 추가
+import jakarta.persistence.*; // JPA 관련 import
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "CHAT_ROOM") // 실제 테이블명과 일치
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ChatRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_chat_room") // 시퀀스 사용 예시
