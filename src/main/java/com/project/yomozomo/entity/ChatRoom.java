@@ -34,7 +34,7 @@ public class ChatRoom {
 
     @ManyToOne
     @JoinColumn(name = "rental_id", nullable = false)
-    private Rental rental;
+    private Rental rental; // 렌탈 필드는 존재합니다.
 
     @ManyToOne
     @JoinColumn(name = "seller_id", nullable = false)
@@ -47,6 +47,7 @@ public class ChatRoom {
     // 양방향 매핑 (선택 사항) - ChatRoom에 속한 Chat 메시지들을 가져올 때 유용
     // @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     // private List<Chat> chats = new ArrayList<>();
+
 
     @PrePersist // 엔티티 저장 전에 실행
     public void prePersist() {
