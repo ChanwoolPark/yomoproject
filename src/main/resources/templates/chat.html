@@ -571,7 +571,7 @@
 <div class="chat-container">
     <div class="chat-header">
         <h3 id="chatHeader">
-            <p>렌탈 ID: <span th:text="${currentRental?.rentalId}">[렌탈 ID]</span></p>
+            <p>채팅방 <span th:text="${currentRentalId}">[렌탈 ID]</span></p>
         </h3>
         <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserprofile_image}" alt="내 프로필">
     </div>
@@ -963,13 +963,23 @@
             });
         }
 
-
-        // 📅 버튼 (리포트 전송) - button3
+// 📅 버튼 (리포트 전송) - button3
         if (reportButton) {
             reportButton.addEventListener('click', function() {
-                const reportUrl = "http://localhost:8080/reports/report.htm"; // 실제 URL로 변경하세요.
-                sendMessage(`[리포트] ${reportUrl}`);
-                alert(`리포트 전송 (URL: ${reportUrl})`);
+                // 리포트 페이지로 이동할 수 있는 백엔드 URL
+                const reportPageUrl = "/report"; // 백엔드 컨트롤러에 정의할 리포트 페이지 URL
+
+                // 1. 채팅 메시지로 알림 전송 (옵션)
+                sendMessage(`[시스템 메시지] 리포트 작성을 위해 <a href="${reportPageUrl}" target="_blank">여기</a>를 클릭하세요.`);
+                // target="_blank"를 추가하여 새 탭에서 열리도록 할 수 있습니다.
+
+
+
+                // 3. 직접 리포트 페이지로 이동 (같은 탭에서)
+                // window.location.href = reportPageUrl;
+
+                // 또는 새 탭에서 열기
+                window.open(reportPageUrl, '_blank');
             });
         }
 
