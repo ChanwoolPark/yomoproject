@@ -1,8 +1,10 @@
 package com.project.yomozomo.service;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.dto.SignupForm;
+import com.project.yomozomo.repository.ReviewRepository;
 import com.project.yomozomo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 
@@ -22,6 +25,7 @@ public class UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
+    private final ReviewRepository reviewRepository;
 
     public boolean existsByUsername(String username) {
         return userRepo.existsByUsername(username);
@@ -102,6 +106,18 @@ public class UserService {
         return userRepo.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
     }
+
+    // 평점, 리뷰 수 집계해서 유저에 저장
+    public void updateUserRatingAndCount(Long targetUserId) {
+        Double avg = reviewRepository.findAverageRatingByTargetId(targetUserId).orElse(0.0);
+        int cnt = reviewRepository.countByTarget_Id(targetUserId);
+
+        User user = userRepo.findById(targetUserId).orElseThrow();
+        user.setRating(BigDecimal.valueOf(avg));// 평점 저장 (user_rating 컬럼)
+        user.setReviewCount(cnt);   // 리뷰 개수 저장 (review_count 컬럼)
+        userRepo.save(user);
+    }
+
 
 
 }

@@ -1,10 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>대여/예약중 목록</title>
+    <style>
+        .list-title {
+            font-size: 19px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            margin-top: 10px;
+            color: #3849c7;
+        }
+        .card-box {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            background: #fafbfc;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+        .card-link {
+            color: #4a90e2;
+            text-decoration: underline;
+            font-weight: 500;
+            font-size: 1.07rem;
+            margin-bottom: 2px;
+            cursor: pointer;
+        }
+        .status {
+            color: #888;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+        .empty-msg {
+            color: #bbb;
+            font-size: 1.09rem;
+            padding: 24px 0;
+            text-align: center;
+            border-radius: 8px;
+            background: #f6f7fa;
+            border: 1.5px dashed #e5e5e5;
+        }
+    </style>
 </head>
 <body>
-<h1>대여 목록 창입니다.</h1>
+<div class="profile-rentals">
+    <h3 class="list-title">대여/예약중인 목록</h3>
+    <div th:if="${#lists.isEmpty(myRentalList)}" class="card-box">대여/예약중인 상품이 없습니다.</div>
+    <div th:each="rental : ${myRentalList}" class="card-box">
+        <a th:href="@{'/product/' + ${rental.product.productId}}" class="card-link" th:text="${rental.product.title}"></a>
+        <span style="margin-left: 10px; color: #888;" th:text="'상태: ' + ${rental.status}"></span>
+        <div style="margin-top: 4px; font-size: 13px; color: #444;">
+            <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy-MM-dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy-MM-dd')}"></span>
+        </div>
+    </div>
+</div>
 </body>
 </html>
