@@ -133,9 +133,24 @@
         fetch(`/mypage/${menuName}`)
             .then(response => response.text())
             .then(html => {
-                document.getElementById('content').innerHTML = html;
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = html;
+
+                // ★★★ 새로 삽입된 script 태그 직접 실행!
+                contentDiv.querySelectorAll("script").forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    if (oldScript.src) {
+                        newScript.src = oldScript.src;
+                    } else {
+                        newScript.textContent = oldScript.textContent;
+                    }
+                    // script 태그는 body에 붙여야 즉시 실행됨!
+                    document.body.appendChild(newScript);
+                    document.body.removeChild(newScript); // 메모리 누수 방지
+                });
             });
     }
+
 
 
     // ✅ 뒤로가기 동작
