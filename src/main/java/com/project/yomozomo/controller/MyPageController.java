@@ -95,7 +95,7 @@ public class MyPageController {
         List<String> statusList = Arrays.asList("예약", "대여중");
         List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList);
 
-// myRentalList를 마이페이지에 넘겨줌
+        // myRentalList를 마이페이지에 넘겨줌
         model.addAttribute("myRentalList", myRentalList);
 
 
@@ -135,14 +135,27 @@ public class MyPageController {
 
     // ────── 대여 관리 ──────
     @GetMapping("/rent-list")
-    public String rentListFragment() {
+    public String rentListFragment(Model model, Principal principal) {
+        String username = principal.getName();
+        User user = usersRepository.findByUsername(username).orElseThrow();
+        // 대여/예약중 목록만 추출
+        List<String> statusList = Arrays.asList("예약", "대여중");
+        List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList);
+        model.addAttribute("myRentalList", myRentalList); // 이 이름이 중요!
         return "mypage/fragments/rent-list";
     }
 
     @GetMapping("/sale-list")
-    public String saleListFragment() {
+    public String saleListFragment(Model model, Principal principal) {
+        String username = principal.getName();
+        User user = usersRepository.findByUsername(username).orElseThrow();
+        // 판매중/대여중/예약중 상품만!
+        List<String> statusList = Arrays.asList("판매중", "대여중", "예약중");
+        List<Product> sellingList = productRepository.findBySeller_IdAndStatusIn(user.getId(), statusList);
+        model.addAttribute("sellingList", sellingList);
         return "mypage/fragments/sale-list";
     }
+
 
     @GetMapping("/cancel-list")
     public String cancelListFragment() {
@@ -186,9 +199,18 @@ public class MyPageController {
     }
 
     @GetMapping("/reviews")
-    public String reviewsFragment() {
-        return "mypage/fragments/reviews";
+    public String myReviewsFragment(Model model, Principal principal) {
+        String username = principal.getName();
+        User user = usersRepository.findByUsername(username).orElseThrow();
+
+        // 내가 쓴 리뷰만 가져오기!
+        List<Review> myWrittenReviews = reviewRepository.findByReviewer(user);
+
+        model.addAttribute("myWrittenReviews", myWrittenReviews);
+
+        return "mypage/fragments/reviews"; // ← reviews.html 파일이 여기에 있어야 함!
     }
+
 
     @GetMapping("/inquiries")
     public String inquiriesFragment() {
@@ -199,82 +221,6 @@ public class MyPageController {
     public String redirectToLayoutWithMenu(@PathVariable String menuName) {
         // 직접 /mypage/profile 등으로 진입하면 → /mypage?menu=profile 로 리디렉트
         return "redirect:/mypage?menu=" + menuName;
-    }
-
-    // 📌 개인정보 확인/수정 페이지 이동
-    @GetMapping("/edit-info")
-    public String editInfoPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        String username = userDetails.getUsername();
-        User user = usersRepository.findByUsername(username).orElseThrow();
-        model.addAttribute("user", user);
-        return "mypage/fragments/edit-info";
-    }
-
-    // 📌 닉네임 중복 확인
-    @GetMapping("/check-nickname")
-    @ResponseBody
-    public boolean checkNickname(@RequestParam String nickname) {
-        return usersRepository.existsByNickname(nickname);
-    }
-
-    // 📌 이메일 중복 확인
-    @GetMapping("/check-email")
-    @ResponseBody
-    public boolean checkEmail(@RequestParam String email) {
-        return usersRepository.existsByEmail(email);
-    }
-
-    // 📌 휴대폰 중복 확인
-    @GetMapping("/check-phone")
-    @ResponseBody
-    public boolean checkPhone(@RequestParam String phone) {
-        return usersRepository.existsByPhone(phone);
-    }
-
-    @PostMapping("/edit-info")
-    @Transactional
-    public String updateUserInfo(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @ModelAttribute UserEditForm form,
-            @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile) {
-
-        User user = usersRepository.findByUsername(userDetails.getUsername()).orElseThrow();
-
-        if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            try {
-                // 1. 실제 저장 경로는 C:/YomoProject/uploads/
-                String uploadsDir = "C:/YomoProject/uploads/";
-                File dir = new File(uploadsDir);
-                if (!dir.exists()) dir.mkdirs();
-
-                // 2. 파일명(중복방지)
-                String originalFilename = profileImageFile.getOriginalFilename();
-                String safeFileName = System.currentTimeMillis() + "_" + originalFilename;
-                File dest = new File(dir, safeFileName);
-
-                // 3. 파일 저장
-                profileImageFile.transferTo(dest);
-
-                System.out.println("실제 저장 경로: " + dest.getAbsolutePath());
-
-                // 4. DB에는 /uploads/파일명 으로 저장 (★슬래시 주의)
-                user.setProfileImageUrl("/uploads/" + safeFileName);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                // 필요하면 에러 메시지 보여주기!
-            }
-        }
-
-        // 나머지 정보 저장
-        user.setNickname(form.getNickname());
-        user.setEmail(form.getEmail());
-        user.setPhone(form.getPhone());
-        user.setAddress(form.getAddress());
-        user.setAddressDetail(form.getAddressDetail());
-        user.setZipNo(form.getZipNo());
-
-        return "redirect:/mypage?menu=profile";
     }
 
 
@@ -289,7 +235,11 @@ public class MyPageController {
 
         List<Product> myProductList = productRepository.findBySeller_Id(user.getId());
         List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList); // statusList는 예약/대여중 등등
-        List<Review> reviews = reviewRepository.findByReviewer(user);
+        List<Review> reviews = reviewRepository.findByTargetId(user.getId());
+
+        double avgRating = reviewRepository.findAverageRatingByTargetId(user.getId()).orElse(0.0);
+        user.setRating(BigDecimal.valueOf(avgRating));
+
 
         // model에 담아서 thymeleaf로 보냄
         model.addAttribute("user", user);
