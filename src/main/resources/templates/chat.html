@@ -767,32 +767,44 @@
     function sendMessage(customMessageContent = null) { // ⭐ 인자를 받도록 수정 ⭐
         let messageContent;
 
-        if (customMessageContent) {
-            // 파일 첨부 등 특정 메시지를 보낼 때 (인자가 넘어온 경우)
+        // customMessageContent가 유효한 문자열인지 먼저 확인
+        if (typeof customMessageContent === 'string' && customMessageContent.trim().length > 0) {
+            // 파일 첨부 등 특정 메시지를 보낼 때 (인자로 유효한 문자열이 넘어온 경우)
             messageContent = customMessageContent.trim();
         } else {
-            // 일반 채팅 메시지를 보낼 때 (인자가 넘어오지 않은 경우, messageInput 사용)
-            messageContent = messageInput.value.trim();
+            // 일반 채팅 메시지를 보낼 때 (인자로 유효한 문자열이 넘어오지 않은 경우, messageInput 사용)
+            // messageInput이 DOM에 존재하는지, value 속성이 있는지 확인하는 것이 좋습니다.
+            if (messageInput && typeof messageInput.value === 'string') {
+                messageContent = messageInput.value.trim();
+            } else {
+                // messageInput이 없거나 value가 문자열이 아닌 경우
+                console.error("메시지 입력 필드를 찾을 수 없거나 값이 유효하지 않습니다.");
+                return; // 메시지 전송 중단
+            }
         }
 
+        // 최종적으로 messageContent가 비어있지 않은지 다시 확인
         if (messageContent) {
             const chatMessage = {
                 roomId: chatRoomId,
                 senderId: currentUserId,
                 message: messageContent,
-                // 파일 첨부 메시지인 경우, messageType을 'FILE' 등으로 다르게 설정할 수도 있습니다.
-                // 서버에서 이 타입을 처리하도록 로직을 추가해야 합니다.
-                messageType: 'TALK' // 일단 'TALK'로 유지하거나, 'FILE' 등으로 변경 고려
+                messageType: 'TALK'
             };
+
             if (stompClient && stompClient.connected) {
                 stompClient.send(`/pub/chat.sendMessage/${chatRoomId}`, {}, JSON.stringify(chatMessage));
-                if (!customMessageContent) { // 일반 메시지 전송 후에만 입력 필드 초기화
+                // 일반 메시지 전송 후에만 입력 필드 초기화
+                // customMessageContent가 유효한 문자열로 넘어온 경우가 아니라면 (즉, messageInput으로 보낸 경우)
+                if (!(typeof customMessageContent === 'string' && customMessageContent.trim().length > 0)) {
                     messageInput.value = '';
                 }
             } else {
                 console.error('STOMP 클라이언트가 연결되지 않았습니다.');
                 alert('채팅 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
             }
+        } else {
+            console.log("빈 메시지는 전송할 수 없습니다.");
         }
     }
 
