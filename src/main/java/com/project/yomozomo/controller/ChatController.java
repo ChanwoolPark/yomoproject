@@ -32,6 +32,17 @@ public class ChatController {
         this.rentalService = rentalService;
     }
 
+    @GetMapping("/start/{rentalId}")
+    public String startChatWithRental(@PathVariable Long rentalId, Principal principal) {
+        Rental rental = rentalService.getRentalById(rentalId);
+        User buyer = userService.getUserByUsername(principal.getName());
+        Rental seller = rentalService.getRentalById(rental.getRentalId());
+        // 유효성 검사(예약 없으면 오류)
+        if (rental == null) throw new IllegalArgumentException("예약 정보 없음");
+        Long chatRoomId = chatService.findOrCreateChatRoom(buyer, seller.getUser(),rental);
+        // 바로 해당 채팅방으로 리다이렉트
+        return "redirect:/chat/" + chatRoomId;
+    }
 
     @GetMapping("/{roomId}")
     public String chatRoom(@PathVariable Long roomId,
@@ -78,27 +89,6 @@ public class ChatController {
         return "chat";
     }
 
-    @GetMapping("/start/{rentalId}")
-    public String startChatWithRental(@PathVariable Long rentalId,
-                                      Principal principal,
-                                      RedirectAttributes redirectAttributes) {
-
-        String currentUsername = principal.getName();
-        User currentUser = userService.getUserByUsername(currentUsername);
-
-        Rental rental = rentalService.getRentalById(rentalId);
-        if (rental == null) {
-            throw new IllegalArgumentException("렌탈 정보를 찾을 수 없습니다: " + rentalId);
-        }
-
-        User seller = rental.getProduct().getSeller();
-        if (currentUser.getId().equals(seller.getId())) {
-            return "redirect:/product/" + rental.getProduct().getProductId();
-        }
-
-        Long chatRoomId = chatService.findOrCreateChatRoom(currentUser, seller, rental);
-        return "redirect:/chat/" + chatRoomId;
-    }
 
     // ⭐ 여기에 report.html 템플릿을 반환하는 새로운 메서드를 추가합니다. ⭐
     @GetMapping("/reportForm") // 이 엔드포인트로 접근하면 리포트 폼 페이지를 보여줍니다.

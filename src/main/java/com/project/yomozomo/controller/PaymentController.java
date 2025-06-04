@@ -32,6 +32,12 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
+    @GetMapping("/payment/paysuccess")
+    public String paySuccessPage() {
+        // 결제 성공 안내 페이지
+        return "/payment/paysuccess";
+    }
+
     // 결제 페이지 진입
     @GetMapping("/payment/{rentalId}")
     public String paymentPage(@PathVariable Long rentalId, Principal principal, Model model) {
