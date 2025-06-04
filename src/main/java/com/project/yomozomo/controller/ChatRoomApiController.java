@@ -1,6 +1,8 @@
 // src/main/java/com/project/yomozomo/controller/ChatRoomApiController.java (이름 변경 추천)
 package com.project.yomozomo.controller;
 
+import com.project.yomozomo.repository.RentalRepository;
+import com.project.yomozomo.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
@@ -18,26 +20,22 @@ import com.project.yomozomo.service.ChatService;
 public class ChatRoomApiController { // 이름을 좀 더 명확하게 변경 (선택 사항)
 
     private final ChatService chatService;
-    // private final ChatService chatRoomService; // 필요 없으면 제거
+    private final UserRepository userRepository;
+    private final RentalRepository rentalRepository;
 
-    @PostMapping // /api/chatrooms 에 대한 POST 요청 (새 채팅방 생성 API)
-    public ResponseEntity<ChatRoom> createRoom(@RequestParam String roomName) {
-        ChatRoom newRoom = chatService.createChatRoom(roomName);
-        return ResponseEntity.ok(newRoom);
-    }
-
-    @PostMapping("/start") // /api/chatrooms/start (채팅 시작/생성 API)
+    @PostMapping("/start")
     @ResponseBody
     public Long startChat(@RequestParam Long rentalId,
                           @RequestParam Long sellerId,
                           Principal principal) {
-        // ... (실제 User/Rental 조회 로직 구현 필요)
-        User buyer = new User(); buyer.setUsername(principal.getName()); // 임시
-        User seller = new User(); seller.setId(sellerId); // 임시
-        Rental rental = new Rental(); rental.setRentalId(rentalId); // 임시
+        User buyer = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("구매자 없음"));
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new IllegalArgumentException("판매자 없음"));
+        Rental rental = rentalRepository.findById(rentalId)
+                .orElseThrow(() -> new IllegalArgumentException("렌탈 없음"));
 
-        Long roomId = chatService.findOrCreateChatRoom(buyer, seller, rental);
-        return roomId;
+        return chatService.findOrCreateChatRoom(buyer, seller, rental);
     }
 
     @GetMapping("/{roomId}") // /api/chatrooms/{roomId} (채팅방 상세 정보 조회 API)
