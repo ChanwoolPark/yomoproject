@@ -11,9 +11,9 @@ import java.util.Date;
 @Entity
 @Table(name = "wallet_log") // 실제 테이블 명
 public class WalletLog {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "wallet_log_seq_gen")
+    @SequenceGenerator(name = "wallet_log_seq_gen", sequenceName = "wallet_log_seq", allocationSize = 1)
     @Column(name = "log_id")
     private Long logId;
 

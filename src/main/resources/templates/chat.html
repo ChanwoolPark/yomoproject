@@ -4,17 +4,23 @@
     <meta charset="UTF-8">
     <title>1:1 실시간 채팅</title>
     <style>
+        /* =================================================== */
+        /* 기본 레이아웃 및 컨테이너 스타일 */
+        /* =================================================== */
+        html, body {
+            height: 100%; /* HTML, BODY가 전체 높이를 차지하도록 */
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            min-height: 100vh; /* 뷰포트 높이의 최소 100% */
             background-color: #f0f2f5;
-            overflow: hidden;
+            overflow: hidden; /* 전체 페이지 스크롤 방지 */
         }
-
         .chat-container {
             width: 100%;
             max-width: 600px;
@@ -27,10 +33,13 @@
             flex-direction: column;
             overflow: hidden;
             background-color: #fff;
-            position: relative;
+            position: relative; /* 자식 요소 (expanded-panel)의 absolute 위치 기준 */
+            z-index: 10; /* 모달보다는 아래, body 콘텐츠보다는 위에 */
         }
 
-        /* chat-header 수정: Flexbox를 사용하여 제목과 이미지를 정렬 */
+        /* =================================================== */
+        /* 채팅 헤더 스타일 */
+        /* =================================================== */
         .chat-header {
             display: flex; /* Flexbox로 변경 */
             align-items: center; /* 세로 중앙 정렬 */
@@ -60,9 +69,17 @@
             object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
             border: 2px solid white; /* 흰색 테두리 */
             flex-shrink: 0; /* 크기가 줄어들지 않도록 */
-            margin-right: 10px; /* 제목과의 간격 */
-            /* order: 1; 제거: 이제 이미지 하나이므로 순서 지정이 덜 중요 */
         }
+        /* 이미지의 순서를 명시적으로 지정 */
+        .profile-image-header.left {
+            margin-right: 10px;
+            order: 1;
+        }
+        .profile-image-header.right {
+            margin-left: 10px;
+            order: 3;
+        }
+
         /* 프로필 이미지 로드 실패 시 또는 src가 없을 때 */
         .profile-image-header:not([src]):before {
             content: "👤"; /* 사용자 아이콘 */
@@ -81,8 +98,9 @@
             content: none;
         }
 
-
-
+        /* =================================================== */
+        /* 채팅 메시지 영역 스타일 */
+        /* =================================================== */
         .chat-messages {
             flex-grow: 1;
             padding: 15px;
@@ -91,7 +109,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            transition: padding-bottom 0.3s ease-out;
+            transition: padding-bottom 0.3s ease-out; /* 패딩 변화 시 애니메이션 */
             scroll-behavior: smooth;
             position: relative;
             z-index: 1;
@@ -168,31 +186,25 @@
             text-align: center;
             margin: 0;
         }
-
-        /* 렌탈 정보 영역 스타일 추가 */
-        .rental-info-area {
-            padding: 15px;
-            background-color: #f8f9fa; /* 밝은 배경색 */
-            border-bottom: 1px solid #eee;
-            font-size: 0.9rem;
-            color: #555;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* 약간의 그림자 */
-            margin-bottom: 10px; /* 채팅 메시지와의 간격 */
-        }
-
+        /* 렌탈 정보 영역 스타일 (이제 사용되지 않음) */
+        /*
         .rental-info-area h4 {
             margin-top: 0;
             margin-bottom: 8px;
             color: #333;
             font-size: 1rem;
-            border-bottom: 1px dashed #ddd; /* 구분선 */
+            border-bottom: 1px dashed #ddd;
             padding-bottom: 5px;
         }
 
         .rental-info-area p {
-            margin: 4px 0; /* 단락 간 간격 */
+            margin: 4px 0;
         }
+        */
 
+        /* =================================================== */
+        /* 채팅 입력 영역 스타일 */
+        /* =================================================== */
         .chat-input-area {
             display: flex;
             flex-direction: column;
@@ -284,39 +296,61 @@
         }
 
 
-        /* 확장 패널 - 채팅창 하단 1/2만 덮도록 수정 */
+        /* =================================================== */
+        /* 확장 패널 스타일 (핵심 변경 부분) */
+        /* =================================================== */
         .expanded-panel {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 0; /* 초기 높이 0 (숨김) */
+            height: 0; /* 초기 높이를 0으로 설정하여 기본적으로 숨겨둡니다. */
             background-color: #f8f9fa;
             border-top: 1px solid #eee;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             transition: height 0.3s ease-out, padding 0.3s ease-out;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            overflow: hidden; /* 내부 콘텐츠가 넘치면 숨김 */
+            display: flex; /* Flexbox 레이아웃 유지 */
+            flex-direction: column; /* 자식 요소들을 세로로 정렬 */
             justify-content: flex-start;
             align-items: center;
-            padding: 0 15px; /* 초기 패딩 0 */
+            padding: 0 15px; /* 초기 패딩을 0으로 설정 */
             box-sizing: border-box;
             z-index: 15;
+            /* JavaScript에서 active 클래스 토글 시 height, padding 변경 */
         }
 
         .expanded-panel.active {
             height: calc(70vh / 2); /* 채팅창 높이의 1/2 */
             padding: 15px; /* 활성화 시 패딩 추가 */
+            overflow-y: auto; /* 패널 내부 내용이 길어지면 스크롤바 생성 */
         }
 
-        .expanded-panel .panel-header {
+        /* 패널 내부의 각 컨테이너 (기본적으로는 expanded-panel에 의해 숨겨짐) */
+        /* expanded-panel이 active일 때 display: flex/grid/block이 되도록 설정 */
+        .panel-header {
+            display: flex; /* flex로 설정 */
+            justify-content: flex-end; /* 닫기 버튼을 오른쪽으로 */
             width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-            padding-top: 10px;
+            padding-bottom: 10px; /* 아래 그리드와의 간격 */
+            flex-shrink: 0; /* 크기 고정 */
         }
+        .inner-buttons-grid {
+            display: grid; /* grid로 설정 */
+            grid-template-columns: 1fr 1fr; /* 두 번째 줄부터 1:1 비율 */
+            gap: 15px; /* 버튼 사이의 간격 */
+            width: 100%;
+            max-width: 400px;
+            flex-shrink: 0; /* 버튼 그리드 높이 고정 */
+            margin-bottom: 20px; /* 섹션과의 간격 */
+        }
+        .panel-content-wrapper {
+            width: 100%;
+            flex-grow: 1; /* 남은 공간을 모두 차지하도록 */
+            position: relative; /* 자식 섹션의 absolute 위치를 위한 기준 */
+            overflow: hidden; /* 내부 섹션의 전환을 위해 오버플로우 숨김 */
+        }
+
 
         .expanded-panel .panel-header button {
             background: none;
@@ -330,25 +364,10 @@
             color: #333;
         }
 
-        .expanded-panel .inner-buttons-grid {
-            display: grid;
-            /* 기존: grid-template-columns: repeat(2, 1fr); */
-            /* 이제 각 버튼이 감싸진 div에 클래스를 부여하여 제어합니다. */
-            grid-template-columns: 1fr 1fr; /* 두 번째 줄부터 1:1 비율 */
-            gap: 15px; /* 버튼 사이의 간격 */
-            width: 100%;
-            max-width: 400px;
-        }
-
         /* 첫 번째 버튼이 전체 너비를 차지하도록 하는 스타일 */
         .expanded-panel .grid-item-full {
             grid-column: 1 / span 2; /* 1번 컬럼부터 2칸(전체) 차지 */
         }
-        /* 절반 너비를 차지하는 버튼 컨테이너 (이전 button 스타일을 재활용할 수도 있습니다) */
-        .expanded-panel .grid-item-half {
-            /* 이 안에 있는 button은 기존 button 스타일을 따릅니다. */
-        }
-
 
         /* 확장 패널 내부 버튼 (기존 스타일 유지, 상위 div가 크기를 조절) */
         .expanded-panel .inner-buttons-grid button {
@@ -371,38 +390,214 @@
             width: 100%; /* 부모 grid-item-half의 너비를 꽉 채움 */
             box-sizing: border-box; /* padding이 너비에 포함되도록 */
         }
+        /* 버튼 내부 아이콘 스타일 */
+        .expanded-panel .inner-buttons-grid button .icon {
+            font-size: 1.8em; /* 아이콘 크기 키우기 */
+            margin-bottom: 5px; /* 텍스트와의 간격 */
+        }
+
+        /* =================================================== */
+        /* 패널 내 콘텐츠 섹션 스타일 (새로 추가/수정) */
+        /* =================================================== */
+        .panel-content-section {
+            position: absolute; /* 모든 섹션을 겹쳐 놓습니다. */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* 부모 .panel-content-wrapper에 맞춰 높이 설정 */
+            padding: 0 15px; /* 패널의 전체 패딩에 더해짐 */
+            box-sizing: border-box;
+            background-color: #f8f9fa; /* 패널 배경색과 일치 */
+            display: none; /* 기본적으로 모든 섹션을 숨깁니다. */
+            overflow-y: auto; /* 섹션 내부 내용이 길어지면 스크롤 가능 */
+            transition: opacity 0.3s ease-in-out; /* 부드러운 전환 효과 */
+            opacity: 0; /* 초기 투명도 */
+            pointer-events: none; /* 숨겨진 동안 클릭 이벤트 방지 */
+        }
+
+        /* 현재 활성화된 패널 섹션만 보이도록 합니다. */
+        .panel-content-section.active-panel-section {
+            display: block; /* 또는 flex, grid 등 해당 섹션에 맞는 display 속성 */
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 결재창 (paymentPanelContent) 내의 요소들 스타일 */
+        #paymentPanelContent h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+
+        #paymentPanelContent label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        #paymentPanelContent input[type="number"] {
+            width: calc(100% - 22px); /* 패딩 고려 */
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        #paymentPanelContent button#processPaymentBtn {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745; /* 녹색 계열 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            height: auto; /* 기본 버튼 스타일 오버라이드 */
+            min-height: 0;
+            flex-direction: row;
+        }
+
+        #paymentPanelContent button#processPaymentBtn:hover {
+            background-color: #218838;
+        }
+
+
+        /* 💰 금액 조절 모달 스타일 (기존 유지) - 이 부분은 확장 패널 내부가 아닌 별도의 모달이므로 독립적임 */
+        .modal-overlay {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center; /* flex로 변경 후 중앙 정렬 */
+            align-items: center;
+            z-index: 1000; /* 다른 모든 요소 위에 표시 */
+        }
+
+        .modal-overlay.active {
+            display: flex; /* 활성화 시 표시 */
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .modal-close-btn:hover {
+            color: #333;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .modal-content input[type="number"] {
+            width: calc(100% - 22px); /* 패딩 고려 */
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-grow: 1; /* 버튼이 동일 너비로 확장 */
+        }
+
+        #modalConfirmBtn {
+            background-color: #007bff;
+            color: white;
+        }
+        #modalConfirmBtn:hover {
+            background-color: #0056b3;
+        }
+
+        #modalCancelBtn {
+            background-color: #6c757d;
+            color: white;
+        }
+        #modalCancelBtn:hover {
+            background-color: #5a6268;
+        }
+
     </style>
 </head>
 <body>
-
 <div class="chat-container">
     <div class="chat-header">
         <h3 id="chatHeader">
-            <p>렌탈 ID: <span th:text="${currentRental?.rentalId}">[렌탈 ID]</span></p>
+            <p>채팅방 <span th:text="${currentRentalId}">[렌탈 ID]</span></p>
         </h3>
-        <img id="myUserProfileImage" class="profile-image-header" src="/images/default-profile.png" alt="내 프로필">
+        <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserprofile_image}" alt="내 프로필">
     </div>
+
     <div class="chat-messages" id="chatMessages">
     </div>
+
     <div class="chat-input-area">
         <div class="input-and-send">
-            <input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
+            <label for="messageInput"></label><input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
             <button id="sendMessageBtn" class="send-button">▲</button>
         </div>
-
+        <input type="file" id="fileInput" style="display: none;">
         <div class="input-toolbar">
             <button id="togglePanelBtn" title="거래 메뉴">😊</button>
             <button id="button2" title="파일 첨부">📎</button>
-            <button id="button3" title="일정">📅</button>
-            <button id="button4" title="신고창">🚨</button>
+            <button id="button3" title="달력 / 일정">📅</button>
+            <button id="button4" title="신고 / 문의">🚨</button>
         </div>
     </div>
 
-    <div class="expanded-panel" id="expandedPanel">
+    <div class="expanded-panel">
         <div class="panel-header">
             <button id="closePanelBtn">✖</button>
         </div>
-         <div class="inner-buttons-grid">
+        <div class="inner-buttons-grid">
             <div class="grid-item-full">
                 <button id="innerButton1" title="거래 시작"><span class="icon">📝</span>거래 시작</button>
             </div>
@@ -410,213 +605,439 @@
                 <button id="innerButton2" title="금액 조절"><span class="icon">💰</span>금액 조절</button>
             </div>
             <div class="grid-item-half">
-                <button id="innerButton3" title="완료"><span class="icon">✅</span>완료</button>
+                <button id="innerButton3" title="거래 완료"><span class="icon">💸</span>결재창</button>
             </div>
-         </div>
+        </div>
+
+        <div class="panel-content-wrapper">
+            <div id="defaultPanelContent" class="panel-content-section">
+                <p>확장 패널의 기본 콘텐츠입니다.</p>
+                <p>위 버튼을 눌러 다른 기능을 사용해보세요.</p>
+            </div>
+            <div id="paymentPanelContent" class="panel-content-section">
+                <h4>결재 정보 입력</h4>
+                <p>여기에 결재에 필요한 입력 필드나 정보가 들어갑니다.</p>
+                <label for="paymentAmount">결재 금액:</label>
+                <input type="number" id="paymentAmount" value="0">
+                <button id="processPaymentBtn">결재 진행</button>
+            </div>
+            <div id="priceAdjustmentPanelContent" class="panel-content-section">
+                <h4>금액 조절</h4>
+                <label for="newPriceInputPanel">새로운 금액을 입력하세요:</label>
+                <input type="number" id="newPriceInputPanel" name="newPrice" min="0" placeholder="예: 25000">
+                <div class="panel-buttons">
+                    <button id="confirmPricePanelBtn">확인</button>
+                    <button id="cancelPricePanelBtn">취소</button>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 <script th:inline="javascript">
-    /*<![CDATA[*/
+    // =========================================================
+    // 1. 전역 변수 선언
+    // =========================================================
+    let stompClient = null;
+    let chatMessagesDiv = null;
+    let messageInput = null;
+    let sendMessageBtn = null;
+    let togglePanelBtn = null;
+    let closePanelBtn = null;
 
-    var stompClient = null;
-    var username = /*[[${username}]]*/ 'defaultUser'; // 현재 사용자 이름
-    var targetUsername = /*[[${targetUsername}]]*/ 'defaultTarget'; // 대화 상대 이름
-    var roomId = /*[[${roomId}]]*/ 'defaultRoom'; // 채팅방 ID
-    var expandedPanel = document.getElementById('expandedPanel');
-    var chatMessagesDiv = document.getElementById('chatMessages');
-    var messageInput = document.getElementById('messageInput');
-    const myUserProfileImage = document.getElementById('myUserProfileImage'); // 새로 추가된 이미지 요소
-    // 1. WebSocket 연결 함수
-    function connect() {
-        if (!username || username === 'defaultUser') {
-            console.error("서버로부터 유저네임을 가져오지 못했습니다. 기본값으로 'defaultUser'를 사용합니다.");
-        }
-        if (!targetUsername || targetUsername === 'defaultTarget') {
-            console.error("서버로부터 상대방 유저네임을 가져오지 못했습니다. 기본값으로 'defaultTarget'를 사용합니다.");
-        }
-        if (!roomId || roomId === 'defaultRoom') {
-            console.error("서버로부터 roomId를 가져오지 못했습니다. 기본값으로 'defaultRoom'를 사용합니다.");
+    // ⭐ 변경: expandedPanel이 이제 패널 전체를 감싸는 부모 요소입니다.
+    let expandedPanel = null;
+
+    let defaultPanelContent = null;
+    let paymentPanelContent = null;
+    let processPaymentBtn = null;
+    let paymentAmountInput = null;
+
+    let priceAdjustmentPanelContent = null;
+    let newPriceInputPanel = null;
+    let confirmPricePanelBtn = null;
+    let cancelPricePanelBtn = null;
+
+    // 패널 내의 기능 버튼
+    let innerButton1 = null; // 거래 시작 버튼
+    let innerButton2 = null; // 금액 조절 버튼
+    let innerButton3 = null; // 결재창 버튼
+    let innerButtonsGrid = null; // ⭐ 추가: 버튼 그리드 요소
+    let reportButton = null; // ⭐ 추가: report.htm 보내는 버튼 (기존 button3)
+    let attachmentButton = null;
+    let fileInput = null;
+
+    // Thymeleaf에서 주입될 값 (전역 변수)
+    const chatRoomId = /*[[${chatRoomId}]]*/ 0;
+    const currentUserId = /*[[${currentUserId}]]*/ 0;
+    const currentRentalId = /*[[${currentRental?.rentalId}]]*/ 0; // chatHeader에서 가져오는 rentalId
+    const chatPartnerId = /*[[${chatPartnerId}]]*/ 0; // ChatController에서 상대방 ID를 추가했다면
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // ...
+        chatMessagesDiv = document.getElementById('chatMessages');
+        messageInput = document.getElementById('messageInput');
+        sendMessageBtn = document.getElementById('sendMessageBtn');
+        togglePanelBtn = document.getElementById('togglePanelBtn');
+        closePanelBtn = document.getElementById('closePanelBtn');
+        expandedPanel = document.querySelector('.expanded-panel'); // querySelector로 가져옴
+        defaultPanelContent = document.getElementById('defaultPanelContent');
+        paymentPanelContent = document.getElementById('paymentPanelContent');
+        priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
+        processPaymentBtn = document.getElementById('processPaymentBtn');
+        paymentAmountInput = document.getElementById('paymentAmount');
+        newPriceInputPanel = document.getElementById('newPriceInputPanel');
+        confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
+        cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn');
+        innerButton1 = document.getElementById('innerButton1');
+        innerButton2 = document.getElementById('innerButton2');
+        innerButton3 = document.getElementById('innerButton3');
+        innerButtonsGrid = document.querySelector('.inner-buttons-grid'); // querySelector로 가져옴
+
+        // ⭐ 중요: 이전에 const로 되어 있었던 부분들을
+        // ⭐ 전역 변수에 할당하는 것이므로 'const' 키워드를 제거해야 합니다!
+        attachmentButton = document.getElementById('button2');
+        reportButton = document.getElementById('button3');
+        fileInput = document.getElementById('fileInput');
+        // ...
+    });
+    // =========================================================
+    // 2. 헬퍼 함수 정의
+    // =========================================================
+
+    /**
+     * 특정 패널 섹션을 표시하고 다른 섹션은 숨깁니다.
+     * @param {HTMLElement | null} sectionToShow - 활성화할 패널 섹션 DOM 요소 (null이면 모든 섹션 숨김)
+     * @param {boolean} [hideButtons=false] - 섹션 활성화 시 버튼 그리드를 숨길지 여부
+     */
+    function showPanelSection(sectionToShow, hideButtons = false) {
+        const sections = document.querySelectorAll('.panel-content-section');
+        sections.forEach(section => {
+            section.classList.remove('active-panel-section');
+        });
+
+        if (sectionToShow) {
+            sectionToShow.classList.add('active-panel-section');
         }
 
-        var socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, onConnected, onError);
+        // 버튼 그리드 표시 여부 제어
+        if (innerButtonsGrid) { // ⭐ innerButtonsGrid 변수가 DOMContentLoaded 안에서 초기화되므로, 이 함수가 호출될 때 이미 값이 할당되어 있어야 합니다.
+            if (hideButtons) {
+                innerButtonsGrid.style.display = 'none'; // 버튼 그리드 숨기기
+            } else {
+                innerButtonsGrid.style.display = 'grid'; // 기본적으로는 보이도록 (CSS에 'grid'로 설정되어 있으니)
+            }
+        }
     }
 
-    // 2. WebSocket 연결 성공 시 호출되는 함수
-    function onConnected() {
-        // 이제 /topic/public 대신 특정 roomId의 토픽을 구독합니다.
-        stompClient.subscribe('/topic/chat/room/' + roomId, onMessageReceived);
-        console.log("구독 채널: " + '/topic/chat/room/' + roomId);
+    /**
+     * 확장 패널을 열거나 닫습니다.
+     * @param {boolean} [show] - true면 열고, false면 닫고, undefined면 토글합니다.
+     */
+    function toggleExpandedPanel(show) {
+        const isPanelCurrentlyActive = expandedPanel.classList.contains('active');
+        const shouldShow = show === undefined ? !isPanelCurrentlyActive : show;
 
-        // 입장 메시지 전송 시 roomId와 receiver 정보 포함
-        var joinMessage = {
-            sender: username,
-            receiver: targetUsername, // 입장 메시지에도 수신자 명시 (선택 사항)
-            type: 'JOIN',
-            roomId: roomId // Room ID 추가
-        };
-        stompClient.send("/app/chat.addUser", {}, JSON.stringify(joinMessage));
-        console.log("WebSocket에 연결되었습니다. 사용자: " + username + ", 대화 상대: " + targetUsername + ", Room ID: " + roomId);
+        if (shouldShow) {
+            expandedPanel.classList.add('active');
+            // 패널이 열릴 때 항상 기본 콘텐츠 섹션을 보여주고 버튼 그리드를 보이도록 합니다.
+            showPanelSection(defaultPanelContent, false); // hideButtons=false로 전달
+        } else {
+            expandedPanel.classList.remove('active');
+            showPanelSection(null); // 패널 닫을 때 모든 콘텐츠 섹션을 숨김 (초기화)
+            if (innerButtonsGrid) {
+                innerButtonsGrid.style.display = 'grid'; // 패널 닫을 때 혹시 숨겨져 있었다면 다시 보이도록
+            }
+        }
+
+        // 메시지 영역 하단 패딩 및 스크롤 조절 (기존 로직 유지)
+        const inputAreaHeight = messageInput ? messageInput.offsetHeight : 0;
+        const panelHeight = shouldShow ? expandedPanel.offsetHeight : 0;
+        const totalBottomPadding = inputAreaHeight + panelHeight + 15;
+
+        if (chatMessagesDiv) {
+            chatMessagesDiv.style.paddingBottom = `${totalBottomPadding}px`;
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
     }
 
-    // 3. WebSocket 연결 실패 시 호출되는 함수
-    function onError(error) {
-        console.error('WebSocket 서버에 연결할 수 없습니다. 페이지를 새로고침하여 다시 시도하세요!', error);
-        alert('채팅 서버 연결에 실패했습니다. 다시 시도해 주세요. 개발자 도구 콘솔을 확인하세요.');
-    }
+    // ⭐ TODO: sendMessage 및 connect 함수는 코드에 없으므로, 필요하다면 추가해야 합니다.
+    function sendMessage(customMessageContent = null) { // ⭐ 인자를 받도록 수정 ⭐
+        let messageContent;
 
-    // 4. 메시지 전송 함수
-    function sendMessage() {
-        var messageContent = messageInput.value.trim();
+        if (customMessageContent) {
+            // 파일 첨부 등 특정 메시지를 보낼 때 (인자가 넘어온 경우)
+            messageContent = customMessageContent.trim();
+        } else {
+            // 일반 채팅 메시지를 보낼 때 (인자가 넘어오지 않은 경우, messageInput 사용)
+            messageContent = messageInput.value.trim();
+        }
 
-        if (messageContent && stompClient) {
-            var chatMessage = {
-                sender: username,
-                receiver: targetUsername, // 메시지 수신자 명시
-                content: messageContent,
-                type: 'CHAT',
-                roomId: roomId // Room ID 포함
+        if (messageContent) {
+            const chatMessage = {
+                roomId: chatRoomId,
+                senderId: currentUserId,
+                message: messageContent,
+                // 파일 첨부 메시지인 경우, messageType을 'FILE' 등으로 다르게 설정할 수도 있습니다.
+                // 서버에서 이 타입을 처리하도록 로직을 추가해야 합니다.
+                messageType: 'TALK' // 일단 'TALK'로 유지하거나, 'FILE' 등으로 변경 고려
             };
-            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
-            messageInput.value = '';
+            if (stompClient && stompClient.connected) {
+                stompClient.send(`/pub/chat.sendMessage/${chatRoomId}`, {}, JSON.stringify(chatMessage));
+                if (!customMessageContent) { // 일반 메시지 전송 후에만 입력 필드 초기화
+                    messageInput.value = '';
+                }
+            } else {
+                console.error('STOMP 클라이언트가 연결되지 않았습니다.');
+                alert('채팅 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+            }
         }
     }
 
-    // 5. 메시지 수신 시 호출되는 함수
-    function onMessageReceived(payload) {
-        var message = JSON.parse(payload.body);
-        var chatMessagesDiv = document.getElementById('chatMessages');
+    function connect() {
+        const socket = new SockJS('/ws'); // 웹소켓 엔드포인트
+        stompClient = Stomp.over(socket);
 
-        var messageWrapper = document.createElement('div');
+        stompClient.connect({}, function(frame) {
+            console.log('Connected: ' + frame);
+            // 채팅방 구독
+            stompClient.subscribe(`/sub/chat/room/${chatRoomId}`, function(messageOutput) {
+                showMessage(JSON.parse(messageOutput.body));
+            });
+
+            // 사용자 입장 메시지 전송 (옵션)
+            // stompClient.send(`/pub/chat.addUser/${chatRoomId}`,
+            //     {},
+            //     JSON.stringify({senderId: currentUserId, messageType: 'JOIN'})
+            // );
+        }, function(error) {
+            console.error('STOMP 연결 오류:', error);
+            // 연결 실패 시 재시도 로직 추가 가능
+        });
+    }
+
+    function showMessage(message) {
+        if (!chatMessagesDiv) return;
+
+        const messageWrapper = document.createElement('div');
         messageWrapper.classList.add('message-wrapper');
 
-        var messageContent = document.createElement('div');
+        const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
 
-        var messageTime = document.createElement('div');
+        const messageTime = document.createElement('div');
         messageTime.classList.add('message-time');
 
-        if (message.type === 'JOIN' || message.type === 'LEAVE') {
+        // 메시지 타입에 따른 스타일 및 내용
+        if (message.messageType === 'JOIN' || message.messageType === 'LEAVE') {
             messageWrapper.classList.add('event-message');
-            messageContent.textContent = `${message.sender} 님이 ${message.type === 'JOIN' ? '입장' : '퇴장'}하셨습니다.`;
-            messageWrapper.appendChild(messageContent);
-            if (message.time) {
-                messageTime.textContent = message.time;
-                messageWrapper.appendChild(messageTime);
-            }
-        } else { // 'CHAT' 메시지
-            messageContent.textContent = message.content;
-            messageTime.textContent = message.time || '시간 없음';
-
-            // 메시지 보낸 사람이 현재 사용자인지, 상대방인지에 따라 스타일 적용
-            if (message.sender === username) {
+            messageContent.textContent = message.message; // "XXX님이 입장/퇴장했습니다"
+        } else {
+            // 일반 채팅 메시지
+            messageContent.textContent = message.message;
+            if (message.senderId === currentUserId) {
                 messageWrapper.classList.add('sent');
-            } else if (message.sender === targetUsername) { // 상대방 메시지
+            } else {
                 messageWrapper.classList.add('received');
             }
-            // 그 외의 경우 (예: 다른 방의 메시지 또는 잘못된 sender)는 처리하지 않거나 기본 스타일 적용
-
-            messageWrapper.appendChild(messageContent);
-            messageWrapper.appendChild(messageTime);
         }
 
+        // 시간 포맷팅
+        const date = new Date(message.sendTime); // 서버에서 내려주는 sendTime (ISO String 또는 Long)
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        messageTime.textContent = `${hours}:${minutes}`;
+
+        messageWrapper.appendChild(messageContent);
+        messageWrapper.appendChild(messageTime);
         chatMessagesDiv.appendChild(messageWrapper);
+
+        // 스크롤을 항상 최하단으로 이동
         chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
     }
 
-    // 6. 확장 패널 토글 함수
-    function toggleExpandedPanel() {
-        const inputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
 
-        if (expandedPanel.classList.contains('active')) {
-            expandedPanel.classList.remove('active');
-            chatMessagesDiv.style.paddingBottom = `${inputAreaHeight + 15}px`;
-        } else {
-            expandedPanel.classList.add('active');
-            const chatContainerHeight = document.querySelector('.chat-container').offsetHeight;
-            const targetPanelHeight = chatContainerHeight / 2;
-
-            chatMessagesDiv.style.paddingBottom = `${targetPanelHeight + inputAreaHeight + 15}px`;
-        }
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-    }
-
-    // 7. 내 프로필 이미지 로드 함수 (이것만 사용)
-    function loadMyUserProfileImage() {
-        if (!username || username === 'defaultUser') {
-            console.warn("내 유저네임이 없어 프로필 이미지를 불러올 수 없습니다. 기본 이미지를 사용합니다.");
-            return;
-        }
-
-        fetch('/api/users/' + username + '/profile')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP 오류! 상태: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(userProfile => {
-                if (userProfile && userProfile.profileImageUrl) {
-                    myUserProfileImage.src = userProfile.profileImageUrl;
-                } else {
-                    console.warn("내 프로필 이미지 URL이 없습니다. 기본 이미지를 사용합니다.");
-                    myUserProfileImage.src = "/images/default_profile.png";
-                }
-            })
-            .catch(error => {
-                console.error('내 프로필 이미지 로드 중 오류 발생:', error);
-                myUserProfileImage.src = "/images/default_profile.png";
-            });
-    }
-
-
-    // DOMContentLoaded 이벤트 리스너: 페이지 로드 후 실행될 코드
+    // =========================================================
+    // 3. DOMContentLoaded 이벤트 리스너 (페이지 로드 후 실행)
+    // =========================================================
     document.addEventListener('DOMContentLoaded', function() {
+        // DOM 요소 초기화
+        chatMessagesDiv = document.getElementById('chatMessages');
+        messageInput = document.getElementById('messageInput');
+        sendMessageBtn = document.getElementById('sendMessageBtn');
+        togglePanelBtn = document.getElementById('togglePanelBtn');
+        closePanelBtn = document.getElementById('closePanelBtn');
+
+        // ⭐ 변경: expandedPanel이 이제 패널 전체를 감싸는 부모 요소입니다. ⭐
+        expandedPanel = document.querySelector('.expanded-panel');
+
+        // 패널 내부의 콘텐츠 섹션 요소들 선택
+        defaultPanelContent = document.getElementById('defaultPanelContent');
+        paymentPanelContent = document.getElementById('paymentPanelContent');
+        priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
+
+        // 패널 내 특정 버튼/입력 필드 선택
+        processPaymentBtn = document.getElementById('processPaymentBtn');
+        paymentAmountInput = document.getElementById('paymentAmount');
+        newPriceInputPanel = document.getElementById('newPriceInputPanel');
+        confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
+        cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn');
+
+        // 패널 내의 핵심 기능 버튼들 선택
+        innerButton1 = document.getElementById('innerButton1'); // 거래 시작
+        innerButton2 = document.getElementById('innerButton2'); // 금액 조절
+        innerButton3 = document.getElementById('innerButton3'); // 결재창
+        innerButtonsGrid = document.querySelector('.inner-buttons-grid'); // ⭐ 추가: 버튼 그리드 요소 선택
+
+
+        const attachmentButton = document.getElementById('button2'); // <input type="file">이 아닌 📎 버튼입니다.
+        const reportButton = document.getElementById('button3');    // 📅 버튼입니다.
+        // ⭐ 핵심: 페이지 로드 시 패널을 초기화 (숨김)합니다.
+        //      CSS의 `height: 0; padding: 0;`으로 기본적으로 숨겨져 있습니다.
+        //      여기서는 명시적으로 'active' 클래스를 제거하여 초기 상태를 보장합니다.
+        if (expandedPanel) {
+            expandedPanel.classList.remove('active');
+        }
+
+        // ⭐ 초기 로드 시 기본 패널 콘텐츠가 활성화되도록 설정합니다.
+        //    (전체 패널은 숨겨져 있어도, 내부 콘텐츠의 초기 상태를 올바르게 설정)
+        showPanelSection(defaultPanelContent, false); // 초기에는 버튼 그리드를 숨기지 않음
+
+
+        // === 이벤트 리스너 설정 ===
+
+        // 메시지 전송 버튼 및 Enter 키
+        if (sendMessageBtn) {
+            sendMessageBtn.addEventListener('click', sendMessage);
+        }
+        if (messageInput) {
+            messageInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        // 확장 패널 토글 버튼 (😊)
+        if (togglePanelBtn) {
+            togglePanelBtn.addEventListener('click', function () {
+                toggleExpandedPanel(); // 인자 없이 호출하여 토글
+            });
+        }
+
+        // 확장 패널 닫기 버튼 (✖)
+        if (closePanelBtn) {
+            closePanelBtn.addEventListener('click', function () {
+                toggleExpandedPanel(false); // 명시적으로 닫기
+            });
+        }
+        // 📎 버튼 (파일 첨부) - button2
+        // ⭐⭐ 이 'if (attachmentButton) { ... }' 블록만 남기고, 바로 위에 있는 똑같은 블록은 삭제하세요. ⭐⭐
+        if (attachmentButton) {
+            attachmentButton.addEventListener('click', function () {
+                if (fileInput) {
+                    fileInput.click(); // 숨겨진 파일 입력 필드 클릭
+                } else {
+                    console.error("오류: fileInput 요소가 초기화되지 않았거나 HTML에 없습니다.");
+                }
+            });
+        }
+
+        // 파일 선택 시 이벤트 처리 (fileInput에 change 이벤트 리스너를 붙이는 부분)
+        if (fileInput) {
+            fileInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const selectedFile = this.files[0];
+
+                    alert(`파일 첨부 기능 (선택된 파일: ${selectedFile.name})`);
+
+                    // 실제 파일 업로드 로직은 서버로 HTTP 요청(fetch 또는 XMLHttpRequest)을 보내야 합니다.
+                    // 지금은 간단히 메시지로 파일 이름만 보냅니다.
+                    sendMessage(`[파일첨부] ${selectedFile.name}`);
+
+                    // 파일 선택 후 input 필드 초기화 (같은 파일 다시 선택 가능하도록)
+                    this.value = '';
+                }
+            });
+        }
+
+// 📅 버튼 (리포트 전송) - button3
+        if (reportButton) {
+            reportButton.addEventListener('click', function() {
+                // 리포트 페이지로 이동할 수 있는 백엔드 URL
+                const reportPageUrl = "/report"; // 백엔드 컨트롤러에 정의할 리포트 페이지 URL
+
+                // 1. 채팅 메시지로 알림 전송 (옵션)
+                sendMessage(`[시스템 메시지] 리포트 작성을 위해 <a href="${reportPageUrl}" target="_blank">여기</a>를 클릭하세요.`);
+                // target="_blank"를 추가하여 새 탭에서 열리도록 할 수 있습니다.
+
+
+
+                // 3. 직접 리포트 페이지로 이동 (같은 탭에서)
+                // window.location.href = reportPageUrl;
+
+                // 또는 새 탭에서 열기
+                window.open(reportPageUrl, '_blank');
+            });
+        }
+
+
+
+        // 패널 내 기능 버튼 이벤트
+        if (innerButton1) { // 거래 시작 버튼
+            innerButton1.addEventListener('click', function() {
+                if (currentRentalId) {
+                    toggleExpandedPanel(false); // 패널 닫기
+                    console.log("거래 시작 버튼 클릭! 렌탈 ID:", currentRentalId);
+                    window.location.href = '/chat/start/' + currentRentalId;
+                } else {
+                    alert('렌탈 정보를 찾을 수 없어 거래를 시작할 수 없습니다.');
+                    console.error("currentRentalId가 유효하지 않습니다:", currentRentalId);
+                }
+            });
+        }
+
+        if (innerButton2) { // 금액 조절 버튼
+            innerButton2.addEventListener('click', function() {
+                showPanelSection(priceAdjustmentPanelContent, true); // true를 전달하여 버튼 그리드 숨김
+            });
+        }
+
+        if (innerButton3) { // 결재창 버튼
+            innerButton3.addEventListener('click', function() {
+                showPanelSection(paymentPanelContent, true); // true를 전달하여 버튼 그리드 숨김
+            });
+        }
+
+        // 결재 진행 버튼 (예시)
+        if (processPaymentBtn) {
+            processPaymentBtn.addEventListener('click', function() {
+                const amount = paymentAmountInput.value;
+                alert(`결재 금액: ${amount}원 (실제 결재 로직 필요)`);
+                // 실제 결재 로직 호출
+                toggleExpandedPanel(false); // 결재 후 패널 닫기
+            });
+        }
+
+        // 금액 조절 확인/취소 버튼 (예시)
+        if (confirmPricePanelBtn) {
+            confirmPricePanelBtn.addEventListener('click', function() {
+                const newPrice = newPriceInputPanel.value;
+                alert(`새로운 금액 제안: ${newPrice}원 (메시지 전송 로직 필요)`);
+                // 메시지로 금액 제안 전송 등
+                toggleExpandedPanel(false); // 패널 닫기
+            });
+        }
+        if (cancelPricePanelBtn) {
+            cancelPricePanelBtn.addEventListener('click', function() {
+                showPanelSection(defaultPanelContent, false); // 취소 시 기본 패널과 버튼 그리드 보이기
+            });
+        }
+
+        // 초기 웹소켓 연결
         connect();
-        // loadTargetUserProfileImage(); // 상대방 프로필 이미지 로드 함수 호출 제거
-        loadMyUserProfileImage();     // 내 프로필 이미지 로드 함수만 호출
-
-        document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        document.getElementById('togglePanelBtn').addEventListener('click', toggleExpandedPanel);
-        document.getElementById('closePanelBtn').addEventListener('click', toggleExpandedPanel);
-
-        document.getElementById('button2').addEventListener('click', function() {
-            alert('달력/일정 버튼 클릭됨!');
-        });
-        document.getElementById('button3').addEventListener('click', function() {
-            alert('시간/알림 버튼 클릭됨!');
-        });
-        document.getElementById('button4').addEventListener('click', function() {
-            alert('문서/파일 첨부 버튼 클릭됨!');
-        });
-
-        // 변경된 inner 버튼 ID와 기능에 맞게 수정
-        document.getElementById('innerButton1').addEventListener('click', function() {
-            alert('거래 시작 로직을 여기에 구현하세요!');
-        });
-
-        document.getElementById('innerButton2').addEventListener('click', function() {
-            alert('금액 조절 로직을 여기에 구현하세요!');
-        });
-
-        document.getElementById('innerButton3').addEventListener('click', function() {
-            alert('완료 로직을 여기에 구현하세요!'); // Alert 메시지 변경
-            // window.location.href = '/report'; // 완료 버튼이 report로 가는 것은 일반적으로 적절하지 않으므로 주석 처리
-            // 만약 '완료' 버튼 클릭 시 수행할 특정 서버 로직(예: 거래 상태 변경)이 있다면, 여기에 해당 API 호출 코드를 작성해야 합니다.
-        });
-
-        // 채팅 메시지 영역의 하단 패딩 설정 (입력창과 겹치지 않도록)
-        const initialInputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
-        chatMessagesDiv.style.paddingBottom = `${initialInputAreaHeight + 15}px`;
     });
 </script>
 </body>

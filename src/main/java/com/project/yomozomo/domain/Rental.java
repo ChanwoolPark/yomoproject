@@ -44,4 +44,9 @@ public class Rental {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private Date createdAt;
+
+    @PrePersist // 엔티티가 영속화되기 전에 호출됨
+    protected void onCreate() {
+        this.createdAt = new Date();
+    }
 }

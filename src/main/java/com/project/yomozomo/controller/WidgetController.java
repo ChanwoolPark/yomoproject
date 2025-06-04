@@ -1,9 +1,11 @@
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.UserWallet;
+import com.project.yomozomo.domain.WalletLog;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.UserRepository;
 import com.project.yomozomo.repository.UserWalletRepository;
+import com.project.yomozomo.repository.WalletLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,6 +23,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Base64;
+import java.util.Date;
 
 @Controller
 public class WidgetController {
@@ -28,10 +31,12 @@ public class WidgetController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final UserRepository userRepository;
     private final UserWalletRepository userWalletRepository;
+    private final WalletLogRepository walletLogRepository;
 
-    public WidgetController(UserRepository userRepository, UserWalletRepository userWalletRepository) {
+    public WidgetController(UserRepository userRepository, UserWalletRepository userWalletRepository, WalletLogRepository walletLogRepository) {
         this.userRepository = userRepository;
         this.userWalletRepository = userWalletRepository;
+        this.walletLogRepository = walletLogRepository;
     }
 
     @PostMapping("/widget")
@@ -77,20 +82,15 @@ public class WidgetController {
         obj.put("amount", amount);
         obj.put("paymentKey", paymentKey);
 
-        // TODO: 개발자센터에 로그인해서 내 결제위젯 연동 키 > 시크릿 키를 입력하세요. 시크릿 키는 외부에 공개되면 안돼요.
-        // @docs https://docs.tosspayments.com/reference/using-api/api-keys
+
         String widgetSecretKey = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
 
-        // 토스페이먼츠 API는 시크릿 키를 사용자 ID로 사용하고, 비밀번호는 사용하지 않습니다.
-        // 비밀번호가 없다는 것을 알리기 위해 시크릿 키 뒤에 콜론을 추가합니다.
-        // @docs https://docs.tosspayments.com/reference/using-api/authorization#%EC%9D%B8%EC%A6%9D
+
         Base64.Encoder encoder = Base64.getEncoder();
         byte[] encodedBytes = encoder.encode((widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
         String authorizations = "Basic " + new String(encodedBytes);
 
-        // 결제 승인 API를 호출하세요.
-        // 결제를 승인하면 결제수단에서 금액이 차감돼요.
-        // @docs https://docs.tosspayments.com/guides/v2/payment-widget/integration#3-결제-승인하기
+
         URL url = new URL("https://api.tosspayments.com/v1/payments/confirm");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestProperty("Authorization", authorizations);
@@ -107,7 +107,7 @@ public class WidgetController {
 
         InputStream responseStream = isSuccess ? connection.getInputStream() : connection.getErrorStream();
 
-        // TODO: 결제 성공 및 실패 비즈니스 로직을 구현하세요.
+
         Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8);
         JSONObject jsonObject = (JSONObject) parser.parse(reader);
         responseStream.close();
@@ -136,7 +136,7 @@ public class WidgetController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
-        // 지갑 정보 가져오기 (UserWallet, 예시)
+        // 지갑 정보 가져오기 (UserWallet)
         UserWallet wallet = userWalletRepository.findByUserId(user.getId());
         if (wallet == null) {
             wallet = new UserWallet();
@@ -146,6 +146,14 @@ public class WidgetController {
         // 충전 금액 반영
         wallet.setBalance(wallet.getBalance() + amount);
         userWalletRepository.save(wallet);
+
+        // 1️⃣ [여기서 WalletLog 저장!]
+        WalletLog log = new WalletLog();
+        log.setUserWalletId(wallet.getWalletId()); // PK
+        log.setAmount(amount);
+        log.setType("충전");
+        log.setCreatedAt(new Date());
+        walletLogRepository.save(log);
 
         // 성공 메시지/금액 모델에 추가
         model.addAttribute("amount", amount);

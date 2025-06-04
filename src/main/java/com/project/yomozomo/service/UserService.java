@@ -10,10 +10,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
@@ -52,7 +56,7 @@ public class UserService {
     public boolean existsByNickname(String nickname) {
         return userRepo.existsByNickname(nickname);
     }
-
+    @Transactional
     public User registerNewUser(SignupForm form) {
         User u = new User();
         u.setUsername(form.getUsername());
@@ -71,9 +75,6 @@ public class UserService {
         u.setAddress(form.getAddress());             // 도로명 주소
         u.setAddressDetail(form.getAddressDetail()); // 상세 주소
 
-        u.setReferral(form.getReferral());
-        u.setProfileImageUrl(form.getProfileImageUrl());
-
         userRepo.save(u);
 
         // --- 여기서 바로 로그인 처리 추가 ---
@@ -90,6 +91,16 @@ public class UserService {
     public User findByUsername(String username) {
         return userRepo.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    }
+
+    public User getUserByUsername(String username) {
+        return userRepo.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username));
+    }
+
+    public User getUserById(Long userId) {
+        return userRepo.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
     }
 
 

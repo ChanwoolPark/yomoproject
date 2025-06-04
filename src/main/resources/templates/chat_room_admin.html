@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>채팅방 관리</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    .search-form { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9; }
+    .search-form label { margin-right: 10px; }
+    .search-form input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    .search-form button { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .search-form button:hover { background-color: #0056b3; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .no-data { text-align: center; color: #777; padding: 20px; }
+  </style>
+</head>
+<body>
+<h1>채팅방 관리</h1>
+
+<div class="search-form">
+  <form th:action="@{/admin/chatrooms}" method="get">
+    <label for="roomName">채팅방 이름:</label>
+    <input type="text" id="roomName" name="roomName" th:value="${param.roomName}">
+    <label for="buyerName">구매자 이름:</label>
+    <input type="text" id="buyerName" name="buyerName" th:value="${param.buyerName}">
+    <label for="sellerName">판매자 이름:</label>
+    <input type="text" id="sellerName" name="sellerName" th:value="${param.sellerName}">
+    <button type="submit">검색</button>
+    <button type="button" onclick="location.href='/admin/chatrooms'">초기화</button>
+  </form>
+</div>
+
+<table>
+  <thead>
+  <tr>
+    <th>ROOM ID</th>
+    <th>채팅방 이름</th>
+    <th>구매자</th>
+    <th>판매자</th>
+    <th>연관 렌탈 ID</th>
+    <th>생성일</th>
+    <th>관리</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="room : ${chatRooms}">
+    <td th:text="${room.roomId}">1</td>
+    <td th:text="${room.roomName}">상품 관련 채팅</td>
+    <td th:text="${room.buyer.username}">buyer1</td> <td th:text="${room.seller.username}">seller1</td> <td th:text="${room.rental.rentalId}">21</td> <td th:text="${#temporals.format(room.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-31 10:00</td>
+    <td>
+      <a th:href="@{/chat/{roomId}(roomId=${room.roomId})}">채팅 보기</a>
+    </td>
+  </tr>
+  <tr th:if="${chatRooms.empty}">
+    <td colspan="7" class="no-data">채팅방이 없습니다.</td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

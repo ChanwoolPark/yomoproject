@@ -3,19 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>마이페이지 프로필</title>
+    <style>
+        .card-box {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+            background: #fafbfc;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
+        }
+        .list-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            margin-top: 22px;
+        }
+        .card-link {
+            color: #4a90e2;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<div class="profile-section">
+<div class="profile-section" th:fragment="profile">
     <div class="profile-header" style="display: flex; align-items: center; margin-bottom: 20px;">
         <img th:src="${user.profileImageUrl}" alt="프로필 이미지"
              style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-right: 16px;">
         <div>
             <h2 style="margin-bottom: 8px;" th:text="${user.nickname + ' (' + user.username + ')'}"></h2>
-            <button onclick="loadContent('edit-info')"
+            <!-- 본인 프로필일 때만 수정 버튼 노출 -->
+            <button
+                    th:if="${#authentication.name == user.username}"
+                    onclick="loadContent('edit-info')"
                     style="padding: 6px 12px; background-color: #4a90e2; color: white; border: none; border-radius: 4px; font-size: 13px;">
                 내 정보 수정
             </button>
-
         </div>
     </div>
 
@@ -29,23 +51,42 @@
         <p style="margin-bottom: 6px;">응답률: <span>95%</span></p>
     </div>
 
-    <div class="profile-sales" style="margin-bottom: 32px;">
-        <h3 style="font-size: 16px; margin-bottom: 12px;">대여/판매 중인 목록</h3>
-        <div th:each="item : ${products}" style="margin-bottom: 8px; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
-            <p th:text="${item.title}" style="margin: 0;">상품명</p>
+    <!-- 판매중 목록 -->
+    <div class="profile-sales">
+        <h3 class="list-title">판매중인 목록</h3>
+        <div th:if="${#lists.isEmpty(myProductList)}" class="card-box">상품이 없습니다.</div>
+        <div th:each="item : ${myProductList}" class="card-box">
+            <!-- 상품명 클릭 시 상세로 이동 -->
+            <a th:href="@{'/product/' + ${item.productId}}" class="card-link" th:text="${item.title}"></a>
+            <span style="margin-left: 10px; color: #888;" th:text="'(' + ${item.status} + ')'"></span>
         </div>
     </div>
 
+    <!-- 대여/예약중 목록 -->
+    <div class="profile-rentals">
+        <h3 class="list-title">대여중/예약중인 목록</h3>
+        <div th:if="${#lists.isEmpty(myRentalList)}" class="card-box">대여/예약중인 상품이 없습니다.</div>
+        <div th:each="rental : ${myRentalList}" class="card-box">
+            <!-- 상품명 클릭 시 상세로 이동 -->
+            <a th:href="@{'/product/' + ${rental.product.productId}}" class="card-link" th:text="${rental.product.title}"></a>
+            <span style="margin-left: 10px; color: #888;" th:text="'상태: ' + ${rental.status}"></span>
+            <div style="margin-top: 4px; font-size: 13px; color: #444;">
+                <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy-MM-dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy-MM-dd')}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 받은 리뷰 목록 -->
     <div class="profile-reviews">
-        <h3 style="font-size: 16px; margin-bottom: 12px;">받은 리뷰</h3>
-        <div th:each="review : ${reviews}" style="margin-bottom: 12px; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
-            <strong th:text="${review.reviewer.name}" style="display: block; margin-bottom: 4px;">리뷰어</strong>
-            <p th:text="${review.reviewText}" style="margin: 0 0 4px;">리뷰 내용</p>
+        <h3 class="list-title">받은 리뷰</h3>
+        <div th:if="${#lists.isEmpty(reviews)}" class="card-box">아직 받은 리뷰가 없습니다.</div>
+        <div th:each="review : ${reviews}" class="card-box">
+            <!-- 리뷰어 이름 클릭 시 해당 유저 프로필로 이동 -->
+            <a th:href="@{'/mypage/profile/' + ${review.reviewer.username}}" class="card-link" th:text="${review.reviewer.name}"></a>
+            <p th:text="${review.reviewText}" style="margin: 6px 0 2px;"></p>
             <small th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}" style="color: #888;">날짜</small>
         </div>
-
     </div>
 </div>
-
 </body>
 </html>

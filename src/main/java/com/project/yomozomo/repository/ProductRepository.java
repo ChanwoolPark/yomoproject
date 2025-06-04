@@ -10,10 +10,14 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findBySubCategory_SubCategoryId(int subCategoryId);
 
     List<Product> findBySeller_IdAndStatus(int seller, String status);
+    List<Product> findBySeller_Id(Long sellerId);
+
 
 
 
     // is_deleted = 'N' 조건 추가
     List<Product> findBySubCategory_Category_CategoryIdAndIsDeleted(int categoryId, String isDeleted);
     List<Product> findBySubCategory_SubCategoryIdAndIsDeleted(int subCategoryId, String isDeleted);
+
+    List<Product> findBySeller_IdAndIsDeletedAndProductIdNot(Long sellerId, String isDeleted, int excludeProductId);
 }

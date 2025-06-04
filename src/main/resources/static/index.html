@@ -22,6 +22,7 @@
     <nav class="nav">
         <a href="/category">카테고리</a>
         <a href="/login" id="loginBtn">로그인</a>
+        <a href="/admin/chatrooms" id="myChatAdminBtn" style="display: none;">내 채팅창 관리</a>
         <a href="/logout" id="logoutBtn" style="display: none;">로그아웃</a>
         <a href="/my" id="myInfoBtn" style="display: none;">내정보</a>
     </nav>
@@ -53,10 +54,12 @@
     }
 
     // 로그인 여부에 따라 버튼 표시 (임시용)
-    const isLoggedIn = false; // 실제 로그인 여부 체크 로직으로 대체
+    const isLoggedIn = true; // ⭐ 테스트를 위해 true로 변경, 실제 로그인 로직으로 대체 필요 ⭐
     document.getElementById("loginBtn").style.display = isLoggedIn ? "none" : "inline";
     document.getElementById("logoutBtn").style.display = isLoggedIn ? "inline" : "none";
     document.getElementById("myInfoBtn").style.display = isLoggedIn ? "inline" : "none";
+    // ⭐ 새로 추가된 '내 채팅창 관리' 버튼의 가시성 설정 ⭐
+    document.getElementById("myChatAdminBtn").style.display = isLoggedIn ? "inline" : "none";
 </script>
 
 </body>

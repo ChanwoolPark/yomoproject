@@ -98,6 +98,11 @@
     </form>
 </div>
 
+<div style="text-align:center; margin-top: 20px;">
+    <button type="button" class="back-btn"
+            th:onclick="|location.href='/category/' + ${categoryId}|">뒤로가기</button>
+</div>
+
 <script>
     // 이미지 미리보기 (선택적)
     const imageInput = document.getElementById("images");
