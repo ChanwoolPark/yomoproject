@@ -36,20 +36,6 @@ public class ChatService {
 
     // --- 채팅방 관리 ---
 
-    @Transactional
-    public ChatRoom createChatRoom(String roomName) {
-        // 이 메서드는 roomName만으로 채팅방을 생성하는데, buyer, seller, rental 정보가 없으므로
-        // 현재 DB 스키마상 rental_id가 NOT NULL 이므로, 이 메서드로는 채팅방을 생성할 수 없습니다.
-        // 이 메서드를 호출하려면 rental, buyer, seller도 Builder로 설정해야 합니다.
-        // 관리 목적으로 "빈" 채팅방을 만들 필요가 없다면 이 메서드는 제거하거나,
-        // 예외를 던지도록 명시적으로 변경해야 합니다.
-        log.warn("ChatRoom createChatRoom(String roomName) 호출: 이 메서드는 rental, buyer, seller 정보 없이 채팅방을 생성할 수 없습니다. 적절한 사용 여부 확인 필요.");
-        throw new UnsupportedOperationException("채팅방은 구매자, 판매자, 렌탈 정보와 함께 생성되어야 합니다.");
-        // ChatRoom chatRoom = new ChatRoom();
-        // chatRoom.setRoomName(roomName);
-        // return chatRoomRepository.save(chatRoom);
-    }
-
     @Transactional(readOnly = true)
     public ChatRoom getChatRoomById(Long roomId) {
         return chatRoomRepository.findById(roomId)
@@ -132,19 +118,6 @@ public class ChatService {
         return chatRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom);
     }
 
-    @Transactional
-    public User createUser(String username) {
-        // 이 메서드는 ChatService보다는 UserService에 있는 것이 적절합니다.
-        log.warn("ChatService.createUser(String username) 호출: 사용자 생성 로직은 UserService에 있어야 합니다.");
-        User user = new User();
-        user.setUsername(username);
-        // User 엔티티의 다른 필수 필드들도 설정해야 할 수 있습니다.
-        // 예를 들어, password, email 등. DDL을 다시 확인하세요.
-        user.setName("Default Name"); // 임시 값
-        user.setEmail(username + "@example.com"); // 임시 값
-        user.setPassword("default_password"); // 임시 값 (실제로는 인코딩 필요)
-        return usersRepository.save(user);
-    }
 
     @Transactional // 트랜잭션이 걸려있어야 save가 정상 작동하고 롤백 가능
     public Long findOrCreateChatRoom(User buyer, User seller, Rental rental) {
