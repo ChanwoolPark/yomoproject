@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin/chatrooms") // 관리자 페이지 URL 프리픽스
+@RequestMapping("/chatadmin/chatrooms") // 관리자 페이지 URL 프리픽스
 @RequiredArgsConstructor
 public class ChatRoomAdminController {
 
