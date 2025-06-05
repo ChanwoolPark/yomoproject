@@ -2,6 +2,7 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.entity.User;
+import com.project.yomozomo.service.CategoryService;
 import com.project.yomozomo.service.ProductListService;
 import com.project.yomozomo.service.UserService;
 import org.springframework.stereotype.Controller;
@@ -19,20 +20,24 @@ public class ProductListController {
 
     private final ProductListService productListService;
     private final UserService userService;
+    private final CategoryService categoryService;
 
-    public ProductListController(ProductListService productListService, UserService userService) {
+    public ProductListController(ProductListService productListService, UserService userService, CategoryService categoryService) {
         this.productListService = productListService;
         this.userService = userService;
+        this.categoryService = categoryService;
     }
 
     // [1] 카테고리별 상품 목록
     @GetMapping("/{categoryId}")
     public String productList(@PathVariable int categoryId, Model model, Principal principal) {
-        // 카테고리 객체 생성 및 설정
         Category category = new Category();
         category.setCategoryId(categoryId);
 
-        // 모델에 데이터 추가
+        // 👇 카테고리 추가
+        List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
+        model.addAttribute("categories", categories);
+
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         model.addAttribute("products", productListService.getProductsByCategory(categoryId));
         model.addAttribute("category", category);
@@ -46,6 +51,10 @@ public class ProductListController {
                                            @PathVariable int subCategoryId,
                                            Model model,
                                            Principal principal) {
+
+        List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
+        model.addAttribute("categories", categories);
+
         // 카테고리 객체 생성 및 설정
         Category category = new Category();
         category.setCategoryId(categoryId);

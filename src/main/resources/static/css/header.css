@@ -1,40 +1,89 @@
-.nav-wrapper {
-    position: relative;
+/* 전체 헤더 */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    height: 60px; /* 헤더 높이 고정 */
 }
 
+/* 왼쪽 전체 영역 (로고 + 카테고리) */
+header > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+body {
+    margin: 0; /* ✅ 이거 추가 */
+    font-family: Arial, sans-serif;
+}
+
+/* 🐥 로고 고정 크기 */
+.logo {
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* 카테고리 전체 wrapper */
+.nav-wrapper {
+    position: relative;
+    margin-left: 60px; /* ✅ 시작 위치 오른쪽으로 밀기 */
+}
+
+/* 카테고리 목록 */
 .nav {
     display: flex;
-    gap: 24px;
+    gap: 48px;
     list-style: none;
     margin: 0;
     padding: 0;
+    justify-content: center; /* (선택) nav 자체를 중앙 정렬하고 싶을 경우 */
+}
+
+.nav li {
+    width: 100px;            /* ✅ 고정 너비 */
+    text-align: center;      /* ✅ 내부 정렬 */
 }
 
 .nav li a {
     text-decoration: none;
     color: #222;
     font-weight: 600;
-    padding: 12px 8px;
-    display: inline-block;
+    padding: 12px 4px;
+    display: block;          /* ✅ 변경 */
+    white-space: nowrap;
+    text-align: center;
 }
 
+/* hover 효과 */
 .nav li a:hover {
     color: #5b9bd5;
+}
+
+/* 오른쪽 (로그인 / 마이페이지) */
+header > div:last-child {
+    display: flex;
+    gap: 20px;
+    align-items: center;
 }
 
 /* 서브카테고리 드롭다운 */
 .all-sub-category-menu {
     display: none;
     position: absolute;
-    top: 100%;
-    left: 0;
+    top: 100%;                 /* 대카테고리 바로 아래 */
+    left: -28px;                   /* 왼쪽 정렬 (중앙 정렬 제거) */
     background-color: #fff;
     border: 1px solid #ddd;
-    padding: 20px 40px;
+    padding: 20px 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    z-index: 100;
-    gap: 60px;
-    width: 100%;
+    z-index: 9999;             /* 배너 위에 보이게 */
+    gap: 48px;                 /* ✅ 간격 좁힘 */
+    width: max-content;
     justify-content: flex-start;
     flex-wrap: wrap;
 }
@@ -43,12 +92,16 @@
     display: flex !important;
 }
 
+/* 서브카테고리 정렬 */
 .sub-group {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 6px;
-    min-width: 120px;
+    min-width: 100px;          /* ✅ 너무 넓으면 줄이기 */
+    text-align: center;
 }
+
 
 .sub-group strong {
     font-size: 15px;
@@ -62,6 +115,7 @@
     color: #333;
     font-size: 14px;
     white-space: nowrap;
+    text-align: center;
 }
 /*서브 카테고리 호버 스타일 용*/
 .sub-group a:hover {

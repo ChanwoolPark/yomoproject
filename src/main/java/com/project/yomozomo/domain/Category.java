@@ -20,6 +20,7 @@ public class Category {
     private String name;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @OrderBy("subCategoryId ASC")
     private List<SubCategory> subCategories;
 
 }
