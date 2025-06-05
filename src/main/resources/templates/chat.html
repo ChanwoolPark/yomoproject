@@ -568,6 +568,7 @@
     </style>
 </head>
 <body>
+<div th:replace="fragments/header :: header"></div>
 <div class="chat-container">
     <div class="chat-header">
         <h3 id="chatHeader">
@@ -575,6 +576,7 @@
         </h3>
         <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserprofile_image}" alt="내 프로필">
     </div>
+
 
     <div class="chat-messages" id="chatMessages">
     </div>
