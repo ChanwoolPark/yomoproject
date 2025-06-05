@@ -29,6 +29,7 @@
 
         <div style="display: flex; gap: 15px; align-items: center;">
             <a href="/login-page" id="loginBtn" th:if="${not #authorization.expression('isAuthenticated()')}">로그인</a>
+            <a href="/admin/chatrooms" id="myChatAdminBtn" th:if="${#authorization.expression('isAuthenticated()')}">내 채팅창 관리</a>
             <a href="/logout" id="logoutBtn" th:if="${#authorization.expression('isAuthenticated()')}">로그아웃</a>
             <a href="/mypage" id="myInfoBtn" th:if="${#authorization.expression('isAuthenticated()')}">마이페이지</a>
         </div>

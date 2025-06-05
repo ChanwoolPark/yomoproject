@@ -1,5 +1,5 @@
 // src/main/java/com/chat/controller/FileUploadController.java
-package com.chat.controller;
+package com.project.yomozomo.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;

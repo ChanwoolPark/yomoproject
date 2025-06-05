@@ -238,9 +238,8 @@
   </form>
 
   <hr />
-  <button type="button">1:1 채팅하기</button>
+  <button type="button" id="chattingButton" style="width: 100%; padding: 10px; margin-top: 10px;">1:1 채팅하기</button>
 </div>
-
 <!-- 오버레이 -->
 <div id="overlay" onclick="closeReservationModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
 
@@ -521,6 +520,45 @@
       nextEl: ".swiper-button-next",
       prevEl: ".swiper-button-prev",
     },
+  });
+
+  // product-detail.html 스크립트 부분
+  document.addEventListener('DOMContentLoaded', function () {
+    const chatButton = document.getElementById('chattingButton'); // 버튼 ID 추가
+
+    if (chatButton) {
+      chatButton.addEventListener('click', function () {
+        const productId = /*[[${product.productId}]]*/ 0;
+        const sellerId = /*[[${product.seller.id}]]*/ 0;
+        const currentUserId = /*[[${userId}]]*/ 0; // 현재 로그인된 사용자 ID
+
+        // 채팅방 생성 또는 조회 API 호출
+        fetch('/api/chat/room', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            productId: productId,
+            sellerId: sellerId,
+            buyerId: currentUserId // 현재 사용자가 구매자가 됩니다.
+          })
+        })
+                .then(response => response.json())
+                .then(data => {
+                  if (data.chatRoomId) {
+                    // 성공적으로 채팅방 ID를 받으면 채팅 페이지로 이동
+                    window.location.href = '/chat/' + data.chatRoomId;
+                  } else {
+                    alert('채팅방을 여는 데 실패했습니다.');
+                  }
+                })
+                .catch(error => {
+                  console.error('Error creating chat room:', error);
+                  alert('채팅방 연결 중 오류가 발생했습니다.');
+                });
+      });
+    }
   });
 </script>
 

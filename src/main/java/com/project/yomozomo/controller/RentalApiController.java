@@ -7,6 +7,7 @@ import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ProductRepository;
 import com.project.yomozomo.repository.RentalRepository;
 import com.project.yomozomo.repository.UserRepository;
+import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,14 +29,16 @@ public class RentalApiController {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final ChatService chatService;
 
     public RentalApiController(RentalRepository rentalRepository,
                                ProductRepository productRepository,
-                               UserRepository userRepository, UserService userService) {
+                               UserRepository userRepository, UserService userService, ChatService chatService) {
         this.rentalRepository = rentalRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.chatService = chatService;
     }
 
     private String formatDate(Date date) {
@@ -100,8 +103,11 @@ public class RentalApiController {
             rental.setStatus("예약");
             rental.setCreatedAt(new Date());
 
-            rentalRepository.save(rental);
+            Rental savedRental = rentalRepository.save(rental);
+
+            chatService.findOrCreateChatRoom(user, product.getSeller(), savedRental);
             return ResponseEntity.ok("예약 완료");
+
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("예약 실패: " + e.getMessage());
