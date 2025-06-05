@@ -14,5 +14,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     // 로그인한 유저가 '대여중' 또는 '예약' 상태인 rental 조회
     List<Rental> findByUserIdAndStatusIn(Long userId, List<String> statusList);
 
+    List<Rental> findByUserId(Long userId);
+
 
 }

@@ -56,7 +56,6 @@ public class Product {
     @Column(length = 20)
     private String status = "판매중";
 
-    private String rental_id;
 
     public void delete() {
         this.isDeleted = "Y";

@@ -38,7 +38,14 @@ public class HomeController {
                 "banner3.png"
         );*/
         List<Map<String, String>> imageList = new ArrayList<>();
-        imageList.add(Map.of("file", "banner1.png", "url", "https://www.youtube.com/watch?v=c_l1ZwJbAnc"));
+        imageList.add(Map.of("file", "banner1.png" +
+                "" +
+                "" +
+                "" +
+                "" +
+                "" +
+                "" +
+                "", "url", "https://www.youtube.com/watch?v=c_l1ZwJbAnc"));
         imageList.add(Map.of("file", "banner2.png", "url", "https://www.youtube.com/watch?v=x9mLLDcBmU0"));
         imageList.add(Map.of("file", "banner3.png", "url", "https://www.youtube.com/watch?v=RudIRwJwdAg"));
         model.addAttribute("imageList", imageList);

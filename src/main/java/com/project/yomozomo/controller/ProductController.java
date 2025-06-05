@@ -1,9 +1,11 @@
 package com.project.yomozomo.controller;
 
 
+import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.ProductImage;
 import com.project.yomozomo.entity.User;
+import com.project.yomozomo.service.CategoryService;
 import com.project.yomozomo.service.ProductDetailService;
 import com.project.yomozomo.service.UserService;
 import org.springframework.security.core.Authentication;
@@ -24,10 +26,12 @@ public class ProductController {
 
     private final ProductDetailService productDetailService;
     private final UserService userService;
+    private final CategoryService categoryService;
 
-    public ProductController(ProductDetailService productDetailService, UserService userService) {
+    public ProductController(ProductDetailService productDetailService, UserService userService, CategoryService categoryService) {
         this.productDetailService = productDetailService;
         this.userService = userService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/{id}")
@@ -65,6 +69,7 @@ public class ProductController {
 
         int wishlistCount = productDetailService.getWishlistCount(productId);
         List<Product> otherProducts = productDetailService.getOtherProductsBySeller(seller.getId(), productId);
+        List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
 
         model.addAttribute("product", product);
         model.addAttribute("imageList", imageList);
@@ -74,6 +79,7 @@ public class ProductController {
         model.addAttribute("userId", userId);
         model.addAttribute("wishlistCount", wishlistCount);
         model.addAttribute("otherProducts", otherProducts);
+        model.addAttribute("categories", categories);
 
         return "product/detail";
     }

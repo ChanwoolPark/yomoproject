@@ -1,6 +1,7 @@
 package com.project.yomozomo.entity;
 
 import com.project.yomozomo.domain.Product;
+import com.project.yomozomo.domain.Rental;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,13 +18,14 @@ import java.time.LocalDateTime;
 public class Review {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_review")
+    @SequenceGenerator(name = "seq_review", sequenceName = "SEQ_REVIEW", allocationSize = 1)
     @Column(name = "review_id")
     private Long reviewId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transaction_id")
-    private TransactionHistory transaction;
+    @JoinColumn(name = "rental_id") // rental_id로 바꿔줘!
+    private Rental rental;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewer_id")

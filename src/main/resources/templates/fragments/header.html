@@ -1,11 +1,12 @@
 <div th:fragment="header">
-    <header style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
+    <header>
         <div style="display: flex; align-items: center; gap: 30px;">
             <div class="logo" onclick="location.href='/'" style="cursor:pointer;">🐥요모</div>
 
+            <!-- 전체 네비게이션 감싸는 영역 -->
             <nav class="nav-wrapper" style="position: relative;">
-                <ul th:if="${categories != null}" class="nav"
-                    style="display: flex; gap: 20px; list-style: none; margin: 0; padding: 0;">
+                <!-- 대카테고리 리스트 -->
+                <ul th:if="${categories != null}" class="nav">
                     <li th:each="category : ${categories}">
                         <a th:href="@{'/category/' + ${category.categoryId}}"
                            th:text="${category.name}"
@@ -13,8 +14,8 @@
                     </li>
                 </ul>
 
-                <div class="all-sub-category-menu"
-                     style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ccc; padding: 20px 30px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 100; gap: 40px; width: max-content;">
+                <!-- 모든 서브카테고리 한번에 표시 -->
+                <div class="all-sub-category-menu">
                     <div th:each="category : ${categories}" class="sub-group" style="display: flex; flex-direction: column; gap: 5px;">
                         <strong th:text="${category.name}" style="color: #555;"></strong>
                         <a th:each="sub : ${category.subCategories}"
@@ -28,7 +29,7 @@
 
         <div style="display: flex; gap: 15px; align-items: center;">
             <a href="/login-page" id="loginBtn" th:if="${not #authorization.expression('isAuthenticated()')}">로그인</a>
-            <a href="/admin/chatrooms" id="myChatAdminBtn" th:if="${#authorization.expression('isAuthenticated()')}">내 채팅창 관리</a>
+            <a href="/chatadmin/chatrooms" id="myChatAdminBtn" th:if="${#authorization.expression('isAuthenticated()')}">내 채팅창 관리</a>
             <a href="/logout" id="logoutBtn" th:if="${#authorization.expression('isAuthenticated()')}">로그아웃</a>
             <a href="/mypage" id="myInfoBtn" th:if="${#authorization.expression('isAuthenticated()')}">마이페이지</a>
         </div>

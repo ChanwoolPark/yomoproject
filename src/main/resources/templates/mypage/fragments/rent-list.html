@@ -46,16 +46,25 @@
     </style>
 </head>
 <body>
-<div class="profile-rentals">
-    <h3 class="list-title">대여/예약중인 목록</h3>
-    <div th:if="${#lists.isEmpty(myRentalList)}" class="card-box">대여/예약중인 상품이 없습니다.</div>
-    <div th:each="rental : ${myRentalList}" class="card-box">
-        <a th:href="@{'/product/' + ${rental.product.productId}}" class="card-link" th:text="${rental.product.title}"></a>
-        <span style="margin-left: 10px; color: #888;" th:text="'상태: ' + ${rental.status}"></span>
-        <div style="margin-top: 4px; font-size: 13px; color: #444;">
-            <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy-MM-dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy-MM-dd')}"></span>
+<div th:if="${#lists.isEmpty(myRentalList)}" class="empty-msg">대여/예약 내역이 없습니다.</div>
+<div th:each="rental : ${myRentalList}">
+    <div class="card-box">
+        <span>상품명: <b th:text="${rental.product.title}"></b></span>
+        <span>상태: <b th:text="${rental.status}"></b></span>
+        <div style="margin-top: 8px;" th:if="${rental.status == '반납완료'}">
+            <button type="button"
+                    th:if="!${reviewWrittenMap[rental.rentalId]}"
+                    th:attr="data-rental-id=${rental.rentalId}, data-product-id=${rental.product.productId}, data-target-id=${rental.product.seller.id}, data-product-title=${rental.product.title}"
+                    onclick="openReviewModalByAttr(this)"
+                    style="padding:6px 16px; border-radius:7px; border:none; background:#596bff; color:#fff; font-weight:500; cursor:pointer;">
+                리뷰쓰기
+            </button>
+            <span th:if="${reviewWrittenMap[rental.rentalId]}"
+                  style="color:#aaa; font-weight:600; font-size:0.97rem;">작성완료</span>
         </div>
     </div>
 </div>
+
+
 </body>
 </html>
