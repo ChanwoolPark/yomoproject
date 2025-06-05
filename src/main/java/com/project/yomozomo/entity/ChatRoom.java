@@ -32,8 +32,8 @@ public class ChatRoom {
     @Column(name = "CREATED_AT", columnDefinition = "TIMESTAMP DEFAULT SYSTIMESTAMP")
     private LocalDateTime createdAt; // Oracle의 SYSTIMESTAMP와 매핑
 
-    @ManyToOne
-    @JoinColumn(name = "rental_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rental_id")
     private Rental rental; // 렌탈 필드는 존재합니다.
 
     @ManyToOne
