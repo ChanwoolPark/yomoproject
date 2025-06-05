@@ -81,6 +81,14 @@ public class User {
     @Column(name = "review_count")
     private Integer reviewCount;
 
+    // 관리자 계정
+    @Column(nullable = false)
+    private String role;
+
     @Column(name = "coupon_count")
     private Integer couponCount = 0;
+
+    public String getRole() {
+        return role; // 예시: "ADMIN" 또는 "USER"
+    }
 }
