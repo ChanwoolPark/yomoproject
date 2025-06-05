@@ -1,10 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>내가 쓴 리뷰</title>
+    <style>
+        .list-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            margin-top: 22px;
+        }
+        .card-box {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+            background: #fafbfc;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
+        }
+        .card-link {
+            color: #4a90e2;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<h1>리뷰 창입니다.</h1>
+<div class="my-reviews-section">
+    <h3 class="list-title">내가 쓴 리뷰</h3>
+    <div th:if="${#lists.isEmpty(myWrittenReviews)}" class="card-box">
+        아직 내가 작성한 리뷰가 없습니다.
+    </div>
+    <div th:each="review : ${myWrittenReviews}" class="card-box">
+        <!-- 리뷰 대상자(판매자/구매자 등) 프로필로 이동 -->
+        <a th:href="@{'/mypage/profile/' + ${review.target.username}}" class="card-link"
+           th:text="'[대상] ' + ${review.target.name}"></a>
+        <p th:text="${review.reviewText}" style="margin: 6px 0 2px;"></p>
+        <small th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}" style="color: #888;">날짜</small>
+    </div>
+</div>
 </body>
 </html>
