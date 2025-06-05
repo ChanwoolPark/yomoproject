@@ -23,7 +23,7 @@
 <h1>채팅방 관리</h1>
 
 <div class="search-form">
-  <form th:action="@{/admin/chatrooms}" method="get">
+  <form th:action="@{/templates/admin/chatrooms}" method="get">
     <label for="roomName">채팅방 이름:</label>
     <input type="text" id="roomName" name="roomName" th:value="${param.roomName}">
     <label for="buyerName">구매자 이름:</label>
@@ -31,7 +31,7 @@
     <label for="sellerName">판매자 이름:</label>
     <input type="text" id="sellerName" name="sellerName" th:value="${param.sellerName}">
     <button type="submit">검색</button>
-    <button type="button" onclick="location.href='/admin/chatrooms'">초기화</button>
+    <button type="button" onclick="location.href='admin/chatrooms'">초기화</button>
   </form>
 </div>
 

@@ -1,11 +1,16 @@
 package com.project.yomozomo.config;
 
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
+import com.project.yomozomo.service.CustomUserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -17,6 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -24,6 +31,7 @@ public class SecurityConfig {
 
 
     private final OAuth2LoginSuccessHandler successHandler;
+
 
     public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
         this.successHandler = successHandler;
@@ -34,6 +42,7 @@ public class SecurityConfig {
         System.out.println("★ SecurityConfig 로드됨");
         http
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers(
                                 "/", "/index.html", "/login", "/login/form", "/login/**",
                                 "/css/**", "/js/**", "/images/**",
@@ -132,5 +141,6 @@ public class SecurityConfig {
             );
         };
     }
+
 
 }
