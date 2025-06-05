@@ -7,6 +7,13 @@ header {
     height: 60px; /* 헤더 높이 고정 */
 }
 
+header a {
+    font-size: 16px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+
 /* 왼쪽 전체 영역 (로고 + 카테고리) */
 header > div:first-child {
     display: flex;

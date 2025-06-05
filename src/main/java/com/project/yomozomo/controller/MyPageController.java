@@ -1,34 +1,22 @@
 package com.project.yomozomo.controller;
 
-import com.project.yomozomo.domain.Product;
-import com.project.yomozomo.domain.Rental;
-import com.project.yomozomo.domain.UserWallet;
-import com.project.yomozomo.domain.ViewedProduct;
+import com.project.yomozomo.domain.*;
 import com.project.yomozomo.dto.ProductDto;
-import com.project.yomozomo.dto.UserEditForm;
 import com.project.yomozomo.entity.Review;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.*;
-import com.project.yomozomo.service.ProductListService;
-import com.project.yomozomo.service.UserService;
-import com.project.yomozomo.service.WalletService;
-import com.project.yomozomo.service.WishlistService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
+import com.project.yomozomo.service.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Controller
@@ -44,6 +32,7 @@ public class MyPageController {
     private final ProductListService productListService;
     private final UserWalletRepository userWalletRepository;
     private final WalletService walletService;
+    private final CategoryService categoryService;
 
 
 
@@ -51,9 +40,10 @@ public class MyPageController {
     public String mypage(Model model, Principal principal) {
         String username = principal.getName(); // email 또는 username
         User user = usersRepository.findByUsername(username).orElseThrow();; // 또는 findByEmail
-
+        List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
 
         model.addAttribute("user", user);  // ★ 이게 안 들어가면 Thymeleaf에서 user.profileImageUrl 못 씀
+        model.addAttribute("categories", categories);
 
         return "mypage/layout";
     }

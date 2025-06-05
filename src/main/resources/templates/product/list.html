@@ -4,9 +4,18 @@
 
     <link rel="stylesheet" href="/css/header.css">
     <style>
-        .container { display: flex; gap: 20px; padding: 20px; }
-        .left, .right { width: 20%; }
-        .center {
+        .product-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .product-left,
+        .product-right {
+            width: 20%;
+        }
+
+        .product-center {
             flex-grow: 1;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -33,10 +42,10 @@
 <body>
 <div th:replace="fragments/header :: header"></div>
 
-<div class="container">
+<div class="product-container">
 
     <!-- 왼쪽: 서브카테고리 -->
-    <div class="left">
+    <div class="product-left">
         <h3>서브 카테고리</h3>
         <ul>
             <li th:each="sub : ${subCategories}">
@@ -47,7 +56,7 @@
     </div>
 
     <!-- 중앙: 상품 리스트 -->
-    <div class="center">
+    <div class="product-center">
 
         <!-- 상품 올리기 -->
         <div style="grid-column: 1 / -1; text-align: right; margin-bottom: 10px;">
@@ -56,7 +65,6 @@
                 상품 글쓰기
             </a>
         </div>
-
 
         <div th:each="product : ${products}" class="product-box-wrapper">
             <a th:href="@{'/product/' + ${product.productId}}" class="product-box-link">
@@ -72,7 +80,7 @@
     </div>
 
     <!-- 오른쪽: 최근 본 상품 & 찜 -->
-    <div class="right">
+    <div class="product-right">
         <h4>최근 본 상품</h4>
         <div class="recently-viewed-items">
             <div th:each="item : ${recentlyViewed}" class="recent-item" style="display: flex; margin-bottom: 10px;">
@@ -90,7 +98,6 @@
             </div>
         </div>
     </div>
-
 </div>
 
 <!-- Top 버튼 -->
