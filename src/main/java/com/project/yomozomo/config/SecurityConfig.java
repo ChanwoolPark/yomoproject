@@ -42,7 +42,7 @@ public class SecurityConfig {
         System.out.println("★ SecurityConfig 로드됨");
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/admin1/**").hasAuthority("ADMIN")
                         .requestMatchers(
                                 "/", "/index.html", "/login", "/login/form", "/login/**",
                                 "/css/**", "/js/**", "/images/**",
@@ -141,6 +141,6 @@ public class SecurityConfig {
             );
         };
     }
-    
+
 
 }

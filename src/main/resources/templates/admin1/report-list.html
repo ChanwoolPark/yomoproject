@@ -16,7 +16,7 @@
     <td th:text="${report.reason}"></td>
     <td th:text="${report.status}"></td>
     <td>
-      <form th:action="@{/admin/reports/process}" method="post">
+      <form th:action="@{/templates/admin1/reports/process}" method="post">
         <input type="hidden" th:name="id" th:value="${report.id}"/>
         <select name="action">
           <option value="WARN">경고</option>
