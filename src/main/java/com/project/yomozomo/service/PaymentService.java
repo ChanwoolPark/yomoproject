@@ -61,9 +61,10 @@ public class PaymentService {
         walletService.addChargeLog(sellerWallet.getWalletId(), price, "상품대여(판매자 수익)");
         walletLogService.saveLog(sellerWallet.getWalletId(), "상품대여(판매자 수익)", price);
 
-        // (3) 관리자(1번 유저)에게 보증금 입금
-        Long adminId = 999L;
-        UserWallet adminWallet = userWalletRepository.findByUserId(adminId);
+        // (3) 관리자에게 보증금 입금
+        User admin = userRepository.findByRole("ADMIN")
+                .orElseThrow(() -> new RuntimeException("관리자 계정이 존재하지 않습니다."));
+        UserWallet adminWallet = userWalletRepository.findByUserId(admin.getId());
         adminWallet.setBalance(adminWallet.getBalance() + deposit);
         userWalletRepository.save(adminWallet);
         walletService.addChargeLog(adminWallet.getWalletId(), deposit, "상품대여(보증금)");
@@ -92,8 +93,9 @@ public class PaymentService {
         Product product = rental.getProduct();
         int deposit = product.getDeposit();
 
-        Long adminId = 999L;
-        UserWallet adminWallet = userWalletRepository.findByUserId(adminId);
+        User admin = userRepository.findByRole("ADMIN")
+                .orElseThrow(() -> new RuntimeException("관리자 계정이 존재하지 않습니다."));
+        UserWallet adminWallet = userWalletRepository.findByUserId(admin.getId());
         UserWallet buyerWallet = userWalletRepository.findByUserId(rental.getUser().getId());
 
         // (1) status 변경
