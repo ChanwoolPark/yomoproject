@@ -86,4 +86,28 @@ public class PaymentService {
 
         return true;
     }
+    @Transactional
+    public void refundDepositAndCompleteRental(Long rentalId) {
+        Rental rental = rentalRepository.findById(rentalId).orElseThrow(() -> new IllegalArgumentException("렌탈 정보 없음"));
+        Product product = rental.getProduct();
+        int deposit = product.getDeposit();
+
+        Long adminId = 999L;
+        UserWallet adminWallet = userWalletRepository.findByUserId(adminId);
+        UserWallet buyerWallet = userWalletRepository.findByUserId(rental.getUser().getId());
+
+        // (1) status 변경
+        rental.setStatus("반납완료");
+        rentalRepository.save(rental);
+
+        // (2) 보증금 반환
+        adminWallet.setBalance(adminWallet.getBalance() - deposit);
+        buyerWallet.setBalance(buyerWallet.getBalance() + deposit);
+        userWalletRepository.save(adminWallet);
+        userWalletRepository.save(buyerWallet);
+        walletService.addChargeLog(buyerWallet.getWalletId(), deposit, "보증금 반환");
+        walletLogService.saveLog(buyerWallet.getWalletId(), "보증금 반환", deposit);
+
+        // (선택) 알림, 거래내역 등 추가 가능
+    }
 }

@@ -1014,9 +1014,26 @@
 
         if (tradeCompleteBtn) {
             tradeCompleteBtn.addEventListener('click', function () {
-                // 리뷰 페이지로 이동 (렌탈번호 넘길 필요 없으면 /리뷰, 필요하면 /리뷰?rid= 등으로 수정)
                 toggleExpandedPanel(false);
-                window.location.href = '/리뷰';
+
+                fetch('/complete/' + currentRentalId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => {
+                        if (res.ok) {
+                            alert('거래가 완료되고 보증금이 반환되었습니다!');
+                            // 필요하다면 여기서 location.href로 이동
+                            // location.href = "/somewhere";
+                        } else {
+                            return res.text().then(msg => { throw new Error(msg); });
+                        }
+                    })
+                    .catch(err => {
+                        alert('거래 완료 처리 실패: ' + err.message);
+                    });
             });
         }
 
