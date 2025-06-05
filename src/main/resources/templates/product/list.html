@@ -37,30 +37,75 @@
             right: 20px;
             padding: 10px;
         }
+
+        /*최근검색어*/
+        .tab.active {
+            border-bottom: 2px solid red;
+            font-weight: bold;
+            color: red;
+        }
+        .tab {
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+        }
+        #searchSuggestions li:hover {
+            background-color: #f5f5f5;
+        }
     </style>
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
 <!--검색창 영역-->
-<form action="/search" method="get" style="display: flex; gap: 10px; margin: 20px;">
+<form action="/search" method="get" style="display: flex; gap: 10px; margin: 20px; position: relative; max-width: 600px;">
     <!-- 카테고리 선택 -->
     <select name="categoryId" style="padding: 8px;">
-        <option value="" th:selected="${selectedCategoryId == null}">전체</option>
+        <option value="">전체</option>
         <option th:each="cat : ${categories}"
                 th:value="${cat.categoryId}"
-                th:text="${cat.name}"
-                th:selected="${cat.categoryId == selectedCategoryId}">
+                th:text="${cat.name}">
         </option>
     </select>
 
     <!-- 검색어 입력 -->
-    <input type="text" name="keyword" placeholder="검색어 입력"
-           th:value="${keyword}" style="padding: 8px; width: 300px;" />
+    <input type="text" name="keyword" id="keywordInput"
+           placeholder="검색어 입력"
+           th:value="${keyword}"
+           onfocus="showSearchSuggestions()"
+           style="padding: 8px; width: 300px;" />
 
     <!-- 검색 버튼 -->
     <button type="submit" style="padding: 8px 16px;">검색</button>
-</form>
 
+    <!-- ▼ 추천 검색어 드롭다운 -->
+    <div id="searchSuggestions"
+         style="display: none; position: absolute; top: 48px; left: 0; width: 100%; background: white; border: 1px solid #ccc; z-index: 999;">
+
+        <!-- 탭 버튼 그룹 -->
+        <div style="display: flex; border-bottom: 1px solid #ddd;">
+            <button type="button"
+                    id="tab-recent"
+                    th:class="${sourceTab == null or sourceTab == 'recent'} ? 'tab active' : 'tab'"
+                    onclick="switchTab('recent')"
+                    style="flex: 1; padding: 10px; font-weight: bold; cursor: pointer;">
+                최근검색어
+            </button>
+
+            <button type="button"
+                    id="tab-popular"
+                    th:class="${sourceTab == 'popular'} ? 'tab active' : 'tab'"
+                    onclick="switchTab('popular')"
+                    style="flex: 1; padding: 10px; font-weight: bold; cursor: pointer;">
+                인기검색어
+            </button>
+        </div>
+
+        <!-- 추천어 리스트 -->
+        <ul id="recentList" style="list-style: none; margin: 0; padding: 10px;"></ul>
+        <ul id="popularList" style="list-style: none; margin: 0; padding: 10px; display: none;"></ul>
+    </div>
+</form>
 
 <div class="product-container">
 
@@ -135,5 +180,67 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
+
+<!--인기 검색어 / 최근 검색어 동작-->
+<script>
+    // 추천 박스 표시
+    function showSearchSuggestions() {
+        document.getElementById("searchSuggestions").style.display = "block";
+        loadRecentKeywords();
+        loadPopularKeywords();
+    }
+
+    // 탭 전환
+    function switchTab(tab) {
+        document.getElementById("recentList").style.display = tab === 'recent' ? 'block' : 'none';
+        document.getElementById("popularList").style.display = tab === 'popular' ? 'block' : 'none';
+        document.getElementById("tab-recent").classList.toggle("active", tab === 'recent');
+        document.getElementById("tab-popular").classList.toggle("active", tab === 'popular');
+    }
+
+    // 최근 검색어 로딩 (세션Storage 또는 서버 세션)
+    function loadRecentKeywords() {
+        fetch("/session-keywords") // 서버 세션에서 가져오는 방식
+            .then(res => res.json())
+            .then(data => {
+                const ul = document.getElementById("recentList");
+                ul.innerHTML = data.length === 0
+                    ? "<li>최근 검색어가 없습니다.</li>"
+                    : data.map(k => `<li style="cursor:pointer;" onclick="goSearch('${k}', 'recent')">${k}</li>`).join("")
+            });
+    }
+
+    // 인기 검색어 로딩 (조회수 기준)
+    function loadPopularKeywords() {
+        fetch("/api/popular-keywords")
+            .then(res => res.json())
+            .then(data => {
+                const ul = document.getElementById("popularList");
+                ul.innerHTML = data.length === 0
+                    ? "<li>인기 검색어가 없습니다.</li>"
+                    : data.map(k => `<li style="cursor:pointer;" onclick="goSearch('${k}', 'popular')">${k}</li>`).join("")
+            });
+    }
+
+    // 검색 실행
+    function goSearch(keyword, sourceTab) {
+        if (sourceTab === 'popular') {
+            switchTab('popular');
+        } else {
+            switchTab('recent');
+        }
+        location.href = "/search?keyword=" + encodeURIComponent(keyword) + "&sourceTab=" + sourceTab;
+    }
+
+    // 외부 클릭 시 닫기
+    document.addEventListener("click", function(e) {
+        const box = document.getElementById("searchSuggestions");
+        const input = document.getElementById("keywordInput");
+        if (!box.contains(e.target) && e.target !== input) {
+            box.style.display = "none";
+        }
+    });
+</script>
+
 </body>
 </html>

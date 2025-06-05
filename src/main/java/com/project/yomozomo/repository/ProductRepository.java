@@ -1,7 +1,9 @@
 package com.project.yomozomo.repository;
 
 import com.project.yomozomo.domain.Product;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -25,4 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findByTitleContainingIgnoreCaseAndIsDeleted(String keyword, String isDeleted);
     List<Product> findByIsDeleted(String isDeleted);
     List<Product> findBySubCategory_Category_CategoryIdAndTitleContainingIgnoreCaseAndIsDeleted(int categoryId, String keyword, String isDeleted);
+
+    @Query("SELECT p.title FROM Product p WHERE p.isDeleted = 'N' ORDER BY p.count DESC")
+    List<String> findTop10PopularTitles(Pageable pageable);
 }
