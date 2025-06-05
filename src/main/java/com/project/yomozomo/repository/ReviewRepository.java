@@ -21,9 +21,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     // 📌 특정 유저가 받은 모든 리뷰
     List<Review> findByTargetId(Long userId);
 
-    // 📌 특정 거래에 대해 이미 작성된 리뷰가 있는지 확인 (중복 방지)
-    boolean existsByTransaction_TransactionIdAndReviewer_Id(Long transactionId, Long reviewerId);
+    // rentalId, reviewerId로 이미 리뷰 쓴 적 있는지 체크
+    boolean existsByRental_RentalIdAndReviewer_Id(Long rentalId, Long reviewerId);
 
     // 📌 특정 유저가 작성한 리뷰
     List<Review> findByReviewer(User user);
+
 }

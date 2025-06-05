@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Controller
@@ -128,12 +130,35 @@ public class MyPageController {
     public String rentListFragment(Model model, Principal principal) {
         String username = principal.getName();
         User user = usersRepository.findByUsername(username).orElseThrow();
-        // 대여/예약중 목록만 추출
-        List<String> statusList = Arrays.asList("예약", "대여중");
+
+        // 대여/예약/반납완료 전체 목록
+        List<String> statusList = Arrays.asList("예약", "대여중", "반납대기", "반납완료");
         List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList);
-        model.addAttribute("myRentalList", myRentalList); // 이 이름이 중요!
+
+        // 리뷰 작성 여부 map 생성 (렌탈ID -> true/false)
+        Map<Long, Boolean> reviewWrittenMap = new HashMap<>();
+        for (Rental rental : myRentalList) {
+            boolean written = reviewRepository.existsByRental_RentalIdAndReviewer_Id(rental.getRentalId(), user.getId());
+            reviewWrittenMap.put(rental.getRentalId(), written);
+        }
+
+        model.addAttribute("myRentalList", myRentalList);
+        model.addAttribute("reviewWrittenMap", reviewWrittenMap); // ★ 리뷰작성여부 추가!
+
+        if (myRentalList == null) {
+            System.out.println("myRentalList가 null임!");
+        } else if (myRentalList.isEmpty()) {
+            System.out.println("myRentalList 비어있음!");
+        } else {
+            for (int i = 0; i < myRentalList.size(); i++) {
+                System.out.println("rental[" + i + "]: " + myRentalList.get(i));
+            }
+        }
+
+
         return "mypage/fragments/rent-list";
     }
+
 
     @GetMapping("/sale-list")
     public String saleListFragment(Model model, Principal principal) {
@@ -239,7 +264,6 @@ public class MyPageController {
 
         return "mypage/full-profile"; // 마이페이지 상세 html 위치!
     }
-
 
 
 }
