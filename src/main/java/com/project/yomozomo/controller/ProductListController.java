@@ -30,17 +30,20 @@ public class ProductListController {
 
     // [1] 카테고리별 상품 목록
     @GetMapping("/{categoryId}")
-    public String productList(@PathVariable int categoryId, Model model, Principal principal) {
+    public String productList(@PathVariable int categoryId,
+                              Model model,
+                              Principal principal) {
+
+        model.addAttribute("isSearch", false);
+
         Category category = new Category();
         category.setCategoryId(categoryId);
 
-        // 👇 카테고리 추가
         List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
         model.addAttribute("categories", categories);
-
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
-        model.addAttribute("products", productListService.getProductsByCategory(categoryId));
         model.addAttribute("category", category);
+        model.addAttribute("products", productListService.getProductsByCategory(categoryId));
 
         addUserRelatedAttributes(model, principal);
         return "product/list";
@@ -52,17 +55,16 @@ public class ProductListController {
                                            Model model,
                                            Principal principal) {
 
+        model.addAttribute("isSearch", false);
+
         List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
         model.addAttribute("categories", categories);
 
-        // 카테고리 객체 생성 및 설정
         Category category = new Category();
         category.setCategoryId(categoryId);
-
-        // 모델에 데이터 추가
+        model.addAttribute("category", category);
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         model.addAttribute("products", productListService.getProductsBySubCategoryId(subCategoryId));
-        model.addAttribute("category", category);
 
         addUserRelatedAttributes(model, principal);
         return "product/list";

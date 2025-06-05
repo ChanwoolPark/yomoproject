@@ -52,6 +52,25 @@
 <!-- 헤더 삽입 -->
 <div th:replace="fragments/header :: header"></div>
 
+<!-- 검색창 영역 (index.html에 복붙) -->
+<form action="/search" method="get" style="display: flex; gap: 10px; margin: 20px;">
+    <!-- 카테고리 선택 -->
+    <select name="categoryId" style="padding: 8px;">
+        <option value="">전체</option>
+        <option th:each="cat : ${categories}"
+                th:value="${cat.categoryId}"
+                th:text="${cat.name}">
+        </option>
+    </select>
+
+    <!-- 검색어 입력 -->
+    <input type="text" name="keyword" placeholder="검색어 입력"
+           style="padding: 8px; width: 300px;" />
+
+    <!-- 검색 버튼 -->
+    <button type="submit" style="padding: 8px 16px;">검색</button>
+</form>
+
 <main>
     <section class="banner swiper mySwiper" style="width: 100%; height: 400px; margin: 0;">
         <div class="swiper-wrapper">

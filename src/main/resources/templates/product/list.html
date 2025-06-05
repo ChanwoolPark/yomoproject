@@ -41,13 +41,35 @@
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
+<!--검색창 영역-->
+<form action="/search" method="get" style="display: flex; gap: 10px; margin: 20px;">
+    <!-- 카테고리 선택 -->
+    <select name="categoryId" style="padding: 8px;">
+        <option value="" th:selected="${selectedCategoryId == null}">전체</option>
+        <option th:each="cat : ${categories}"
+                th:value="${cat.categoryId}"
+                th:text="${cat.name}"
+                th:selected="${cat.categoryId == selectedCategoryId}">
+        </option>
+    </select>
+
+    <!-- 검색어 입력 -->
+    <input type="text" name="keyword" placeholder="검색어 입력"
+           th:value="${keyword}" style="padding: 8px; width: 300px;" />
+
+    <!-- 검색 버튼 -->
+    <button type="submit" style="padding: 8px 16px;">검색</button>
+</form>
+
 
 <div class="product-container">
 
     <!-- 왼쪽: 서브카테고리 -->
     <div class="product-left">
-        <h3>서브 카테고리</h3>
-        <ul>
+        <h3 th:if="${isSearch and selectedCategoryId == null}">🔍 전체 검색 중입니다</h3>
+        <h3 th:unless="${isSearch and selectedCategoryId == null}">서브 카테고리</h3>
+
+        <ul th:if="${not (isSearch and selectedCategoryId == null)}">
             <li th:each="sub : ${subCategories}">
                 <a th:href="@{'/category/' + ${sub.category.categoryId} + '/subcategory/' + ${sub.subCategoryId}}"
                    th:text="${sub.name}" style="text-decoration:none; color:black;"></a>
@@ -60,12 +82,18 @@
 
         <!-- 상품 올리기 -->
         <div style="grid-column: 1 / -1; text-align: right; margin-bottom: 10px;">
-            <a th:href="@{'/product/write?categoryId=' + ${category.categoryId}}"
+            <a th:href="@{'/product/write?categoryId=' + ${category != null ? category.categoryId : ''}}"
                style="padding: 8px 16px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
                 상품 글쓰기
             </a>
         </div>
 
+        <!-- 검색 결과가 없을 때 -->
+        <div th:if="${#lists.isEmpty(products)}" style="grid-column: 1 / -1; text-align: center;">
+            <p>🔍 검색 결과가 없습니다.</p>
+        </div>
+
+        <!-- 검색 결과가 있을 때 -->
         <div th:each="product : ${products}" class="product-box-wrapper">
             <a th:href="@{'/product/' + ${product.productId}}" class="product-box-link">
                 <div class="product-box">
