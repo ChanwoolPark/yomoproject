@@ -54,6 +54,7 @@ public class ChatController {
 
         ChatRoom chatRoom = chatService.getChatRoomById(roomId);
 
+
         boolean isBuyer = currentUser.getId().equals(chatRoom.getBuyer().getId());
         boolean isSeller = currentUser.getId().equals(chatRoom.getSeller().getId());
 
@@ -71,6 +72,9 @@ public class ChatController {
         model.addAttribute("currentUserId", currentUser.getId());
         model.addAttribute("chatPartnerNickname", chatPartnerNickname);
         model.addAttribute("chatRoomId", roomId);
+
+        System.out.println("채팅방 ID: " + roomId + ", rental: " + chatRoom.getRental());
+        System.out.println("rentalId: " + (chatRoom.getRental() != null ? chatRoom.getRental().getRentalId() : "null"));
 
         if (chatRoom.getRental() != null) {
             model.addAttribute("currentRentalId", chatRoom.getRental().getRentalId());
