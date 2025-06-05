@@ -524,38 +524,37 @@
 
   // product-detail.html 스크립트 부분
   document.addEventListener('DOMContentLoaded', function () {
-    const chatButton = document.getElementById('chattingButton'); // 버튼 ID 추가
+    const chatButton = document.getElementById('chattingButton');
 
     if (chatButton) {
       chatButton.addEventListener('click', function () {
-        const productId = /*[[${product.productId}]]*/ 0;
-        const sellerId = /*[[${product.seller.id}]]*/ 0;
-        const currentUserId = /*[[${userId}]]*/ 0; // 현재 로그인된 사용자 ID
+        const rentalIdToPass = /*[[${product.productId}]]*/ 0; // ⭐ product.productId를 rentalId로 사용 ⭐
 
         // 채팅방 생성 또는 조회 API 호출
-        fetch('/api/chat/room', {
+        fetch('/api/chatrooms/start', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json' // JSON 타입 명시
           },
           body: JSON.stringify({
-            productId: productId,
-            sellerId: sellerId,
-            buyerId: currentUserId // 현재 사용자가 구매자가 됩니다.
+            rentalId: rentalIdToPass // ⭐ 백엔드 DTO 필드명과 일치시켜야 함 ⭐
+            // 필요하다면 productId, sellerId, buyerId도 여기에 추가 (백엔드 DTO에 추가 후)
           })
         })
-                .then(response => response.json())
-                .then(data => {
-                  if (data.chatRoomId) {
-                    // 성공적으로 채팅방 ID를 받으면 채팅 페이지로 이동
-                    window.location.href = '/chat/' + data.chatRoomId;
-                  } else {
-                    alert('채팅방을 여는 데 실패했습니다.');
+                .then(response => {
+                  if (response.ok) {
+                    return response.json();
                   }
+                  // 서버에서 반환하는 에러 메시지가 있다면 그걸 사용
+                  return response.text().then(text => { throw new Error(text || '채팅방을 여는 데 실패했습니다.'); });
+                })
+                .then(chatRoomId => {
+                  // 성공적으로 채팅방 ID를 받으면 채팅 페이지로 이동
+                  window.location.href = '/chat/' + chatRoomId;
                 })
                 .catch(error => {
                   console.error('Error creating chat room:', error);
-                  alert('채팅방 연결 중 오류가 발생했습니다.');
+                  alert('채팅방 연결 중 오류가 발생했습니다: ' + error.message);
                 });
       });
     }

@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.security.Principal;
-
+import com.project.yomozomo.dto.ChatMessage;
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.domain.Rental; // domain 패키지라면 유지
 import com.project.yomozomo.service.ChatService;
-
+import org.springframework.http.HttpStatus; // HttpStatus import
 @RestController // 여전히 RESTful API 컨트롤러
 @RequestMapping("/api/chatrooms") // API 프리픽스 유지
 @RequiredArgsConstructor
@@ -24,22 +24,29 @@ public class ChatRoomApiController { // 이름을 좀 더 명확하게 변경 (�
     private final RentalRepository rentalRepository;
 
     @PostMapping("/start")
-    public ResponseEntity<Long> startChat(@RequestParam Long rentalId,
+    public ResponseEntity<Long> startChat(@RequestBody ChatMessage.ChatStartRequest request, // ⭐ @RequestBody로 변경 및 DTO 사용 ⭐
                                           Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // DTO에서 rentalId를 가져옴
+        Long rentalId = request.getRentalId();
+        if (rentalId == null) { // rentalId가 필수라면 null 체크
+            return ResponseEntity.badRequest().body(-1L); // 또는 적절한 에러 응답
+        }
+
         User buyer = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("구매자 정보를 찾을 수 없습니다."));
 
         Rental rental = rentalRepository.findById(rentalId)
                 .orElseThrow(() -> new IllegalArgumentException("렌탈 정보를 찾을 수 없습니다. ID: " + rentalId));
 
-        // Rental 엔티티에서 판매자 User 정보를 가져와야 합니다.
-        // 예를 들어 Rental 엔티티에 private User user; 또는 private User seller; 필드가 있다면 해당 필드를 사용합니다.
         User seller = rental.getUser(); // ⭐ Rental 엔티티에 판매자 User가 매핑되어 있다고 가정 ⭐
         if (seller == null) {
             throw new IllegalArgumentException("렌탈 상품의 판매자 정보를 찾을 수 없습니다.");
         }
 
-        // ⭐ 수정: chatService.findOrCreateChatRoomForRental 메서드 호출 ⭐
         Long chatRoomId = chatService.findOrCreateChatRoomForRental(buyer, seller, rental.getRentalId());
 
         return ResponseEntity.ok(chatRoomId);
