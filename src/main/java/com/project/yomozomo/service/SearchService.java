@@ -4,6 +4,8 @@ import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.repository.ProductImageRepository;
 import com.project.yomozomo.repository.ProductRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -63,5 +65,10 @@ public class SearchService {
                                 : null,
                         productImageRepo.findTopImageUrlByProductId(p.getProductId())
                 )).toList();
+    }
+
+    public List<String> getPopularKeywords() {
+        Pageable top10 = PageRequest.of(0, 10);
+        return productRepository.findTop10PopularTitles(top10);
     }
 }
