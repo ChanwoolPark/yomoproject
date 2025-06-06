@@ -4,6 +4,7 @@ package com.project.yomozomo.controller;
 import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.ProductImage;
+import com.project.yomozomo.entity.Review;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.service.CategoryService;
 import com.project.yomozomo.service.ProductDetailService;
@@ -45,15 +46,12 @@ public class ProductController {
         if (!"anonymousUser".equals(username)) {
             User user = userService.findByUsername(username);
             userId = user.getId();
-
-            // 👉 최근 본 상품 저장 로직 추가
             productDetailService.saveViewedProduct(userId, productId);
         }
 
         Product product = productDetailService.incrementViewCount(productId);
         List<ProductImage> imageList = productDetailService.getProductImages(productId);
         User seller = product.getSeller();
-
 
         String formattedDate = product.getCreatedAt() != null
                 ? product.getCreatedAt().toInstant()
@@ -71,6 +69,9 @@ public class ProductController {
         List<Product> otherProducts = productDetailService.getOtherProductsBySeller(seller.getId(), productId);
         List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
 
+        // ⭐️ 리뷰 가져오기 추가
+        List<Review> productReviews = productDetailService.findReviewsByProductId((long) productId);
+
         model.addAttribute("product", product);
         model.addAttribute("imageList", imageList);
         model.addAttribute("seller", seller);
@@ -80,7 +81,9 @@ public class ProductController {
         model.addAttribute("wishlistCount", wishlistCount);
         model.addAttribute("otherProducts", otherProducts);
         model.addAttribute("categories", categories);
+        model.addAttribute("productReviews", productReviews); // ✅ 추가!
 
         return "product/detail";
     }
+
 }
