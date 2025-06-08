@@ -1,6 +1,7 @@
 // src/main/java/com/project/yomozomo/controller/ChatRoomApiController.java
 package com.project.yomozomo.controller;
 
+import com.project.yomozomo.dto.ChatStartRequest;
 import com.project.yomozomo.repository.RentalRepository;
 import com.project.yomozomo.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class ChatRoomApiController { // 이름을 좀 더 명확하게 변경 (�
     private final RentalRepository rentalRepository;
 
     @PostMapping("/start")
-    public ResponseEntity<Long> startChat(@RequestBody ChatMessage.ChatStartRequest request, // ⭐ @RequestBody로 변경 및 DTO 사용 ⭐
+    public ResponseEntity<Long> startChat(@RequestBody ChatStartRequest request, // ⭐ @RequestBody로 변경 및 DTO 사용 ⭐
                                           Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
