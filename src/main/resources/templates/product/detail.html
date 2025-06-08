@@ -522,35 +522,29 @@
     },
   });
 
-  // product-detail.html 스크립트 부분
+  // product-detail.html 스크립트 (이전에 제안했던 코드와 유사)
   document.addEventListener('DOMContentLoaded', function () {
     const chatButton = document.getElementById('chattingButton');
-
     if (chatButton) {
       chatButton.addEventListener('click', function () {
-        const rentalIdToPass = /*[[${product.productId}]]*/ 0; // ⭐ product.productId를 rentalId로 사용 ⭐
-
-        // 채팅방 생성 또는 조회 API 호출
-        fetch('/api/chatrooms/start', {
+        const rentalIdToPass = /*[[${product.productId}]]*/ 0; // 이 값이 rentalId로 사용될 것인지 다시 확인
+        console.log("전송될 rentalId:", rentalIdToPass);
+        fetch('/api/chatrooms/start', { // ⭐ POST 요청 ⭐
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json' // JSON 타입 명시
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            rentalId: rentalIdToPass // ⭐ 백엔드 DTO 필드명과 일치시켜야 함 ⭐
-            // 필요하다면 productId, sellerId, buyerId도 여기에 추가 (백엔드 DTO에 추가 후)
-          })
+          body: JSON.stringify({ rentalId: rentalIdToPass }) // ⭐ rentalId 전송 ⭐
         })
                 .then(response => {
                   if (response.ok) {
-                    return response.json();
+                    return response.json(); // 서버에서 chatRoomId(Long) 반환
                   }
-                  // 서버에서 반환하는 에러 메시지가 있다면 그걸 사용
-                  return response.text().then(text => { throw new Error(text || '채팅방을 여는 데 실패했습니다.'); });
+                  return response.text().then(text => { throw new Error(text || '채팅방 시작 실패'); });
                 })
                 .then(chatRoomId => {
-                  // 성공적으로 채팅방 ID를 받으면 채팅 페이지로 이동
-                  window.location.href = '/chat/' + chatRoomId;
+                  // 성공적으로 chatRoomId를 받으면 웹 페이지로 리다이렉트
+                  window.location.href = '/chat/' + chatRoomId; // ⭐ 이 경로는 ChatController의 GET /chat/{roomId}로 이동 ⭐
                 })
                 .catch(error => {
                   console.error('Error creating chat room:', error);
