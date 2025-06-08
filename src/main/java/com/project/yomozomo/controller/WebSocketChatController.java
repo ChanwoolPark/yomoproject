@@ -8,7 +8,7 @@ import com.project.yomozomo.entity.ChatMessage;
 import com.project.yomozomo.service.ChatMessageService;
 
 // ⭐ 새로 만든 DTO 임포트 (가장 중요!) ⭐
-import com.project.yomozomo.dto.chat.ChatMessageDTO; // ⭐ 이 줄이 이름 충돌을 해결합니다 ⭐
+import com.project.yomozomo.dto.ChatMessageDTO; // ⭐ 이 줄이 이름 충돌을 해결합니다 ⭐
 
 import java.security.Principal;
 
