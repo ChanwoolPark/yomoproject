@@ -29,7 +29,7 @@ public class WalletService {
         WalletLog log = new WalletLog();
         log.setUserWalletId(userWalletId);
         log.setAmount(amount);
-        log.setType("충전");
+        log.setType("");
         walletLogMapper.insertLog(log);
     }
 
