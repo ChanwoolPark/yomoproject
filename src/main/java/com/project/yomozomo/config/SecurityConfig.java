@@ -1,5 +1,6 @@
 package com.project.yomozomo.config;
 
+import com.project.yomozomo.security.CustomAuthenticationEntryPoint;
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
 import com.project.yomozomo.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,31 +33,48 @@ public class SecurityConfig {
 
     private final OAuth2LoginSuccessHandler successHandler;
 
+    private final CustomAuthenticationEntryPoint customEntryPoint;
 
-    public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
+    public SecurityConfig(OAuth2LoginSuccessHandler successHandler, CustomAuthenticationEntryPoint customEntryPoint) {
         this.successHandler = successHandler;
+        this.customEntryPoint = customEntryPoint;
     }
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         System.out.println("★ SecurityConfig 로드됨");
         http
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customEntryPoint)  // 👈 이 줄 추가
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers(
                                 "/", "/index.html", "/login", "/login/form", "/login/**",
-                                "/css/**", "/js/**", "/images/**",
-                                "/charge", "/oauth2/**", "/signup", "/category",
+                                "/css/**", "/js/**", "/images/**", "/oauth2/**",
+                                "/signup", "/category",
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
-                                "/find-id","/find-password.html", "/profile/**",
-                                "/test-login", "/uploads/**"
+                                "/find-id","/find-password.html",
+                                "/test-login", "/uploads/**", "/login-required", "/subcategory/**",
+                                "/product/**","/mypage/profile/{username}"
                         ).permitAll()
                         .anyRequest().authenticated()
+
+
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")  // ★★★ 로그인 진입 선택화면 ("/login")으로 지정
-                        .loginProcessingUrl("/login/form") // 실제 로그인 submit POST action
-                        .defaultSuccessUrl("/", true)
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login/form")
+                        .successHandler((request, response, authentication) -> {
+                            String redirectUrl = request.getParameter("redirect");
+
+                            if (redirectUrl != null && redirectUrl.startsWith("/")) {
+                                response.sendRedirect(redirectUrl);
+                            } else {
+                                response.sendRedirect("/");
+                            }
+                        })
                         .failureUrl("/login/form?error=true")
                         .permitAll()
                 )

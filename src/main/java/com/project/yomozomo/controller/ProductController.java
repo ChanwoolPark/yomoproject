@@ -42,9 +42,11 @@ public class ProductController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
+
         Long userId = null;
+        User user = null;
         if (!"anonymousUser".equals(username)) {
-            User user = userService.findByUsername(username);
+            user = userService.findByUsername(username);
             userId = user.getId();
             productDetailService.saveViewedProduct(userId, productId);
         }
@@ -82,6 +84,7 @@ public class ProductController {
         model.addAttribute("otherProducts", otherProducts);
         model.addAttribute("categories", categories);
         model.addAttribute("productReviews", productReviews); // ✅ 추가!
+        model.addAttribute("isLoggedIn", user != null);
 
         return "product/detail";
     }

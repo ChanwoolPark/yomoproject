@@ -132,7 +132,7 @@ public class MyPageController {
         User user = usersRepository.findByUsername(username).orElseThrow();
 
         // 대여/예약/반납완료 전체 목록
-        List<String> statusList = Arrays.asList("예약", "대여중", "반납대기", "반납완료");
+        List<String> statusList = Arrays.asList("예약", "대여중", "반납대기", "반납완료", "취소");
         List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList);
 
         // 리뷰 작성 여부 map 생성 (렌탈ID -> true/false)
@@ -246,7 +246,7 @@ public class MyPageController {
         if (user == null) {
             return "error/404";
         }
-        List<String> statusList = Arrays.asList("대여중", "예약");
+        List<String> statusList = Arrays.asList("예약", "대여중", "반납대기", "반납완료");
 
         List<Product> myProductList = productRepository.findBySeller_Id(user.getId());
         List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList); // statusList는 예약/대여중 등등
@@ -264,6 +264,9 @@ public class MyPageController {
 
         return "mypage/full-profile"; // 마이페이지 상세 html 위치!
     }
+
+
+
 
 
 }

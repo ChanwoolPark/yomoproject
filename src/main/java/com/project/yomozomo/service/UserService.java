@@ -39,6 +39,7 @@ public class UserService {
         return userRepo.existsByPhone(phone);
     }
 
+
     // 아이디 찾기 (이름+이메일)
     public Optional<String> findUsernameByNameAndEmail(String name, String email) {
         return userRepo.findByNameAndEmail(name, email)
