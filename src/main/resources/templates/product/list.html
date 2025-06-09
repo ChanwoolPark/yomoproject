@@ -166,17 +166,32 @@
 
         <!-- 게시글 정렬 & 상품 올리기 -->
         <div style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div th:if="${not isSearch and not isPriceFiltered}" style="display: flex; gap: 10px; align-items: center;">
                 <span>정렬:</span>
 
-                <a th:href="@{/category/{categoryId}(categoryId=${category.categoryId}, sort='latest')}"
-                   th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
+                <!-- 서브카테고리 정렬 링크 -->
+                <div th:if="${subCategoryId != null}">
+                    <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=${'latest'}|}"
+                       th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
 
-                <a th:href="@{/category/{categoryId}(categoryId=${category.categoryId}, sort='views')}"
-                   th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
+                    <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=${'views'}|}"
+                       th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
 
-                <a th:href="@{/category/{categoryId}(categoryId=${category.categoryId}, sort='price')}"
-                   th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
+                    <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=${'price'}|}"
+                       th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
+                </div>
+
+                <!-- 대카테고리 정렬 링크 -->
+                <div th:if="${subCategoryId == null}">
+                    <a th:href="@{|/category/${category.categoryId}?sort=${'latest'}|}"
+                       th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
+
+                    <a th:href="@{|/category/${category.categoryId}?sort=${'views'}|}"
+                       th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
+
+                    <a th:href="@{|/category/${category.categoryId}?sort=${'price'}|}"
+                       th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
+                </div>
             </div>
 
             <!-- 상품 글쓰기 버튼 -->

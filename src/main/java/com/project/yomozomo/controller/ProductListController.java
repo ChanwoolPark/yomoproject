@@ -34,9 +34,13 @@ public class ProductListController {
     @GetMapping("/{categoryId}")
     public String productList(@PathVariable int categoryId,
                               @RequestParam(defaultValue = "latest") String sort,
+                              @RequestParam(required = false) Integer minPrice,
+                              @RequestParam(required = false) Integer maxPrice,
                               Model model,
                               Principal principal) {
 
+        boolean isPriceFiltered = (minPrice != null || maxPrice != null);
+        model.addAttribute("isPriceFiltered", isPriceFiltered);
         model.addAttribute("isSearch", false);
 
         Category category = new Category();
@@ -47,10 +51,8 @@ public class ProductListController {
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         model.addAttribute("category", category);
 
-        // ✅ 정렬만 적용
         List<ProductDto> products = productListService.getProductsByCategorySorted(categoryId, sort);
         model.addAttribute("products", products);
-
         model.addAttribute("currentSort", sort);
 
         addUserRelatedAttributes(model, principal);
@@ -63,9 +65,12 @@ public class ProductListController {
                                            @PathVariable int subCategoryId,
                                            @RequestParam(required = false) Integer minPrice,
                                            @RequestParam(required = false) Integer maxPrice,
+                                           @RequestParam(defaultValue = "latest") String sort,
                                            Model model,
                                            Principal principal) {
 
+        boolean isPriceFiltered = (minPrice != null || maxPrice != null);
+        model.addAttribute("isPriceFiltered", isPriceFiltered);
         model.addAttribute("isSearch", false);
 
         List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
@@ -76,19 +81,17 @@ public class ProductListController {
         model.addAttribute("category", category);
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
 
-        // 가격 조건이 있을 경우
-        if (minPrice != null || maxPrice != null) {
-            model.addAttribute("products",
-                    productListService.getProductsBySubCategoryAndPriceRange(subCategoryId, minPrice, maxPrice));
+        if (isPriceFiltered) {
+            model.addAttribute("products", productListService.getProductsBySubCategoryAndPriceRange(subCategoryId, minPrice, maxPrice));
         } else {
-            model.addAttribute("products",
-                    productListService.getProductsBySubCategoryId(subCategoryId));
+            model.addAttribute("products", productListService.getProductsBySubCategorySorted(subCategoryId, sort));
         }
+
+        model.addAttribute("currentSort", sort);
 
         addUserRelatedAttributes(model, principal);
         return "product/list";
     }
-
     // [3] 로그인 시 최근 본 상품/찜 목록
     private void addUserRelatedAttributes(Model model, Principal principal) {
         if (principal != null) {
