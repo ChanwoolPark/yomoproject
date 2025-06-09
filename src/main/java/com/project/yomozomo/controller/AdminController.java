@@ -1,6 +1,8 @@
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.WithdrawalRequest;
+import com.project.yomozomo.entity.ChatroomReport;
+import com.project.yomozomo.service.ChatroomReportService;
 import com.project.yomozomo.service.WithdrawalService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,9 +18,11 @@ import java.util.List;
 public class AdminController {
 
     private final WithdrawalService withdrawalService;
+    private final ChatroomReportService chatroomReportService;
 
-    public AdminController(WithdrawalService withdrawalService) {
+    public AdminController(WithdrawalService withdrawalService, ChatroomReportService chatroomReportService) {
         this.withdrawalService = withdrawalService;
+        this.chatroomReportService = chatroomReportService;
     }
 
     @GetMapping("/dashboard")
@@ -63,4 +67,24 @@ public class AdminController {
         withdrawalService.updateStatus(requestId, status);
         return "redirect:/admin/list";
     }    // 추가: 회원 관리, 통계 등
+
+    @GetMapping("/chatroom-reports")
+    public String chatroomReportList(Model model) {
+        model.addAttribute("reportList", chatroomReportService.getAllReports());
+        return "admin/chatroom_report_list";
+    }
+
+    @GetMapping("/chatroom-report-detail")
+    public String chatroomReportDetail(@RequestParam Long reportId, Model model) {
+        ChatroomReport report = chatroomReportService.getReport(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("신고 내역을 찾을 수 없습니다."));
+        model.addAttribute("report", report);
+        return "admin/chatroom_report_detail";
+    }
+
+    @PostMapping("/chatroom-report-status")
+    public String updateChatroomReportStatus(@RequestParam Long reportId, @RequestParam String status) {
+        chatroomReportService.updateStatus(reportId, status);
+        return "redirect:/admin/chatroom-reports";
+    }
 }
