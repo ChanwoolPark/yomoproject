@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/category")
@@ -39,9 +40,8 @@ public class ProductListController {
                               Model model,
                               Principal principal) {
 
-        boolean isPriceFiltered = (minPrice != null || maxPrice != null);
-        model.addAttribute("isPriceFiltered", isPriceFiltered);
         model.addAttribute("isSearch", false);
+        model.addAttribute("isPriceFiltered", (minPrice != null || maxPrice != null)); // ✅ 뷰에서 정렬 숨기기 조건
 
         Category category = new Category();
         category.setCategoryId(categoryId);
@@ -50,15 +50,26 @@ public class ProductListController {
         model.addAttribute("categories", categories);
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         model.addAttribute("category", category);
+        model.addAttribute("subCategoryId", null); // 뷰에서 구분용
 
-        List<ProductDto> products = productListService.getProductsByCategorySorted(categoryId, sort);
+        List<ProductDto> products;
+
+        if (minPrice != null || maxPrice != null) {
+            products = productListService.getProductsByCategoryAndPriceRange(categoryId, minPrice, maxPrice);
+        } else {
+            products = productListService.getProductsByCategorySorted(categoryId, sort);
+        }
+
         model.addAttribute("products", products);
         model.addAttribute("currentSort", sort);
+        model.addAttribute("param", Map.of( // ✅ 가격 필터 유지용
+                "minPrice", minPrice != null ? minPrice : "",
+                "maxPrice", maxPrice != null ? maxPrice : ""
+        ));
 
         addUserRelatedAttributes(model, principal);
         return "product/list";
     }
-
     // 서브 카테고리 선택시 상품 목록
     @GetMapping("/{categoryId}/subcategory/{subCategoryId}")
     public String productListBySubCategory(@PathVariable int categoryId,
