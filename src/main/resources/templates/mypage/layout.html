@@ -86,6 +86,16 @@
             color: #777;
         }
 
+        .star {
+            font-size: 22px;
+            color: #bbb;
+            cursor: pointer;
+        }
+        .star.selected {
+            color: #ffbf00;
+        }
+
+
     </style>
     <link rel="stylesheet" href="/css/header.css">
 
@@ -115,6 +125,36 @@
     </div>
     <div id="content"></div>
 </div>
+
+<!-- 모달 (숨김 기본) -->
+<div id="reviewModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:32px 24px; border-radius:16px; min-width:350px; max-width:90vw;">
+        <h2 style="font-size:1.3em; margin-bottom:1em;">리뷰 작성</h2>
+        <div id="modalProductTitle" style="margin-bottom:8px; color:#3849c7; font-weight:600;"></div>
+        <div style="margin-bottom:12px;">
+            <span>평점:</span>
+            <span id="reviewStars">
+        <span class="star" data-value="1">&#9734;</span>
+        <span class="star" data-value="2">&#9734;</span>
+        <span class="star" data-value="3">&#9734;</span>
+        <span class="star" data-value="4">&#9734;</span>
+        <span class="star" data-value="5">&#9734;</span>
+    </span>
+        </div>
+        <form id="reviewForm">
+            <input type="hidden" name="rentalId" id="modalRentalId">
+            <input type="hidden" name="rating" id="modalRating">
+            <input type="hidden" id="modalProductId" name="productId">
+            <input type="hidden" id="modalTargetId" name="targetId">
+
+            <textarea name="reviewText" id="reviewContent" rows="5" style="width:100%; border-radius:6px;" placeholder="리뷰를 입력하세요"></textarea>
+            <br>
+            <button type="submit" ...>작성 완료</button>
+            <button type="button" ...>닫기</button>
+        </form>
+    </div>
+</div>
+
 
 <div th:replace="fragments/footer :: footer"></div>
 
@@ -149,6 +189,8 @@
                     document.body.removeChild(newScript); // 메모리 누수 방지
                 });
             });
+
+
     }
 
 
@@ -316,6 +358,84 @@
             }
         }).open();
     }
+
+    function openReviewModalByAttr(btn) {
+        const rentalId = btn.getAttribute('data-rental-id');
+        const productId = btn.getAttribute('data-product-id');
+        const targetId = btn.getAttribute('data-target-id');
+        const productTitle = btn.getAttribute('data-product-title');
+        document.getElementById('modalRentalId').value = rentalId;
+        document.getElementById('modalProductId').value = productId;
+        document.getElementById('modalTargetId').value = targetId;
+        document.getElementById('modalProductTitle').innerText = "상품명: " + productTitle;
+        document.getElementById('reviewModal').style.display = 'flex';
+    }
+
+
+    // 모달 닫기
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+        document.getElementById('reviewContent').value = '';
+    }
+
+    // 폼 제출 이벤트 (ajax로 할 거면 여기서 처리)
+    document.getElementById('reviewForm').onsubmit = function(e) {
+        e.preventDefault();
+        // 여기서 ajax로 리뷰 등록 처리하면 됨!
+        // rentalId: document.getElementById('modalRentalId').value
+        // content: document.getElementById('reviewContent').value
+        alert('리뷰 등록 기능은 곧 추가됩니다! (이제 서버 연동하면 돼)');
+        closeReviewModal();
+    };
+
+    // 평점 입력 기능
+    document.querySelectorAll('#reviewStars .star').forEach(star => {
+        star.addEventListener('click', function() {
+            let rating = this.getAttribute('data-value');
+            document.getElementById('modalRating').value = rating;
+            document.querySelectorAll('#reviewStars .star').forEach((s, idx) => {
+                s.classList.toggle('selected', idx < rating);
+                s.innerHTML = idx < rating ? '★' : '☆';
+            });
+        });
+    });
+
+    document.getElementById('reviewForm').onsubmit = function(e) {
+        e.preventDefault();
+        let rentalId = document.getElementById('modalRentalId').value;
+        let content = document.getElementById('reviewContent').value.trim();
+        let rating = document.getElementById('modalRating').value;
+
+        if (!content || !rating) {
+            alert('리뷰 내용과 평점을 모두 입력하세요!');
+            return;
+        }
+
+        fetch('/reviews/write', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                rentalId: rentalId,
+                productId: document.getElementById('modalProductId').value,
+                targetId: document.getElementById('modalTargetId').value,
+                reviewText: content,
+                rating: rating
+            })
+        })
+                .then(res => res.json())
+            .then(result => {
+                if(result.success) {
+                    alert('리뷰가 등록되었습니다!');
+                    closeReviewModal();
+                    // 평점 갱신 콜백 실행(알잘딱: 그냥 새로고침도 O, 아래 참고!)
+                    location.reload();
+                } else {
+                    alert('리뷰 등록 실패: ' + result.message);
+                }
+            });
+    };
+
+
 
 </script>
 

@@ -1,6 +1,7 @@
 package com.project.yomozomo.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
@@ -15,5 +16,6 @@ public class LoginController {
         return "login-form"; // 일반 로그인 폼
     }
     // POST 방식은 Spring Security가 자동 처리
+
 }
 

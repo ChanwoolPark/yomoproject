@@ -39,6 +39,7 @@ public class UserService {
         return userRepo.existsByPhone(phone);
     }
 
+
     // 아이디 찾기 (이름+이메일)
     public Optional<String> findUsernameByNameAndEmail(String name, String email) {
         return userRepo.findByNameAndEmail(name, email)
@@ -78,6 +79,8 @@ public class UserService {
         u.setZipNo(form.getZipNo());                 // 우편번호
         u.setAddress(form.getAddress());             // 도로명 주소
         u.setAddressDetail(form.getAddressDetail()); // 상세 주소
+
+        u.setRole("ROLE_USER");
 
         userRepo.save(u);
 
