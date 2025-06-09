@@ -22,16 +22,20 @@
             flex-direction: column;
         }
         .card-link {
-            color: #4a90e2;
-            text-decoration: underline;
-            font-weight: 500;
+            color: #3849c7;
+            text-decoration: none;
+            font-weight: 600;
             font-size: 1.07rem;
             margin-bottom: 2px;
             cursor: pointer;
         }
+        .card-link:hover {
+            text-decoration: underline;
+            color: #2c3ab2;
+        }
         .status {
             color: #888;
-            margin-left: 10px;
+            margin-top: 6px;
             font-size: 14px;
         }
         .empty-msg {
@@ -46,16 +50,39 @@
     </style>
 </head>
 <body>
-<div class="profile-rentals">
-    <h3 class="list-title">대여/예약중인 목록</h3>
-    <div th:if="${#lists.isEmpty(myRentalList)}" class="card-box">대여/예약중인 상품이 없습니다.</div>
-    <div th:each="rental : ${myRentalList}" class="card-box">
-        <a th:href="@{'/product/' + ${rental.product.productId}}" class="card-link" th:text="${rental.product.title}"></a>
-        <span style="margin-left: 10px; color: #888;" th:text="'상태: ' + ${rental.status}"></span>
-        <div style="margin-top: 4px; font-size: 13px; color: #444;">
-            <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy-MM-dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy-MM-dd')}"></span>
+
+<!-- 제목 -->
+<h2 class="list-title">대여 / 예약 내역</h2>
+
+<!-- 내역 없을 때 -->
+<div th:if="${#lists.isEmpty(myRentalList)}" class="empty-msg">
+    대여/예약 내역이 없습니다.
+</div>
+
+<!-- 내역 있을 때 -->
+<div th:each="rental : ${myRentalList}">
+    <div class="card-box">
+        <!-- 상품명 링크 -->
+        <a th:href="@{/product/{id}(id=${rental.product.productId})}" class="card-link"
+           th:text="${rental.product.title}">상품명</a>
+
+        <!-- 상태 -->
+        <span class="status" th:text="'상태: ' + ${rental.status}"></span>
+
+        <!-- 반납완료 시 리뷰 -->
+        <div style="margin-top: 10px;" th:if="${rental.status == '반납완료'}">
+            <button type="button"
+                    th:if="!${reviewWrittenMap[rental.rentalId]}"
+                    th:attr="data-rental-id=${rental.rentalId}, data-product-id=${rental.product.productId}, data-target-id=${rental.product.seller.id}, data-product-title=${rental.product.title}"
+                    onclick="openReviewModalByAttr(this)"
+                    style="padding:6px 16px; border-radius:7px; border:none; background:#596bff; color:#fff; font-weight:500; cursor:pointer;">
+                리뷰쓰기
+            </button>
+            <span th:if="${reviewWrittenMap[rental.rentalId]}"
+                  style="color:#aaa; font-weight:600; font-size:0.97rem;">작성완료</span>
         </div>
     </div>
 </div>
+
 </body>
 </html>

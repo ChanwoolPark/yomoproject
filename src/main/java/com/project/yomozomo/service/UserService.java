@@ -79,6 +79,8 @@ public class UserService {
         u.setAddress(form.getAddress());             // 도로명 주소
         u.setAddressDetail(form.getAddressDetail()); // 상세 주소
 
+        u.setRole("ROLE_USER");
+
         userRepo.save(u);
 
         // --- 여기서 바로 로그인 처리 추가 ---
