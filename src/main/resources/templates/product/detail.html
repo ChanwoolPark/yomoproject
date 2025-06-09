@@ -173,7 +173,7 @@
         찜 취소
       </button>
 
-      <button type="button" class="reservation-btn" onclick="handleReservationClick()">예약 신청</button>
+      <button type="button" class="reservation-btn">예약 신청</button>
     </div>
 
     <!-- 하단: 수정, 삭제, 목록 (판매자만 수정/삭제 가능) -->
@@ -596,10 +596,28 @@
   });
 
 </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const reservationBtn = document.querySelector('.reservation-btn');
+    if (reservationBtn) {
+      reservationBtn.addEventListener('click', function () {
+        if (!isLoggedIn) {
+          alert("로그인이 필요한 서비스입니다.");
+          window.location.href = "/login?needAuth=true";
+          return;
+        }
+        openReservationModal();
+      });
+    }
+  });
+</script>
 
 <script th:inline="javascript">
   const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
 </script>
+
+});
+
 
 
 </body>
