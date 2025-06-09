@@ -56,4 +56,14 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             @org.springframework.lang.Nullable Integer minPrice,
             @org.springframework.lang.Nullable Integer maxPrice
     );
+
+    /*정렬 쿼리*/
+    @Query("SELECT p FROM Product p WHERE p.subCategory.category.categoryId = :categoryId AND p.isDeleted = 'N' ORDER BY p.createdAt DESC")
+    List<Product> findByCategoryOrderByCreatedAtDesc(@org.springframework.lang.NonNull Integer categoryId);
+
+    @Query("SELECT p FROM Product p WHERE p.subCategory.category.categoryId = :categoryId AND p.isDeleted = 'N' ORDER BY p.count DESC")
+    List<Product> findByCategoryOrderByCountDesc(@org.springframework.lang.NonNull Integer categoryId);
+
+    @Query("SELECT p FROM Product p WHERE p.subCategory.category.categoryId = :categoryId AND p.isDeleted = 'N' ORDER BY p.price ASC")
+    List<Product> findByCategoryOrderByPriceAsc(@org.springframework.lang.NonNull Integer categoryId);
 }

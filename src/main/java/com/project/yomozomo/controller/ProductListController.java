@@ -1,6 +1,7 @@
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Category;
+import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.service.CategoryService;
 import com.project.yomozomo.service.ProductListService;
@@ -29,11 +30,10 @@ public class ProductListController {
         this.categoryService = categoryService;
     }
 
-    // [1] 카테고리별 상품 목록
+    // 카테고리별 상품 목록
     @GetMapping("/{categoryId}")
     public String productList(@PathVariable int categoryId,
-                              @RequestParam(required = false) Integer minPrice,
-                              @RequestParam(required = false) Integer maxPrice,
+                              @RequestParam(defaultValue = "latest") String sort,
                               Model model,
                               Principal principal) {
 
@@ -47,19 +47,17 @@ public class ProductListController {
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         model.addAttribute("category", category);
 
-        // ⭐ 가격 필터 있는 경우만 필터된 상품 리스트 조회
-        if (minPrice != null || maxPrice != null) {
-            model.addAttribute("products",
-                    productListService.getProductsByCategoryAndPriceRange(categoryId, minPrice, maxPrice));
-        } else {
-            model.addAttribute("products",
-                    productListService.getProductsByCategory(categoryId));
-        }
+        // ✅ 정렬만 적용
+        List<ProductDto> products = productListService.getProductsByCategorySorted(categoryId, sort);
+        model.addAttribute("products", products);
+
+        model.addAttribute("currentSort", sort);
 
         addUserRelatedAttributes(model, principal);
         return "product/list";
     }
 
+    // 서브 카테고리 선택시 상품 목록
     @GetMapping("/{categoryId}/subcategory/{subCategoryId}")
     public String productListBySubCategory(@PathVariable int categoryId,
                                            @PathVariable int subCategoryId,

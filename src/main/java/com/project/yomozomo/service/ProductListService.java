@@ -119,5 +119,16 @@ public class ProductListService {
         return mapProductsToDto(products);
     }
 
+    /*정렬 메서드*/
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsByCategorySorted(int categoryId, String sort) {
+        List<Product> products = switch (sort) {
+            case "views" -> productRepo.findByCategoryOrderByCountDesc(categoryId);
+            case "price" -> productRepo.findByCategoryOrderByPriceAsc(categoryId);
+            default -> productRepo.findByCategoryOrderByCreatedAtDesc(categoryId); // 최신순
+        };
+
+        return mapProductsToDto(products);
+    }
     
 }
