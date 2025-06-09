@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 import java.util.List;
@@ -31,6 +32,8 @@ public class ProductListController {
     // [1] 카테고리별 상품 목록
     @GetMapping("/{categoryId}")
     public String productList(@PathVariable int categoryId,
+                              @RequestParam(required = false) Integer minPrice,
+                              @RequestParam(required = false) Integer maxPrice,
                               Model model,
                               Principal principal) {
 
@@ -43,7 +46,15 @@ public class ProductListController {
         model.addAttribute("categories", categories);
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         model.addAttribute("category", category);
-        model.addAttribute("products", productListService.getProductsByCategory(categoryId));
+
+        // ⭐ 가격 필터 있는 경우만 필터된 상품 리스트 조회
+        if (minPrice != null || maxPrice != null) {
+            model.addAttribute("products",
+                    productListService.getProductsByCategoryAndPriceRange(categoryId, minPrice, maxPrice));
+        } else {
+            model.addAttribute("products",
+                    productListService.getProductsByCategory(categoryId));
+        }
 
         addUserRelatedAttributes(model, principal);
         return "product/list";
@@ -52,6 +63,8 @@ public class ProductListController {
     @GetMapping("/{categoryId}/subcategory/{subCategoryId}")
     public String productListBySubCategory(@PathVariable int categoryId,
                                            @PathVariable int subCategoryId,
+                                           @RequestParam(required = false) Integer minPrice,
+                                           @RequestParam(required = false) Integer maxPrice,
                                            Model model,
                                            Principal principal) {
 
@@ -64,7 +77,15 @@ public class ProductListController {
         category.setCategoryId(categoryId);
         model.addAttribute("category", category);
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
-        model.addAttribute("products", productListService.getProductsBySubCategoryId(subCategoryId));
+
+        // 가격 조건이 있을 경우
+        if (minPrice != null || maxPrice != null) {
+            model.addAttribute("products",
+                    productListService.getProductsBySubCategoryAndPriceRange(subCategoryId, minPrice, maxPrice));
+        } else {
+            model.addAttribute("products",
+                    productListService.getProductsBySubCategoryId(subCategoryId));
+        }
 
         addUserRelatedAttributes(model, principal);
         return "product/list";

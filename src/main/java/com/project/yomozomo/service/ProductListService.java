@@ -106,5 +106,18 @@ public class ProductListService {
     }
 
 
+    /*가격 필터 (대카테고리용)*/
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsByCategoryAndPriceRange(int categoryId, Integer minPrice, Integer maxPrice) {
+        List<Product> products = productRepo.findByCategoryWithPriceFilter(categoryId, minPrice, maxPrice);
+        return mapProductsToDto(products);
+    }
+    /*가격 필터 (서브카테고리용)*/
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsBySubCategoryAndPriceRange(int subCategoryId, Integer minPrice, Integer maxPrice) {
+        List<Product> products = productRepo.findBySubCategoryWithPriceFilter(subCategoryId, minPrice, maxPrice);
+        return mapProductsToDto(products);
+    }
+
     
 }

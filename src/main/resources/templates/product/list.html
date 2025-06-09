@@ -64,7 +64,8 @@
         <option value="">전체</option>
         <option th:each="cat : ${categories}"
                 th:value="${cat.categoryId}"
-                th:text="${cat.name}">
+                th:text="${cat.name}"
+                th:selected="${selectedCategoryId != null and cat.categoryId == selectedCategoryId}">
         </option>
     </select>
 
@@ -120,6 +121,32 @@
                    th:text="${sub.name}" style="text-decoration:none; color:black;"></a>
             </li>
         </ul>
+
+        <!--가격 필터 칸-->
+        <div th:if="${subCategoryId != null and category != null}">
+            <!-- 서브카테고리 전용 필터 -->
+            <form th:action="@{/category/{categoryId}/subcategory/{subCategoryId}(categoryId=${category.categoryId}, subCategoryId=${subCategoryId})}"
+                  method="get"
+                  style="margin-top: 20px;"
+                  onsubmit="return validatePriceRange()">
+                <input type="number" name="minPrice" id="minPrice1" placeholder="최소 가격" style="width: 80px;" th:value="${param.minPrice}" />
+                ~
+                <input type="number" name="maxPrice" id="maxPrice1" placeholder="최대 가격" style="width: 80px;" th:value="${param.maxPrice}" />
+                <button type="submit" style="margin-top: 10px;">가격 필터</button>
+            </form>
+        </div>
+        <div th:if="${subCategoryId == null and category != null}">
+            <!-- 대카테고리 또는 전체 검색용 필터 -->
+            <form th:action="@{/category/{categoryId}(categoryId=${category.categoryId})}"
+                  method="get"
+                  style="margin-top: 20px;"
+                  onsubmit="return validatePriceRange()">
+                <input type="number" name="minPrice" id="minPrice" placeholder="최소 가격" style="width: 80px;" th:value="${param.minPrice}" />
+                ~
+                <input type="number" name="maxPrice" id="maxPrice" placeholder="최대 가격" style="width: 80px;" th:value="${param.maxPrice}" />
+                <button type="submit" style="margin-top: 10px;">가격 필터</button>
+            </form>
+        </div>
     </div>
 
     <!-- 중앙: 상품 리스트 -->
@@ -247,6 +274,41 @@
             box.style.display = "none";
         }
     });
+</script>
+
+<!--가격 오류 알림-->
+<script>
+    function validatePriceRange() {
+        // 대카테고리용 기본 필터 (id="minPrice", "maxPrice")
+        const min1 = document.getElementById("minPrice");
+        const max1 = document.getElementById("maxPrice");
+
+        if (min1 && max1) {
+            const minVal = min1.value;
+            const maxVal = max1.value;
+
+            if (minVal && maxVal && parseInt(maxVal) < parseInt(minVal)) {
+                alert("최대 가격은 최소 가격보다 커야 합니다.");
+                return false;
+            }
+        }
+
+        // 서브카테고리용 필터 (id="minPrice1", "maxPrice1")
+        const min2 = document.getElementById("minPrice1");
+        const max2 = document.getElementById("maxPrice1");
+
+        if (min2 && max2) {
+            const minVal = min2.value;
+            const maxVal = max2.value;
+
+            if (minVal && maxVal && parseInt(maxVal) < parseInt(minVal)) {
+                alert("최대 가격은 최소 가격보다 커야 합니다.");
+                return false;
+            }
+        }
+
+        return true;
+    }
 </script>
 
 </body>

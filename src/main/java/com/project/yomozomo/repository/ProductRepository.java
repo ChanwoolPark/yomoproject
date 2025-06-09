@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Integer> {
-    List<Product> findBySubCategory_Category_CategoryId(int categoryId);
-    List<Product> findBySubCategory_SubCategoryId(int subCategoryId);
 
     List<Product> findBySeller_IdAndStatus(int seller, String status);
     List<Product> findBySeller_Id(Long sellerId);
@@ -30,4 +28,32 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     @Query("SELECT p.title FROM Product p WHERE p.isDeleted = 'N' ORDER BY p.count DESC")
     List<String> findTop10PopularTitles(Pageable pageable);
+
+
+    /*가격 필터 (대카테고리용)*/
+    @Query("""
+    SELECT p FROM Product p
+    WHERE p.subCategory.category.categoryId = :categoryId
+    AND p.isDeleted = 'N'
+    AND (:minPrice IS NULL OR p.price >= :minPrice)
+    AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+""")
+    List<Product> findByCategoryWithPriceFilter(
+            @org.springframework.lang.NonNull Integer categoryId,
+            @org.springframework.lang.Nullable Integer minPrice,
+            @org.springframework.lang.Nullable Integer maxPrice
+    );
+    /*가격 필터 (서브카테고리용)*/
+    @Query("""
+    SELECT p FROM Product p
+    WHERE p.subCategory.subCategoryId = :subCategoryId
+    AND p.isDeleted = 'N'
+    AND (:minPrice IS NULL OR p.price >= :minPrice)
+    AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+""")
+    List<Product> findBySubCategoryWithPriceFilter(
+            @org.springframework.lang.NonNull Integer subCategoryId,
+            @org.springframework.lang.Nullable Integer minPrice,
+            @org.springframework.lang.Nullable Integer maxPrice
+    );
 }

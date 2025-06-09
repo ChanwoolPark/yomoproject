@@ -55,8 +55,10 @@ public class SearchController {
         model.addAttribute("isSearch", true);
         model.addAttribute("categories", categoryService.getAllCategoriesWithSubCategories());
         if (categoryId != null) {
+            model.addAttribute("category", categoryService.getCategoryById(categoryId));
             model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         } else {
+            model.addAttribute("category", null);
             model.addAttribute("subCategories", List.of()); // 전체 검색 시에는 안 보이게
         }
 
