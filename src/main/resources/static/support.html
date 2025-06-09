@@ -3,382 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2인 대화 채팅창</title>
+    <title>게시판</title>
     <style>
-        /* 기본적인 CSS 스타일 */
+        /* 기본적인 스타일링 (예시) - 필요에 따라 수정하거나 외부 CSS 파일로 분리하세요. */
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f0f2f5;
+            margin: 20px;
+            background-color: #f4f4f4;
         }
-        .chat-container {
-            width: 90%;
-            max-width: 800px;
-            height: 80vh;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
             background-color: #fff;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        .chat-header {
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .board-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #eee;
-            background-color: #f8f8f8;
+        }
+        .board-header .board-title {
+            font-size: 1.5em;
             font-weight: bold;
             color: #333;
         }
-        .chat-messages {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px; /* 메시지 간 간격 */
+        .write-button-area {
+            text-align: right; /* 버튼을 오른쪽에 정렬 */
+            margin-bottom: 20px;
         }
-        .message {
-            max-width: 70%;
+        .write-button-area .btn-write {
+            display: inline-block; /* JavaScript로 display:none 또는 block 제어 예정 */
             padding: 10px 15px;
-            border-radius: 18px;
-            word-wrap: break-word;
-            line-height: 1.4;
-        }
-        .message.user-a { /* 왼쪽 정렬, 상대방 메시지 */
-            align-self: flex-start;
-            background-color: #e2e2e2;
-            color: #333;
-            border-bottom-left-radius: 2px;
-        }
-        .message.user-b { /* 오른쪽 정렬, 내 메시지 */
-            align-self: flex-end;
             background-color: #007bff;
             color: white;
-            border-bottom-right-radius: 2px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
         }
-        .message.system { /* 시스템 메시지 */
-            align-self: center;
-            background-color: #f0f0f0;
-            color: #777;
-            font-size: 0.85em;
-            text-align: center;
-            padding: 5px 10px;
-            border-radius: 10px;
-        }
-        .message img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin-top: 5px;
-        }
-        /* 지도 메시지 내 링크 스타일 */
-        .message a {
-            color: #004085;
-            text-decoration: underline;
-        }
-        .message.user-b a { /* 내 메시지 안의 링크는 흰색에 가깝게 */
-            color: #f8f9fa;
-        }
-
-        .chat-input-area {
-            border-top: 1px solid #eee;
-            padding: 15px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background-color: #f8f8f8;
-        }
-        .input-row {
-            display: flex;
-            gap: 10px;
-        }
-        .message-input {
-            flex-grow: 1;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            font-size: 1em;
-            outline: none;
-        }
-        .send-button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.2s;
-        }
-        .send-button:hover {
+        .write-button-area .btn-write:hover {
             background-color: #0056b3;
         }
-        .feature-buttons {
+        .board-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .board-item {
             display: flex;
-            gap: 10px;
-            justify-content: flex-start;
-            padding-top: 5px;
+            flex-direction: column; /* 제목과 정보가 세로로 쌓이도록 */
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
         }
-        .feature-button {
-            background-color: #e9ecef;
-            border: 1px solid #ced4da;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            font-size: 1.2em;
-            color: #495057;
-            transition: background-color 0.2s;
+        .board-item:last-child {
+            border-bottom: none;
         }
-        .feature-button:hover {
-            background-color: #dee2e6;
+        .board-item a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px; /* 제목과 정보 사이 간격 */
         }
-        /* 네이버 지도 컨테이너 스타일 */
-        #naverMapContainer {
-            width: 100%; /* 너비 전체 사용 */
-            height: 300px; /* 높이 설정 */
-            border-radius: 8px;
-            margin-top: 10px; /* 메시지와의 간격 */
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            background-color: #f5f5f5; /* 로딩 중 배경색 */
-            display: none; /* 초기에는 숨김 */
-            position: relative; /* 마커나 컨트롤을 올리기 위해 */
+        .board-item a:hover {
+            color: #007bff;
         }
-        /* 지도 닫기 버튼 스타일 */
-        .close-map-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(0, 0, 0, 0.6);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 1.2em;
-            cursor: pointer;
-            z-index: 10; /* 지도가 다른 요소 위에 오도록 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .board-meta {
+            font-size: 0.85em;
+            color: #666;
+        }
+        .board-meta span {
+            margin-right: 15px;
+        }
+        .board-meta .views {
+            color: #999;
+        }
+        .no-posts-message {
+            text-align: center;
+            color: #888;
+            padding: 30px;
+            font-size: 1.1em;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 20px;
         }
     </style>
-
-    <script type="text/javascript" th:src="@{${'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + naverMapsClientId}}"></script>
-
 </head>
 <body>
-<div class="chat-container">
-    <div class="chat-header">
-        <div class="user-profile">
-            <span>사용자 A (상대방)</span>
-        </div>
-        <div class="user-profile">
-            <span>사용자 B (나)</span>
-        </div>
+<div class="container">
+    <div class="board-header">
+        <div class="board-title">공지사항</div>
     </div>
 
+    <div class="write-button-area">
+        <a href="/admin/write-post" class="btn-write" id="writePostButton" style="display: none;">글쓰기</a>
+    </div>
 
+    <ul class="board-list" id="postList">
+    </ul>
 
-    <div class="chat-input-area">
-        <div class="input-row">
-            <input type="text" id="messageInput" class="message-input" placeholder="메시지를 입력하세요...">
-            <button id="sendMessageButton" class="send-button">전송</button>
-        </div>
-        <div class="feature-buttons">
-            <button class="feature-button" id="gptButton" title="GPT (AI) 기능">
-                🤖
-            </button>
-            <button class="feature-button" id="naverMapsButton" title="네이버 지도">
-                🗺️
-            </button>
-            <input type="file" id="imageUploadInput" style="display: none;" accept="image/*">
-            <button class="feature-button" id="attachImageButton" title="이미지 첨부">
-                📸
-            </button>
-            <button class="feature-button" id="calendarButton" title="캘린더/일정 공유">
-                🗓️
-            </button>
-        </div>
+    <div class="no-posts-message" id="noPostsMessage">
+        작성된 게시글이 없습니다.
     </div>
 </div>
 
 <script>
-    const chatMessages = document.getElementById('chatMessages');
-    const messageInput = document.getElementById('messageInput');
-    const sendMessageButton = document.getElementById('sendMessageButton');
-    const attachImageButton = document.getElementById('attachImageButton');
-    const imageUploadInput = document.getElementById('imageUploadInput');
-    const gptButton = document.getElementById('gptButton');
-    const naverMapsButton = document.getElementById('naverMapsButton');
-    const calendarButton = document.getElementById('calendarButton');
-    const naverMapContainer = document.getElementById('naverMapContainer');
-    const closeMapButton = document.getElementById('closeMapButton'); // 지도 닫기 버튼
+    // 이 스크립트는 프론트엔드에서 버튼을 숨기거나 보이게 하는 예시입니다.
+    // 실제로는 서버에서 사용자 권한을 받아와 처리해야 합니다.
+    document.addEventListener('DOMContentLoaded', function() {
+        const writePostButton = document.getElementById('writePostButton');
+        const postList = document.getElementById('postList');
+        const noPostsMessage = document.getElementById('noPostsMessage');
 
-    let naverMapInstance = null; // 지도 객체를 저장할 변수
-    let selectedMapMarker = null; // 지도에 표시될 마커 객체
+        // --- 이 부분은 실제 개발 시 서버에서 받아온 관리자 권한 여부로 대체됩니다. ---
+        // let is_admin = false; // 기본은 일반 사용자
+        let is_admin = true; // 테스트를 위해 일단 관리자로 설정
+        // ----------------------------------------------------------------------
 
-    // 메시지 전송 로직
-    sendMessageButton.addEventListener('click', () => {
-        const messageText = messageInput.value.trim();
-        if (messageText) {
-            // 이 부분에서 실제 메시지를 서버로 전송하는 로직이 들어갑니다.
-            // 현재는 임시로 메시지를 화면에 추가하는 예시
-            addChatMessage(messageText, 'user-b'); // 내 메시지
-            messageInput.value = ''; // 입력창 비우기
-
-            // 지도가 표시되어 있다면 다시 숨김
-            hideMapContainer();
-        }
-    });
-
-    // 채팅 메시지를 화면에 추가하는 헬퍼 함수
-    function addChatMessage(content, type, isHtml = false) {
-        const newMessageDiv = document.createElement('div');
-        newMessageDiv.classList.add('message', type);
-        if (isHtml) {
-            newMessageDiv.innerHTML = content;
-        } else {
-            newMessageDiv.textContent = content;
-        }
-        chatMessages.appendChild(newMessageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // 스크롤 하단으로 이동
-    }
-
-    // 지도 컨테이너를 숨기고 마커 제거
-    function hideMapContainer() {
-        naverMapContainer.style.display = 'none';
-        if (selectedMapMarker) {
-            selectedMapMarker.setMap(null); // 마커 제거
-            selectedMapMarker = null;
-        }
-    }
-
-    // 이미지 첨부 로직 (기존 코드)
-    attachImageButton.addEventListener('click', () => {
-        imageUploadInput.click();
-    });
-
-    imageUploadInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            alert(`이미지 파일 선택됨: ${file.name}\n(실제로는 서버로 업로드 및 URL 반환 로직 필요)`);
-            // TODO: 이미지 업로드 API 호출 및 응답 처리 로직
-            // 예: const imageUrl = "업로드된_이미지_URL";
-            // addChatMessage(`이미지를 보냈습니다.<br><img src="${imageUrl}" alt="첨부 이미지">`, 'user-b', true);
-        }
-    });
-
-    // GPT 버튼 클릭 이벤트 (AI 기능 활성화)
-    gptButton.addEventListener('click', () => {
-        alert('GPT (AI) 기능 활성화! (여기에 AI 대화 모달 또는 입력창 전환 로직 구현)');
-        // TODO: GPT API 호출 로직 추가 (백엔드 연동)
-        hideMapContainer(); // 다른 기능 활성화 시 지도 숨김
-    });
-
-    // 네이버 지도 버튼 클릭 이벤트
-    naverMapsButton.addEventListener('click', () => {
-        naverMapContainer.style.display = 'block'; // 지도 컨테이너 표시
-
-        // 지도 초기화 또는 재사용
-        if (!naverMapInstance) {
-            naverMapInstance = new naver.maps.Map('naverMapContainer', {
-                center: new naver.maps.LatLng(37.5665, 126.9780), // 서울 시청
-                zoom: 15,
-                zoomControl: true, // 확대/축소 컨트롤 표시
-                zoomControlOptions: {
-                    position: naver.maps.Position.TOP_RIGHT // 우측 상단
-                }
-            });
-
-            // 지도 클릭 이벤트 핸들러 (위치 선택)
-            naver.maps.Event.addListener(naverMapInstance, 'click', (e) => {
-                const selectedLatLng = e.coord; // 클릭한 위치의 좌표
-                const selectedLat = selectedLatLng.lat();
-                const selectedLng = selectedLatLng.lng();
-
-                // 기존 마커가 있으면 제거
-                if (selectedMapMarker) {
-                    selectedMapMarker.setMap(null);
-                }
-
-                // 클릭한 위치에 마커 추가
-                selectedMapMarker = new naver.maps.Marker({
-                    position: selectedLatLng,
-                    map: naverMapInstance
-                });
-
-                // 사용자에게 선택된 위치를 공유할지 확인하는 창 띄우기
-                if (confirm(`선택한 위치를 공유하시겠습니까?\n위도: ${selectedLat}\n경도: ${selectedLng}`)) {
-                    // 네이버 지도 링크 생성 (클릭 시 해당 위치로 이동)
-                    const mapLink = `https://map.naver.com/v5/search/${selectedLat},${selectedLng}`; // 좌표 검색 링크
-
-                    // 메시지로 표시 (HTML 형태로 링크 포함)
-                    const messageHtml = `위치를 공유했습니다: <br><a href="${mapLink}" target="_blank" style="color: white; text-decoration: underline;">지도에서 보기</a><br><img src="https://naveropenapi.map.naver.com/api/v3/staticmap?w=200&h=150&center=${selectedLng},${selectedLat}&zoom=15&markers=${selectedLng},${selectedLat}&key=YOUR_CLIENT_ID" alt="공유된 지도 이미지" style="max-width: 100%; border-radius: 4px; margin-top: 5px;">`;
-                    addChatMessage(messageHtml, 'user-b', true);
-
-                    // TODO: 선택한 위치 정보를 서버로 전송
-                    // message: mapLink, message_type: 'MAP', latitude: selectedLat, longitude: selectedLng 등
-                    // 실제 DB에 저장할 때는 이미지 URL 대신 위도/경도 또는 지도 링크만 저장하고, 프론트엔드에서 렌더링 시
-                    // 동적으로 지도를 그리거나 스태틱 맵 이미지를 요청할 수 있습니다.
-                    // fetch('/api/chat/message', {
-                    //     method: 'POST',
-                    //     headers: { 'Content-Type': 'application/json' },
-                    //     body: JSON.stringify({
-                    //         room_id: 123, // 실제 room_id
-                    //         user_id: 456, // 실제 user_id
-                    //         message: `위치를 공유했습니다.`, // 메시지 텍스트
-                    //         img_url: `https://naveropenapi.map.naver.com/api/v3/staticmap?w=200&h=150&center=${selectedLng},${selectedLat}&zoom=15&markers=${selectedLng},${selectedLat}&key=YOUR_CLIENT_ID`, // 지도 스태틱 이미지 URL
-                    //         has_image: 'Y',
-                    //         message_type: 'IMAGE_MAP', // 새로운 메시지 타입 정의
-                    //         location_data: { lat: selectedLat, lng: selectedLng, link: mapLink } // 위치 데이터 추가
-                    //     })
-                    // });
-
-                    // 지도를 다시 숨김
-                    hideMapContainer();
-                }
-            });
-        } else {
-            // 이미 지도가 로드되어 있다면, 지도를 다시 표시하고 중심을 초기화
-            naverMapInstance.setCenter(new naver.maps.LatLng(37.5665, 126.9780)); // 서울 시청으로 다시 중심 설정
-            naverMapInstance.setZoom(15);
-            // 기존 마커가 있다면 제거
-            if (selectedMapMarker) {
-                selectedMapMarker.setMap(null);
-                selectedMapMarker = null;
+        if (writePostButton) {
+            if (is_admin) {
+                writePostButton.style.display = 'inline-block'; // 관리자에게만 보이게
+            } else {
+                writePostButton.style.display = 'none'; // 일반 사용자에게는 숨김
             }
         }
-    });
 
-    // 지도 닫기 버튼 이벤트
-    closeMapButton.addEventListener('click', () => {
-        hideMapContainer();
-    });
-
-    // 캘린더 버튼 로직 (기존 코드)
-    calendarButton.addEventListener('click', () => {
-        alert('캘린더/일정 공유 기능 활성화! (여기에 날짜 선택 모달 로직)');
-        // TODO: 캘린더/일정 공유 기능 구현
-        hideMapContainer(); // 다른 기능 활성화 시 지도 숨김
-    });
-
-    // 메시지 입력창에서 Enter 키로 전송 (기존 코드)
-    messageInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            sendMessageButton.click();
+        // 게시글이 없을 때 메시지 표시 여부 (초기 로드 시)
+        // 실제로는 서버에서 게시글 목록을 가져온 후 postList.children.length를 확인합니다.
+        if (postList.children.length === 0) {
+            noPostsMessage.style.display = 'block';
+        } else {
+            noPostsMessage.style.display = 'none';
         }
+
+        // --- 이 아래는 예시로 게시글을 동적으로 추가하는 함수입니다. ---
+        // 실제로는 서버 API 호출을 통해 게시글 데이터를 받아와서 사용합니다.
+        function addPost(title, author, date, views) {
+            const newPost = document.createElement('li');
+            newPost.className = 'board-item';
+            newPost.innerHTML = `
+                    <a href="#">${title}</a>
+                    <div class="board-meta">
+                        <span class="author">${author}</span>
+                        <span class="date">${date}</span>
+                        <span class="views">조회 ${views}</span>
+                    </div>
+                `;
+            postList.appendChild(newPost);
+
+            // 게시글이 추가되면 "작성된 게시글이 없습니다." 메시지를 숨김
+            if (noPostsMessage) {
+                noPostsMessage.style.display = 'none';
+            }
+        }
+
+        // --- 개발 테스트용: 관리자가 로그인했다고 가정하고 샘플 글을 추가해볼 수 있습니다. ---
+        // 이 코드는 실제 배포 시에는 제거하거나 서버에서 데이터를 가져오는 코드로 대체되어야 합니다.
+        if (is_admin) {
+            // 잠시 후 샘플 글 추가 (실제는 서버에서 데이터를 받아옴)
+            setTimeout(() => {
+                // addPost("2025 설연휴 안내", " 스토어", "2025-01-17 14:21:11", 1509);
+                // addPost("새로운 공지사항", "관리자", "2025-06-07 13:00:00", 0);
+                // addPost("시스템 점검 안내", " 스토어", "2025-05-20 10:00:00", 500);
+            }, 1000); // 1초 후 추가 (테스트용)
+        }
+        // ----------------------------------------------------------------------------------
     });
 </script>
 </body>

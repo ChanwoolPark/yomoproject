@@ -20,7 +20,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_product")
     @SequenceGenerator(name = "seq_product", sequenceName = "seq_product", allocationSize = 1)
     @Column(name = "product_id")
-    private int productId;
+    private Long productId;
 
     // seller는 users 테이블과 연관관계 설정
     @ManyToOne
