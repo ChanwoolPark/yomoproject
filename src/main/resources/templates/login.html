@@ -90,10 +90,20 @@
 <script>
   const urlParams = new URLSearchParams(window.location.search);
   const needAuth = urlParams.get('needAuth');
-  if (needAuth === 'true') {
-    alert('로그인이 필요한 서비스입니다.');
+
+  if (needAuth === 'true' && !sessionStorage.getItem('authAlertShown')) {
+    alert("로그인이 필요한 서비스입니다.");
+    sessionStorage.setItem('authAlertShown', 'true');
+
+    // URL 깔끔하게 정리
+    urlParams.delete("needAuth");
+    const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+    window.history.replaceState({}, document.title, newUrl);
   }
 </script>
+
+
+
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>
