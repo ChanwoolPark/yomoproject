@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 센터 글쓰기</title>
+    <style>
+        .form-container {
+            width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            background-color: #fafafa;
+        }
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .image-preview {
+            margin-top: 10px;
+        }
+    </style>
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="form-container">
+    <h2>상품 등록</h2>
+    <form th:action="@{/product/write}" method="post" enctype="multipart/form-data">
+
+        <!-- 1. 카테고리 -->
+        <div class="form-group">
+            <label for="subCategoryId">카테고리</label>
+            <select id="subCategoryId" name="subCategoryId" required>
+                <option value="">-- 선택 --</option>
+                <option th:each="sub : ${subCategories}" th:value="${sub.subCategoryId}" th:text="${sub.name}"></option>
+            </select>
+        </div>
+
+        <!-- 2. 제목 -->
+        <div class="form-group">
+            <label for="title">상품명</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+
+        <!-- 3. 가격 -->
+        <div class="form-group">
+            <label for="price">일 대여금액 (원)</label>
+            <input type="number" id="price" name="price" required>
+        </div>
+
+        <!-- 4. 보증금 -->
+        <div class="form-group">
+            <label for="deposit">보증금 (원)</label>
+            <input type="number" id="deposit" name="deposit" value="0">
+        </div>
+
+        <!-- 5. 상세 설명 -->
+        <div class="form-group">
+            <label for="description">상품 설명</label>
+            <textarea id="description" name="description" rows="6" required></textarea>
+        </div>
+
+        <!-- 6. 이미지 -->
+        <div class="form-group">
+            <label for="images">상품 이미지 (최대 3장)</label>
+            <input type="file" id="images" name="images" multiple accept="image/*">
+            <div class="image-preview" id="imagePreview"></div>
+        </div>
+
+        <div style="text-align: center;">
+            <button type="submit">등록하기</button>
+        </div>
+
+    </form>
+</div>
+
+<div style="text-align:center; margin-top: 20px;">
+    <button type="button" class="back-btn"
+            th:onclick="|location.href='/category/' + ${categoryId}|">뒤로가기</button>
+</div>
+
+<script>
+    // 이미지 미리보기 (선택적)
+    const imageInput = document.getElementById("images");
+    const imagePreview = document.getElementById("imagePreview");
+
+    imageInput.addEventListener("change", function () {
+        imagePreview.innerHTML = ""; // 초기화
+        const files = Array.from(imageInput.files).slice(0, 3); // 최대 3장
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.width = "100px";
+                img.style.marginRight = "10px";
+                imagePreview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
+
+</body>
+</html>
