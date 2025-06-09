@@ -523,43 +523,37 @@
   });
 
   // product-detail.html 스크립트 부분
-  document.addEventListener('DOMContentLoaded', function () {
-    const chatButton = document.getElementById('chattingButton'); // 버튼 ID 추가
+  const chatButton = document.getElementById('chattingButton');
+  if (chatButton) {
+    chatButton.addEventListener('click', function () {
+      if (!selectedStart || !selectedEnd) {
+        alert("시작일과 종료일을 모두 선택하세요.");
+        return;
+      }
+      const startDateStr = formatDate(selectedStart);
+      const endDateStr = formatDate(selectedEnd);
 
-    if (chatButton) {
-      chatButton.addEventListener('click', function () {
-        const productId = /*[[${product.productId}]]*/ 0;
-        const sellerId = /*[[${product.seller.id}]]*/ 0;
-        const currentUserId = /*[[${userId}]]*/ 0; // 현재 로그인된 사용자 ID
-
-        // 채팅방 생성 또는 조회 API 호출
-        fetch('/api/chat/room', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            productId: productId,
-            sellerId: sellerId,
-            buyerId: currentUserId // 현재 사용자가 구매자가 됩니다.
-          })
+      fetch('/api/rental', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: productId,
+          startDate: startDateStr,
+          endDate: endDateStr
         })
-                .then(response => response.json())
-                .then(data => {
-                  if (data.chatRoomId) {
-                    // 성공적으로 채팅방 ID를 받으면 채팅 페이지로 이동
-                    window.location.href = '/chat/' + data.chatRoomId;
-                  } else {
-                    alert('채팅방을 여는 데 실패했습니다.');
-                  }
-                })
-                .catch(error => {
-                  console.error('Error creating chat room:', error);
-                  alert('채팅방 연결 중 오류가 발생했습니다.');
-                });
-      });
-    }
-  });
+      })
+              .then(res => {
+                if (!res.ok) throw new Error("예약 실패");
+                return res.text();
+              })
+              .then(msg => {
+                alert("예약이 완료되었습니다! 채팅방으로 이동합니다.");
+                closeReservationModal();
+                window.location.href = "/chatadmin/chatrooms";
+              })
+              .catch(err => alert(err.message));
+    });
+  }
 </script>
 
 
