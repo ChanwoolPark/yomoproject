@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>출금 결과</title>
+</head>
+<body>
+<div th:if="${successMsg}" style="color:green;">
+    <h3 th:text="${successMsg}"></h3>
+    <a th:href="@{/withdrawal/history}">내 출금내역 보기</a>
+</div>
+<div th:if="${errorMsg}" style="color:red;">
+    <h3 th:text="${errorMsg}"></h3>
+    <a th:href="@{/withdrawal/request}">출금 신청 다시하기</a>
+</div>
+</body>
+</html>
