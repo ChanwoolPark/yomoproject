@@ -1,28 +1,22 @@
-// src/main/java/com/project/yomozomo/service/ChatService.java
 package com.project.yomozomo.service;
 
 import com.project.yomozomo.entity.Chat;
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.User;
-import com.project.yomozomo.domain.Rental; // Rental 도메인 (혹은 엔티티)
-// Product 엔티티를 사용할 예정이 없다면 import 제거
-// import com.project.yomozomo.domain.Product;
-
+import com.project.yomozomo.domain.Rental; // Rental의 실제 위치가 domain이라면 유지
 import com.project.yomozomo.repository.ChatRepository;
 import com.project.yomozomo.repository.ChatRoomRepository;
 import com.project.yomozomo.repository.RentalRepository;
-import com.project.yomozomo.repository.UserRepository; // UserRepository로 변경 고려
+import com.project.yomozomo.repository.UserRepository;
 
-import lombok.Data; // 필드에 @Data 어노테이션 사용 시 필요
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-// import org.springframework.beans.factory.annotation.Autowired; // @RequiredArgsConstructor 사용 시 필요 없음
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.time.LocalDateTime; // Date 대신 LocalDateTime 사용을 강력히 권장
+import java.util.Optional; // Optional 임포트는 한 번만 필요합니다.
+import java.time.LocalDateTime;
 
 @Service
 @Slf4j
@@ -31,82 +25,80 @@ public class ChatService {
 
     private final ChatRepository chatRepository;
     private final ChatRoomRepository chatRoomRepository;
-    private final UserRepository usersRepository; // usersRepository로 유지하거나 일관성을 위해 userRepository로 변경
+    private final UserRepository userRepository;
     private final RentalRepository rentalRepository;
 
     // --- 채팅방 관리 ---
 
-    @Transactional(readOnly = true)
-    public ChatRoom getChatRoomById(Long roomId) {
-        return chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
-    }
+    /**
+     * 특정 렌탈에 대한 구매자와 판매자 간의 채팅방을 찾거나 생성합니다.
+     *
+     * @param buyer    채팅을 시작하는 구매자 User 객체
+     * @param seller   판매자 User 객체 (Rental에 연결된 Product의 User)
+     * @param rentalId 채팅방과 연결될 Rental의 ID
+     * @return 생성되거나 찾아진 ChatRoom의 ID
+     */
+    @Transactional // 채팅방 생성/저장이 트랜잭션 내에서 이루어지도록 합니다.
+    public Long findOrCreateChatRoomForRental(User buyer, User seller, Long rentalId) {
+        // 1. rentalId로 Rental 엔티티를 찾습니다.
+        Rental rental = rentalRepository.findById(rentalId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 렌탈 ID입니다: " + rentalId));
 
-    @Transactional(readOnly = true)
-    public List<ChatRoom> getAllChatRooms() {
-        return chatRoomRepository.findAll();
-    }
+        // 2. buyer, seller, rental 기준으로 채팅방을 찾습니다.
+        Optional<ChatRoom> existingRoom = chatRoomRepository.findByBuyerAndSellerAndRental(buyer, seller, rental);
 
-    // ⭐⭐ 여기 아래에 searchChatRoomsByRoomName 메서드를 추가합니다. ⭐⭐
-    @Transactional(readOnly = true)
-    public List<ChatRoom> searchChatRoomsByRoomName(String roomName) {
-        // ChatRoomRepository에 findByRoomNameContainingIgnoreCase 메서드가 있어야 합니다.
-        return chatRoomRepository.findByRoomNameContainingIgnoreCase(roomName);
-    }
+        if (existingRoom.isPresent()) {
+            // 기존 채팅방이 존재하면 해당 채팅방의 ID를 반환
+            return existingRoom.get().getRoomId(); // ⭐ getId()로 수정 (ChatRoom 엔티티의 PK 필드 이름에 따름) ⭐
+        } else {
+            // 3. 존재하지 않으면 새 채팅방 생성
+            // roomName은 "상품명_구매자_판매자" 형식으로 생성
+            String productName = "알 수 없는 상품"; // 기본값
+            if (rental.getProduct() != null && rental.getProduct().getTitle() != null) {
+                // Product 엔티티에 getTitle() 메서드가 있는지 확인 필수
+                productName = rental.getProduct().getTitle();
+            }
 
-    // 사용자 이름으로 검색하는 메서드는 ChatRoomRepository에 적절한 쿼리 메서드가 필요합니다.
-    // ChatRoomAdminController에서 buyerName, sellerName으로 검색하는 로직을 사용하려면
-    // 아래와 같은 메서드가 ChatService에 필요하며, ChatRoomRepository에도 해당 쿼리 메서드가 정의되어야 합니다.
-    @Transactional(readOnly = true)
-    public List<ChatRoom> searchChatRooms(String roomName, String buyerName, String sellerName) {
-        // 복합 검색 로직 (ChatRoomRepository에 searchChatRooms(String, String, String) 같은 메서드가 있다면 사용)
-        // 현재 ChatRoomRepository에는 해당 메서드가 없으므로 아래 코드는 예시입니다.
-        // 필요하다면 ChatRoomRepository에 해당 JPQL 쿼리 메서드를 추가해야 합니다.
-        // List<ChatRoom> result = chatRoomRepository.searchChatRooms(roomName, buyerName, sellerName);
-        // return result;
+            // ⭐ roomName 필드가 ChatRoom 엔티티에 있어야 합니다. ⭐
+            String roomName = productName + " 대여 채팅 (" + buyer.getNickname() + " - " + seller.getNickname() + ")";
 
-        // 임시 방편으로 모든 채팅방을 가져와서 필터링 (비효율적이지만 빠른 테스트 가능)
-        List<ChatRoom> allChatRooms = chatRoomRepository.findAll();
-        return allChatRooms.stream()
-                .filter(room -> {
-                    boolean matches = true;
-                    if (roomName != null && !roomName.isEmpty()) {
-                        if (room.getRoomName() == null || !room.getRoomName().toLowerCase().contains(roomName.toLowerCase())) {
-                            matches = false;
-                        }
-                    }
-                    if (matches && buyerName != null && !buyerName.isEmpty()) {
-                        if (room.getBuyer() == null || room.getBuyer().getUsername() == null || !room.getBuyer().getUsername().toLowerCase().contains(buyerName.toLowerCase())) {
-                            matches = false;
-                        }
-                    }
-                    if (matches && sellerName != null && !sellerName.isEmpty()) {
-                        if (room.getSeller() == null || room.getSeller().getUsername() == null || !room.getSeller().getUsername().toLowerCase().contains(sellerName.toLowerCase())) {
-                            matches = false;
-                        }
-                    }
-                    return matches;
-                })
-                .collect(java.util.stream.Collectors.toList());
+            ChatRoom newChatRoom = ChatRoom.builder()
+                    .roomName(roomName) // ⭐ roomName 필드 설정 (ChatRoom 엔티티에 존재해야 함) ⭐
+                    .buyer(buyer)
+                    .seller(seller)
+                    .rental(rental)
+                    .build();
+                    /*.updatedAt(LocalDateTime.now())  최신 업데이트 시간을 명시적으로 설정     builde 위로*/
+
+            ChatRoom savedRoom = chatRoomRepository.save(newChatRoom);
+            return savedRoom.getRoomId(); // ⭐ getId()로 수정 (ChatRoom 엔티티의 PK 필드 이름에 따름) ⭐
+        }
     }
 
 
     // --- 메시지 관리 ---
 
     @Transactional
-    public Chat saveChatMessage(Long roomId, Long userId, String messageContent, String imgUrl, String messageType) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Chat room not found: " + roomId));
-        User user = usersRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+    public Chat saveChatMessage(Long chatRoomId, Long senderUserId, String messageContent,
+                                String imgUrl, String messageType) {
+        // 1. chatRoomId로 ChatRoom 엔티티를 찾습니다.
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다. ID: " + chatRoomId));
 
-        Chat chat = new Chat();
+        // 2. senderUserId로 User 엔티티를 찾습니다.
+        User sender = userRepository.findById(senderUserId)
+                .orElseThrow(() -> new IllegalArgumentException("발신자 사용자를 찾을 수 없습니다. ID: " + senderUserId));
+
+        // 3. Chat 엔티티 생성 및 저장
+        Chat chat = new Chat(); // Chat 엔티티에 @Builder가 없다면 이 방식이 맞습니다.
         chat.setChatRoom(chatRoom);
-        chat.setUser(user);
+        chat.setUser(sender);
         chat.setMessage(messageContent);
         chat.setImgUrl(imgUrl);
-        chat.setHasImage(imgUrl != null && !imgUrl.isEmpty() ? 'Y' : 'N');
-        chat.setMessageType(messageType != null ? messageType : "TEXT");
+        // ⭐ 아래 두 줄은 Chat 엔티티의 @PrePersist가 처리한다면 제거해도 됩니다. ⭐
+        // 만약 @PrePersist가 없다면 유지해야 합니다.
+        // chat.setHasImage(imgUrl != null && !imgUrl.isEmpty() ? 'Y' : 'N');
+        // chat.setMessageType(messageType != null ? messageType : "TEXT");
 
         return chatRepository.save(chat);
     }
@@ -114,34 +106,25 @@ public class ChatService {
     @Transactional(readOnly = true)
     public List<Chat> getChatMessagesByRoom(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Chat room not found: " + roomId));
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다. ID: " + roomId));
         return chatRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom);
     }
 
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정
+    public Optional<ChatRoom> getChatRoomById(Long roomId) {
+        return chatRoomRepository.findById(roomId);
+    }
 
-    @Transactional // 트랜잭션이 걸려있어야 save가 정상 작동하고 롤백 가능
-    public Long findOrCreateChatRoom(User buyer, User seller, Rental rental) {
-        // 1. 기존 채팅방 찾기 시도
-        return chatRoomRepository.findByBuyerAndSellerAndRental(buyer, seller, rental)
-                .map(ChatRoom::getRoomId)
-                .orElseGet(() -> {
-                    ChatRoom newChatRoom = ChatRoom.builder()
-                            .buyer(buyer)
-                            .seller(seller)
-                            .rental(rental)
-                            // Rental 엔티티에 getTitle() 메서드가 있는지 확인하거나
-                            // roomName 생성 로직을 변경해야 합니다.
-                            .roomName(rental.getRentalId() != null ? rental.getRentalId() + " 관련 채팅" : "렌탈 채팅")
-                            .createdAt(LocalDateTime.now()) // LocalDateTime으로 변경 권장
-                            .build();
-                    try {
-                        ChatRoom savedChatRoom = chatRoomRepository.save(newChatRoom);
-                        log.info("새로운 채팅방 생성됨: RoomId = {}", savedChatRoom.getRoomId());
-                        return savedChatRoom.getRoomId();
-                    } catch (Exception e) {
-                        log.error("채팅방 생성 중 오류 발생: {}", e.getMessage(), e);
-                        throw new RuntimeException("채팅방 생성에 실패했습니다.", e);
-                    }
-                });
+    //채팅방 이름으로 검색
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정
+    public List<ChatRoom> searchChatRoomsByRoomName(String roomName) {
+        // chatRoomRepository에 findByRoomNameContainingIgnoreCase 메서드가 있어야 합니다.
+        // 이 메서드는 대소문자 구분 없이 roomName을 포함하는 모든 채팅방을 검색합니다.
+        return chatRoomRepository.findByRoomNameContainingIgnoreCase(roomName);
+    }
+
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정
+    public List<ChatRoom> getAllChatRooms() {
+        return chatRoomRepository.findAll();
     }
 }
