@@ -64,18 +64,5 @@ public class WithdrawalController {
         return "withdrawal/history";
     }
 
-    // 4. 관리자: 전체 출금 요청 내역
-    @GetMapping("/admin/list")
-    public String adminWithdrawalList(Model model) {
-        List<WithdrawalRequest> list = withdrawalService.getAllRequests();
-        model.addAttribute("requests", list);
-        return "withdrawal/admin_list";
-    }
 
-    // 5. 관리자: 출금 승인/거절 처리
-    @PostMapping("/admin/updateStatus")
-    public String updateStatus(@RequestParam Long requestId, @RequestParam String status) {
-        withdrawalService.updateStatus(requestId, status);
-        return "redirect:/withdrawal/admin/list";
-    }
 }
