@@ -61,9 +61,10 @@ public class PaymentService {
         walletService.addChargeLog(sellerWallet.getWalletId(), price, "상품대여(판매자 수익)");
         walletLogService.saveLog(sellerWallet.getWalletId(), "상품대여(판매자 수익)", price);
 
-        // (3) 관리자(1번 유저)에게 보증금 입금
-        Long adminId = 999L;
-        UserWallet adminWallet = userWalletRepository.findByUserId(adminId);
+        // (3) 관리자에게 보증금 입금
+        User admin = userRepository.findByRole("ADMIN")
+                .orElseThrow(() -> new RuntimeException("관리자 계정이 존재하지 않습니다."));
+        UserWallet adminWallet = userWalletRepository.findByUserId(admin.getId());
         adminWallet.setBalance(adminWallet.getBalance() + deposit);
         userWalletRepository.save(adminWallet);
         walletService.addChargeLog(adminWallet.getWalletId(), deposit, "상품대여(보증금)");
@@ -85,5 +86,30 @@ public class PaymentService {
 
 
         return true;
+    }
+    @Transactional
+    public void refundDepositAndCompleteRental(Long rentalId) {
+        Rental rental = rentalRepository.findById(rentalId).orElseThrow(() -> new IllegalArgumentException("렌탈 정보 없음"));
+        Product product = rental.getProduct();
+        int deposit = product.getDeposit();
+
+        User admin = userRepository.findByRole("ADMIN")
+                .orElseThrow(() -> new RuntimeException("관리자 계정이 존재하지 않습니다."));
+        UserWallet adminWallet = userWalletRepository.findByUserId(admin.getId());
+        UserWallet buyerWallet = userWalletRepository.findByUserId(rental.getUser().getId());
+
+        // (1) status 변경
+        rental.setStatus("반납완료");
+        rentalRepository.save(rental);
+
+        // (2) 보증금 반환
+        adminWallet.setBalance(adminWallet.getBalance() - deposit);
+        buyerWallet.setBalance(buyerWallet.getBalance() + deposit);
+        userWalletRepository.save(adminWallet);
+        userWalletRepository.save(buyerWallet);
+        walletService.addChargeLog(buyerWallet.getWalletId(), deposit, "보증금 반환");
+        walletLogService.saveLog(buyerWallet.getWalletId(), "보증금 반환", deposit);
+
+        // (선택) 알림, 거래내역 등 추가 가능
     }
 }
