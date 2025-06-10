@@ -188,7 +188,7 @@
   </span>
 
       <!-- 항상 보이는 목록 버튼 -->
-      <button type="button" onclick="alert('신고 기능은 준비 중입니다.')">신고하기</button>
+      <button type="button" onclick="openReportModal()">신고하기</button>
       <a th:href="@{'/category/' + ${product.subCategory.category.categoryId}}" style="margin-left: auto;">
         <button type="button">목록</button>
       </a>
@@ -265,6 +265,45 @@
 <!-- 오버레이 -->
 <div id="overlay" onclick="closeReservationModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
 
+
+<!-- 신고하기 모달 부분(뷰) -->
+<div id="reportModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
+  <h3>신고하기</h3>
+  <form id="reportForm">
+    <input type="hidden" name="productId" th:value="${product.productId}" />
+
+    <div>
+      <label>작성자:</label>
+      <input type="text" th:value="${#authentication.name}" readonly />
+    </div>
+
+    <div>
+      <label>신고 대상자:</label>
+      <input type="text" th:value="${product.seller.username}" readonly />
+    </div>
+
+    <div>
+      <label>신고 상품:</label>
+      <input type="text" th:value="${product.title}" readonly />
+    </div>
+
+    <div>
+      <label for="title">신고 제목:</label>
+      <input type="text" id="title" name="title" required />
+    </div>
+
+    <div>
+      <label for="details">신고 내용:</label>
+      <textarea id="details" name="details" rows="5" required></textarea>
+    </div>
+
+    <button type="submit">신고 제출</button>
+    <button type="button" onclick="closeReportModal()">닫기</button>
+  </form>
+</div>
+
+<!-- 신고 모달 오버레이 -->
+<div id="reportOverlay" onclick="closeReportModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
 
 <div th:replace="fragments/footer :: footer"></div>
 
@@ -343,7 +382,6 @@
       });
     }
 
-    // ✅ 이 부분도 DOMContentLoaded 안으로 들어와야 해!
     const unwishlistBtn = document.querySelector('.unwishlist-btn');
     if (unwishlistBtn) {
       unwishlistBtn.addEventListener('click', function () {
@@ -597,6 +635,53 @@
   const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
 </script>
 
+<script>
+  // 모달 열기
+  function openReportModal() {
+    if (!isLoggedIn) {
+      alert("로그인이 필요한 서비스입니다.");
+      window.location.href = "/login?needAuth=true";
+      return;
+    }
+
+    document.getElementById('reportModal').style.display = 'block';
+    document.getElementById('reportOverlay').style.display = 'block';
+  }
+
+  // 모달 닫기
+  function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    document.getElementById('reportOverlay').style.display = 'none';
+  }
+
+  // 폼 제출
+  document.getElementById("reportForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const formData = {
+      productId: document.querySelector("input[name='productId']").value,
+      title: document.querySelector("input[name='title']").value,
+      details: document.querySelector("textarea[name='details']").value
+    };
+
+    fetch("/api/report", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(formData)
+    })
+            .then(res => {
+              if (res.ok) {
+                alert("신고가 접수되었습니다.");
+                closeReportModal();  //
+                // 성공 시 모달 닫기
+              } else {
+                alert("신고 실패");
+              }
+            });
+  });
+</script>
 
 </body>
 </html>
