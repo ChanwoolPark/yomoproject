@@ -19,4 +19,10 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<ChatRoom> findByRoomNameContainingIgnoreCase(String roomName);
     // 참고: buyer와 seller의 순서에 상관없이 찾고 싶다면, 두 가지 경우를 모두 고려해야 할 수 있습니다.
     // 또는 buyer_id와 seller_id를 채팅방 생성 시 항상 정해진 순서로 저장하도록 강제할 수 있습니다.
+
+    // 렌탈 상품과 연결되지 않은 일반 1:1 채팅방을 찾을 때 (rental 필드가 null인 경우)
+    Optional<ChatRoom> findByBuyerAndSellerAndRentalIsNull(User buyer, User seller);
+
+    // 특정 사용자가 참여한 모든 채팅방을 찾을 때 (필요하다면 추가)
+    // List<ChatRoom> findByBuyerOrSeller(User user1, User user2);
 }
