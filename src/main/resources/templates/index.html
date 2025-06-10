@@ -62,33 +62,34 @@
         #searchSuggestions li:hover {
             background-color: #f5f5f5;
         }
-        .search-container {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            margin: 0;         /* ✅ 위아래 여백 제거 */
-            padding: 20px 40px; /* ✅ 좌측에만 여백 줘서 보기 좋게 */
-        }
 
         .search-bar {
             display: flex;
-            gap: 12px;
-            padding: 20px 24px;
+            gap: 10px;
+            margin: 20px 30px;
+            position: relative;
+
+
+
+
+
+            max-width: 600px;
+            padding: 16px 20px;
             border: 1px solid #eee;
-            border-radius: 20px;
+            border-radius: 16px;
             background: #fefefe;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-            width: 100%;
-            max-width: 640px;   /* ✅ 좀 더 얇게 줄임 */
         }
 
-        .search-bar select {
+
+        #categorySelect {
             padding: 10px 14px;
             border-radius: 8px;
             font-size: 15px;
+            border: 1px solid #ddd;
         }
 
-        .search-bar input[type="text"] {
+        #keywordInput {
             flex: 1;
             padding: 10px 16px;
             font-size: 16px;
@@ -96,7 +97,7 @@
             border: 1px solid #ddd;
         }
 
-        .search-bar button {
+        .search-bar button[type="submit"] {
             padding: 10px 20px;
             background: #7c4dff;
             color: white;
@@ -110,6 +111,57 @@
         .search-bar button:hover {
             background: #5e35b1;
         }
+
+        #searchSuggestions {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border: 1px solid #ccc;
+            z-index: 999;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #f9f9f9;
+            border: none;
+            border-bottom: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid #7c4dff;
+            background: #fff;
+        }
+
+        #searchSuggestions ul {
+            list-style: none;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #searchSuggestions ul li {
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #searchSuggestions ul li:hover {
+            background-color: #f2f2f2;
+        }
+
     </style>
 </head>
 <body>
@@ -117,50 +169,36 @@
 <!-- 헤더 삽입 -->
 <div th:replace="fragments/header :: header"></div>
 
-<!-- ✅ HTML 구조 -->
-<div class="search-container">
-    <div class="search-bar">
-        <!-- 카테고리 -->
-        <select name="categoryId">
-            <option value="">전체</option>
-            <option th:each="cat : ${categories}"
-                    th:value="${cat.categoryId}"
-                    th:text="${cat.name}">
-            </option>
-        </select>
+<form id="searchForm" action="/search" method="get" class="search-bar">
+    <!-- 카테고리 선택 -->
+    <select name="categoryId" id="categorySelect">
+        <option value="">전체</option>
+        <option th:each="cat : ${categories}"
+                th:value="${cat.categoryId}"
+                th:text="${cat.name}">
+        </option>
+    </select>
 
-        <!-- 검색어 -->
-        <input type="text" name="keyword" placeholder="검색어를 입력하세요" />
+    <!-- 검색어 입력 -->
+    <input type="text" name="keyword" id="keywordInput"
+           placeholder="검색어 입력"
+           th:value="${keyword}"
+           onfocus="showSearchSuggestions()" />
 
-        <!-- 검색 버튼 -->
-        <button type="submit" form="searchForm">검색</button>
-    </div>
-</div>
-
-<!-- ✅ 실제 form은 따로 둠 (버튼이 이걸 가리킴) -->
-<form id="searchForm" action="/search" method="get" style="display:none;"></form>
+    <!-- 검색 버튼 -->
+    <button type="submit">검색</button>
 
     <!-- ▼ 추천 검색어 드롭다운 -->
-    <div id="searchSuggestions"
-         style="display: none; position: absolute; top: 48px; left: 0; width: 100%; background: white; border: 1px solid #ccc; z-index: 999;">
-
-        <!-- 탭 버튼 그룹 -->
-        <div style="display: flex; border-bottom: 1px solid #ddd;">
-            <button type="button" class="tab active" id="tab-recent" onclick="switchTab('recent')"
-                    style="flex: 1; padding: 10px; font-weight: bold; cursor: pointer;">
-                최근검색어
-            </button>
-            <button type="button" class="tab" id="tab-popular" onclick="switchTab('popular')"
-                    style="flex: 1; padding: 10px; font-weight: bold; cursor: pointer;">
-                인기검색어
-            </button>
+    <div id="searchSuggestions">
+        <div class="tab-buttons">
+            <button type="button" class="tab active" id="tab-recent" onclick="switchTab('recent')">최근검색어</button>
+            <button type="button" class="tab" id="tab-popular" onclick="switchTab('popular')">인기검색어</button>
         </div>
-
-        <!-- 리스트 -->
-        <ul id="recentList" style="list-style: none; margin: 0; padding: 10px;"></ul>
-        <ul id="popularList" style="list-style: none; margin: 0; padding: 10px; display: none;"></ul>
+        <ul id="recentList"></ul>
+        <ul id="popularList" style="display: none;"></ul>
     </div>
 </form>
+
 
 <main>
     <section class="banner swiper mySwiper" style="width: 100%; height: 400px; margin: 0;">
