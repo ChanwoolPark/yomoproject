@@ -1,9 +1,14 @@
 package com.project.yomozomo.service;
 
+import com.project.yomozomo.domain.Rental;
+import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.ChatroomReport;
+import com.project.yomozomo.repository.ChatRoomRepository;
 import com.project.yomozomo.repository.ChatroomReportRepository;
+import com.project.yomozomo.repository.RentalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -14,6 +19,9 @@ import java.util.Optional;
 public class ChatroomReportService {
 
     private final ChatroomReportRepository chatroomReportRepository;
+    private final RentalRepository rentalRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final WalletService walletService;
 
     public void submitReport(Long chatRoomId, Long reporterId, Long reportedId, String title, String content) {
         ChatroomReport report = new ChatroomReport();
@@ -40,5 +48,24 @@ public class ChatroomReportService {
                 .orElseThrow(() -> new RuntimeException("신고 내역을 찾을 수 없습니다."));
         report.setStatus(status);
         chatroomReportRepository.save(report);
+    }
+    @Transactional
+    public void processDeposit(Long reportId, Long receiverId, int amount, String rentalStatus) {
+        ChatroomReport report = chatroomReportRepository.findById(reportId)
+                .orElseThrow(() -> new RuntimeException("신고 내역을 찾을 수 없습니다."));
+
+        ChatRoom chatRoom = chatRoomRepository.findById(report.getChatRoomId())
+                .orElseThrow(() -> new RuntimeException("채팅방이 없습니다."));
+        Rental rental = rentalRepository.findById(chatRoom.getRental().getRentalId())
+                .orElseThrow(() -> new RuntimeException("렌탈 정보가 없습니다."));
+
+        // 보증금 정산: receiverId(구매자 또는 판매자)에게 금액 입금
+        walletService.increaseBalance(receiverId, amount);
+
+        // 렌탈 상태 변경
+        rental.setStatus(rentalStatus);
+        rentalRepository.save(rental);
+
+        // 정산 내역, 처리 로그 등 추가 저장 가능
     }
 }
