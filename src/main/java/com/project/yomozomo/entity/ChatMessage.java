@@ -38,7 +38,7 @@ public class ChatMessage { // 엔티티 클래스 이름은 ChatMessage로 유�
 
     // HAS_IMAGE 컬럼 추가 (CHAR(1) 'Y'/'N' 매핑)
     @Column(name = "HAS_IMAGE", length = 1)
-    private String hasImage = "N"; // 기본값 'N'
+    private char hasImage = 'N'; // 기본값 'N'
 
     @Column(name = "MESSAGE_TYPE", length = 20) // ⭐ DB 컬럼명 MESSAGE_TYPE과 매핑 ⭐
     private String messageType = "TEXT"; // 기본값 'TEXT'
@@ -56,9 +56,9 @@ public class ChatMessage { // 엔티티 클래스 이름은 ChatMessage로 유�
         }
         // imgUrl이 있다면 hasImage를 'Y'로 설정
         if (imgUrl != null && !imgUrl.isEmpty()) {
-            hasImage = "Y";
+            hasImage = 'Y';
         } else {
-            hasImage = "N";
+            hasImage = 'N';
         }
     }
 }
