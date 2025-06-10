@@ -353,6 +353,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+
+    // 찜하기 버튼
     const wishlistBtn = document.querySelector('.wishlist-btn');
     if (wishlistBtn) {
       wishlistBtn.addEventListener('click', function () {
@@ -363,6 +365,7 @@
         }
 
         const productId = this.dataset.productId;
+
         fetch('/wishlist', {
           method: 'POST',
           headers: {
@@ -403,7 +406,6 @@
     }
   });
 </script>
-
 
 <!-- 예약 부분 캘린더 JS 코드 -->
 <script th:inline="javascript">
@@ -622,6 +624,60 @@
               .catch(err => alert(err.message));
     });
   }
+
+
+</script>
+
+<script th:inline="javascript">
+  const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
+</script>
+
+<script>
+  // 모달 열기
+  function openReportModal() {
+    if (!isLoggedIn) {
+      alert("로그인이 필요한 서비스입니다.");
+      window.location.href = "/login?needAuth=true";
+      return;
+    }
+
+    document.getElementById('reportModal').style.display = 'block';
+    document.getElementById('reportOverlay').style.display = 'block';
+  }
+
+  // 모달 닫기
+  function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    document.getElementById('reportOverlay').style.display = 'none';
+  }
+
+  // 폼 제출
+  document.getElementById("reportForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const formData = {
+      productId: document.querySelector("input[name='productId']").value,
+      title: document.querySelector("input[name='title']").value,
+      details: document.querySelector("textarea[name='details']").value
+    };
+
+    fetch("/api/report", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(formData)
+    })
+            .then(res => {
+              if (res.ok) {
+                alert("신고가 접수되었습니다.");
+                closeReportModal();  //
+                // 성공 시 모달 닫기
+              } else {
+                alert("신고 실패");
+              }
+            });
+  });
 </script>
 
 </body>
