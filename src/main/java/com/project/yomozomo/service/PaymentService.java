@@ -22,8 +22,6 @@ public class PaymentService {
     @Autowired
     private UserWalletRepository userWalletRepository;
     @Autowired
-    private WalletService walletService; // 로그 기록용
-    @Autowired
     private TransactionHistoryRepository transactionHistoryRepository;
     @Autowired
     private WalletLogService walletLogService;
@@ -50,7 +48,6 @@ public class PaymentService {
         // (1) 구매자 잔고 차감
         buyerWallet.setBalance(buyerWallet.getBalance() - totalPrice);
         userWalletRepository.save(buyerWallet);
-        walletService.addChargeLog(buyerWallet.getWalletId(), -totalPrice, "상품대여(차감)");
         walletLogService.saveLog(buyerWallet.getWalletId(), "상품대여(차감)", -totalPrice);
 
         // (2) 판매자에게 가격 지급
@@ -58,7 +55,6 @@ public class PaymentService {
         UserWallet sellerWallet = userWalletRepository.findByUserId(sellerId);
         sellerWallet.setBalance(sellerWallet.getBalance() + price);
         userWalletRepository.save(sellerWallet);
-        walletService.addChargeLog(sellerWallet.getWalletId(), price, "상품대여(판매자 수익)");
         walletLogService.saveLog(sellerWallet.getWalletId(), "상품대여(판매자 수익)", price);
 
         // (3) 관리자에게 보증금 입금
@@ -67,7 +63,6 @@ public class PaymentService {
         UserWallet adminWallet = userWalletRepository.findByUserId(admin.getId());
         adminWallet.setBalance(adminWallet.getBalance() + deposit);
         userWalletRepository.save(adminWallet);
-        walletService.addChargeLog(adminWallet.getWalletId(), deposit, "상품대여(보증금)");
         walletLogService.saveLog(adminWallet.getWalletId(), "상품대여(보증금)", deposit);
 
         // (4) rental 상태 변경
@@ -107,7 +102,6 @@ public class PaymentService {
         buyerWallet.setBalance(buyerWallet.getBalance() + deposit);
         userWalletRepository.save(adminWallet);
         userWalletRepository.save(buyerWallet);
-        walletService.addChargeLog(buyerWallet.getWalletId(), deposit, "보증금 반환");
         walletLogService.saveLog(buyerWallet.getWalletId(), "보증금 반환", deposit);
 
         // (선택) 알림, 거래내역 등 추가 가능
