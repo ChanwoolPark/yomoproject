@@ -7,6 +7,12 @@ import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.RentalService;
 import com.project.yomozomo.service.UserService;
 
+// 웹소켓 관련 임포트 제거
+// import org.springframework.messaging.handler.annotation.DestinationVariable;
+// import org.springframework.messaging.handler.annotation.MessageMapping;
+// import org.springframework.messaging.handler.annotation.Payload;
+// import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
