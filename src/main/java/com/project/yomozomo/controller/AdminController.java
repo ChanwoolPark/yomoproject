@@ -1,6 +1,7 @@
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Rental;
+import com.project.yomozomo.domain.Report;
 import com.project.yomozomo.domain.WithdrawalRequest;
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.ChatroomReport;
@@ -9,6 +10,7 @@ import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.InquiryRepository;
 import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.ChatroomReportService;
+import com.project.yomozomo.service.ReportService;
 import com.project.yomozomo.service.WithdrawalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -25,7 +27,7 @@ import java.util.List;
 public class AdminController {
 
     private final InquiryRepository inquiryRepo;
-
+    private final ReportService reportService;
     private final WithdrawalService withdrawalService;
     private final ChatroomReportService chatroomReportService;
     private final ChatService chatService;
@@ -39,16 +41,23 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
-        // 신고/문의/환불/정산 등 목록을 model에 담아서 넘김
-        // 예: model.addAttribute("reports", reportService.findAll());
         return "admin/dashboard";
     }
 
     // 1.상품 신고 관리
-    @GetMapping("/reports")
-    public String reportList(Model model) {
-        // model.addAttribute("reports", reportService.findAll());
-        return "admin/report-list";
+    @GetMapping("/product-reports")
+    public String productReportList(Model model) {
+        model.addAttribute("reportList", reportService.getAllReports());
+        return "admin/product_report_list";
+    }
+
+    // 1-2. 상품 신고 상세
+    @GetMapping("/product-report/{reportId}")
+    public String productReportDetail(@PathVariable Long reportId, Model model) {
+        Report report = reportService.getReport(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("신고 내역을 찾을 수 없습니다."));
+        model.addAttribute("report", report);
+        return "admin/product_report_detail"; // 상세페이지는 추가로 구성
     }
 
     // 2. 문의 관리 (고객센터)
