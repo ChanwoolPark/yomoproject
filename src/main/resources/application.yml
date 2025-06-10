@@ -4,7 +4,7 @@ spring:
     name: Yomozomo
 
   datasource:
-    url: jdbc:oracle:thin:@DESKTOP-EHU0A9:1521/xepdb1 # <-- 이 줄을 이렇게 수정합니다. jdbc:oracle:thin:@Mint:1521/xepdb1
+    url:  jdbc:oracle:thin:@Mint:1521/xepdb1 # <-- 이 줄을 이렇게 수정합니다. jdbc:oracle:thin:@Mint:1521/xepdb1
     driver-class-name: oracle.jdbc.OracleDriver
     username: Yomo
     password: 12345
