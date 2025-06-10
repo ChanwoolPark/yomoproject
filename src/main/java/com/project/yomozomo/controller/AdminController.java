@@ -1,23 +1,19 @@
 package com.project.yomozomo.controller;
 
-import com.project.yomozomo.entity.Inquiry;
-import com.project.yomozomo.repository.InquiryRepository;
-import lombok.RequiredArgsConstructor;
-import org.antlr.v4.runtime.tree.pattern.ParseTreePattern;
 import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.domain.WithdrawalRequest;
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.ChatroomReport;
+import com.project.yomozomo.entity.Inquiry;
 import com.project.yomozomo.entity.User;
+import com.project.yomozomo.repository.InquiryRepository;
 import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.ChatroomReportService;
 import com.project.yomozomo.service.WithdrawalService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -34,11 +30,12 @@ public class AdminController {
     private final ChatroomReportService chatroomReportService;
     private final ChatService chatService;
 
+    /*
     public AdminController(WithdrawalService withdrawalService, ChatroomReportService chatroomReportService, ChatService chatService) {
         this.withdrawalService = withdrawalService;
         this.chatroomReportService = chatroomReportService;
         this.chatService = chatService;
-    }
+    }*/
 
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
@@ -120,7 +117,7 @@ public class AdminController {
 
         return "admin/report-detail"; // templates/admin/report-detail.html
 
-
+    }
     // 4-2. 신고 상태 변경 (처리중/완료/거절)
     @PostMapping("/report/status")
     public String updateReportStatus(@RequestParam Long reportId,
