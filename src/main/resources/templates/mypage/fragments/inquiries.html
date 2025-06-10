@@ -5,6 +5,17 @@
     <title>Title</title>
 </head>
 <body>
-<h1>문의 내역 창입니다.</h1>
+<div class="card-box">
+    <h2>내 문의내역</h2>
+    <div th:each="inquiry : ${inquiries}" class="inquiry-item">
+        <p><strong th:text="${inquiry.title}">제목</strong></p>
+        <p th:text="${inquiry.content}">내용</p>
+        <p th:text="'답변상태: ' + (${inquiry.isAnswered} ? '답변완료' : '답변대기')"></p>
+        <p th:if="${inquiry.isAnswered}">
+            <strong>답변:</strong> <span th:text="${inquiry.answer}"></span>
+        </p>
+    </div>
+</div>
+
 </body>
 </html>

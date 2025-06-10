@@ -32,12 +32,15 @@ public class SecurityConfig {
 
 
     private final OAuth2LoginSuccessHandler successHandler;
-
     private final CustomAuthenticationEntryPoint customEntryPoint;
+    private final CustomUserDetailsService userDetailsService;
 
-    public SecurityConfig(OAuth2LoginSuccessHandler successHandler, CustomAuthenticationEntryPoint customEntryPoint) {
+    public SecurityConfig(OAuth2LoginSuccessHandler successHandler,
+                          CustomAuthenticationEntryPoint customEntryPoint,
+                          CustomUserDetailsService userDetailsService ) {
         this.successHandler = successHandler;
         this.customEntryPoint = customEntryPoint;
+        this.userDetailsService = userDetailsService;
     }
 
 
@@ -52,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers(
                                 "/", "/index.html", "/login", "/login/form", "/login/**",
+                                "/login-page",
                                 "/css/**", "/js/**", "/images/**", "/oauth2/**",
                                 "/signup", "/category",
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
@@ -100,6 +104,13 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")
                         .permitAll()
                 )
+                .rememberMe(remember -> remember
+                        .key("yomozomo-remember-me-key")
+                        .tokenValiditySeconds(60 * 60 * 24 * 14)
+                        .rememberMeParameter("remember-me")
+                        .userDetailsService(userDetailsService)
+                )
+
 
                 .csrf(csrf -> csrf.disable());
 

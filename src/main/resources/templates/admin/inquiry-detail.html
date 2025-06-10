@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>문의 상세</title>
+</head>
+<body>
+<h2 th:text="'문의 제목: ' + ${inquiry.title}"></h2>
+<p><strong>이메일:</strong> <span th:text="${inquiry.email}"></span></p>
+<p><strong>내용:</strong></p>
+<p th:text="${inquiry.content}"></p>
+
+<form th:action="@{'/admin/inquiries/' + ${inquiry.id} + '/reply'}" method="post">
+    <label for="answer">답변 작성</label><br>
+    <textarea name="answer" rows="5" style="width: 100%;" th:text="${inquiry.answer}"></textarea><br>
+    <button type="submit">답변 등록</button>
+</form>
+</body>
+</html>
