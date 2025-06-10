@@ -188,7 +188,7 @@
   </span>
 
       <!-- 항상 보이는 목록 버튼 -->
-      <button type="button" onclick="alert('신고 기능은 준비 중입니다.')">신고하기</button>
+      <button type="button" onclick="openReportModal()">신고하기</button>
       <a th:href="@{'/category/' + ${product.subCategory.category.categoryId}}" style="margin-left: auto;">
         <button type="button">목록</button>
       </a>
@@ -266,42 +266,77 @@
 <div id="overlay" onclick="closeReservationModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
 
 
+<!-- 신고하기 모달 부분(뷰) -->
+<div id="reportModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
+  <h3>신고하기</h3>
+  <form id="reportForm">
+    <input type="hidden" name="productId" th:value="${product.productId}" />
+
+    <div>
+      <label>작성자:</label>
+      <input type="text" th:value="${#authentication.name}" readonly />
+    </div>
+
+    <div>
+      <label>신고 대상자:</label>
+      <input type="text" th:value="${product.seller.username}" readonly />
+    </div>
+
+    <div>
+      <label>신고 상품:</label>
+      <input type="text" th:value="${product.title}" readonly />
+    </div>
+
+    <div>
+      <label for="title">신고 제목:</label>
+      <input type="text" id="title" name="title" required />
+    </div>
+
+    <div>
+      <label for="details">신고 내용:</label>
+      <textarea id="details" name="details" rows="5" required></textarea>
+    </div>
+
+    <button type="submit">신고 제출</button>
+    <button type="button" onclick="closeReportModal()">닫기</button>
+  </form>
+</div>
+
+<!-- 신고 모달 오버레이 -->
+<div id="reportOverlay" onclick="closeReportModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
+
 <div th:replace="fragments/footer :: footer"></div>
 
 
 <!-- 지도 API KEY -->
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&libraries=services"></script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&autoload=false&libraries=services"></script>
 
 <script th:inline="javascript">
   document.addEventListener("DOMContentLoaded", function () {
-    const sellerAddress = /*[[${seller.address}]]*/ "";
+    kakao.maps.load(function () {
+      const sellerAddress = /*[[${seller.address}]]*/ "";
 
-    const mapContainer = document.getElementById('map');
-    const mapOption = {
-      center: new kakao.maps.LatLng(37.5665, 126.9780),
-      level: 3
-    };
+      const mapContainer = document.getElementById('map');
+      const mapOption = {
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 3
+      };
 
-    const map = new kakao.maps.Map(mapContainer, mapOption);
+      const map = new kakao.maps.Map(mapContainer, mapOption);
+      const geocoder = new kakao.maps.services.Geocoder();
 
-
-
-    const geocoder = new kakao.maps.services.Geocoder();
-
-    geocoder.addressSearch(sellerAddress, function(result, status) {
-      if (status === kakao.maps.services.Status.OK) {
-        console.log("주소:", sellerAddress); // ✅ 주소 확인
-        console.log("변환 좌표:", result[0]); // ✅ 변환된 위도/경도 확인
-
-        const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-        const marker = new kakao.maps.Marker({
-          map: map,
-          position: coords
-        });
-        map.setCenter(coords);
-      } else {
-        console.warn("주소 변환 실패:", sellerAddress);
-      }
+      geocoder.addressSearch(sellerAddress, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+          const marker = new kakao.maps.Marker({
+            map: map,
+            position: coords
+          });
+          map.setCenter(coords);
+        } else {
+          console.warn("주소 변환 실패:", sellerAddress);
+        }
+      });
     });
   });
 </script>
@@ -328,6 +363,7 @@
         }
 
         const productId = this.dataset.productId;
+
         fetch('/wishlist', {
           method: 'POST',
           headers: {
@@ -347,7 +383,6 @@
       });
     }
 
-    // ✅ 이 부분도 DOMContentLoaded 안으로 들어와야 해!
     const unwishlistBtn = document.querySelector('.unwishlist-btn');
     if (unwishlistBtn) {
       unwishlistBtn.addEventListener('click', function () {
@@ -414,7 +449,7 @@
               const end = new Date(event.end);
               start.setHours(0, 0, 0, 0);
               end.setHours(0, 0, 0, 0);
-              return clickedDate >= start && clickedDate <= end;
+              return clickedDate >= start && clickedDate < end;
             });
 
             if (isDisabled) {
@@ -439,7 +474,7 @@
                 const end = new Date(event.end);
                 start.setHours(0, 0, 0, 0);
                 end.setHours(0, 0, 0, 0);
-                return clickedDate >= start && selectedStart <= end;
+                return clickedDate >= start && selectedStart < end;
               });
 
               if (overlap) {
@@ -557,43 +592,38 @@
   });
 
   // product-detail.html 스크립트 부분
-  document.addEventListener('DOMContentLoaded', function () {
-    const chatButton = document.getElementById('chattingButton'); // 버튼 ID 추가
+  const chatButton = document.getElementById('chattingButton');
+  if (chatButton) {
+    chatButton.addEventListener('click', function () {
+      if (!selectedStart || !selectedEnd) {
+        alert("시작일과 종료일을 모두 선택하세요.");
+        return;
+      }
+      const startDateStr = formatDate(selectedStart);
+      const endDateStr = formatDate(selectedEnd);
 
-    if (chatButton) {
-      chatButton.addEventListener('click', function () {
-        const productId = /*[[${product.productId}]]*/ 0;
-        const sellerId = /*[[${product.seller.id}]]*/ 0;
-        const currentUserId = /*[[${userId}]]*/ 0; // 현재 로그인된 사용자 ID
-
-        // 채팅방 생성 또는 조회 API 호출
-        fetch('/api/chat/room', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            productId: productId,
-            sellerId: sellerId,
-            buyerId: currentUserId // 현재 사용자가 구매자가 됩니다.
-          })
+      fetch('/api/rental', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: productId,
+          startDate: startDateStr,
+          endDate: endDateStr
         })
-                .then(response => response.json())
-                .then(data => {
-                  if (data.chatRoomId) {
-                    // 성공적으로 채팅방 ID를 받으면 채팅 페이지로 이동
-                    window.location.href = '/chat/' + data.chatRoomId;
-                  } else {
-                    alert('채팅방을 여는 데 실패했습니다.');
-                  }
-                })
-                .catch(error => {
-                  console.error('Error creating chat room:', error);
-                  alert('채팅방 연결 중 오류가 발생했습니다.');
-                });
-      });
-    }
-  });
+      })
+              .then(res => {
+                if (!res.ok) throw new Error("예약 실패");
+                return res.text();
+              })
+              .then(msg => {
+                alert("예약이 완료되었습니다! 채팅방으로 이동합니다.");
+                closeReservationModal();
+                window.location.href = "/chatadmin/chatrooms";
+              })
+              .catch(err => alert(err.message));
+    });
+  }
+
 
 </script>
 <script>
@@ -616,9 +646,55 @@
   const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
 </script>
 
-});
 
 
+<script>
+  // 모달 열기
+  function openReportModal() {
+    if (!isLoggedIn) {
+      alert("로그인이 필요한 서비스입니다.");
+      window.location.href = "/login?needAuth=true";
+      return;
+    }
+
+    document.getElementById('reportModal').style.display = 'block';
+    document.getElementById('reportOverlay').style.display = 'block';
+  }
+
+  // 모달 닫기
+  function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    document.getElementById('reportOverlay').style.display = 'none';
+  }
+
+  // 폼 제출
+  document.getElementById("reportForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const formData = {
+      productId: document.querySelector("input[name='productId']").value,
+      title: document.querySelector("input[name='title']").value,
+      details: document.querySelector("textarea[name='details']").value
+    };
+
+    fetch("/api/report", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(formData)
+    })
+            .then(res => {
+              if (res.ok) {
+                alert("신고가 접수되었습니다.");
+                closeReportModal();  //
+                // 성공 시 모달 닫기
+              } else {
+                alert("신고 실패");
+              }
+            });
+  });
+</script>
 
 </body>
 </html>

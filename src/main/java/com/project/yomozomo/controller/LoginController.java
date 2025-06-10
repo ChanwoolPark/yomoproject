@@ -1,13 +1,22 @@
 package com.project.yomozomo.controller;
 
+import com.project.yomozomo.service.CategoryService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class LoginController {
+
+    private final CategoryService categoryService;
+
+    public LoginController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
+
     @GetMapping("/login")
-    public String loginSelect() {
+    public String loginSelect(Model model) {
+        model.addAttribute("categories", categoryService.getAllCategoriesWithSubCategories());
         return "login"; // 소셜/일반 선택 페이지
     }
 

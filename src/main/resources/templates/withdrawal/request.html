@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>포인트 출금 신청</title>
+</head>
+<body>
+<h2>포인트 출금 신청</h2>
+<form th:action="@{/withdrawal/request}" method="post">
+    <label>출금 금액(포인트):</label>
+    <input type="number" name="amount" min="1000" step="1000" required placeholder="최소 1,000원" /><br/><br/>
+
+    <label>은행명:</label>
+    <input type="text" name="bankName" required placeholder="예: 카카오뱅크" /><br/><br/>
+
+    <label>입금받을 계좌번호:</label>
+    <input type="text" name="bankAccount" required /><br/><br/>
+
+    <p style="color:#d48419">출금 신청 후 1~3일 이내 관리자가 직접 입금 처리합니다.<br/>
+        (출금 내역은 [마이페이지>출금내역]에서 확인하세요)</p>
+    <button type="submit">출금 신청</button>
+</form>
+</body>
+</html>

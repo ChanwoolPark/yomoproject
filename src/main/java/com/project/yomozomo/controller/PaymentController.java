@@ -10,6 +10,8 @@ import com.project.yomozomo.repository.UserRepository;
 import com.project.yomozomo.repository.UserWalletRepository;
 import com.project.yomozomo.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -127,6 +129,15 @@ public class PaymentController {
         } else {
             model.addAttribute("error", "결제 실패! 포인트가 부족하거나 시스템 오류.");
             return "payment/payment_fail";
+        }
+    }
+    @PostMapping("/complete/{rentalId}")
+    public ResponseEntity<?> completeRental(@PathVariable Long rentalId) {
+        try {
+            paymentService.refundDepositAndCompleteRental(rentalId);
+            return ResponseEntity.ok("거래가 정상적으로 완료되었습니다. 보증금이 반환되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("거래 완료 처리 실패: " + e.getMessage());
         }
     }
 }

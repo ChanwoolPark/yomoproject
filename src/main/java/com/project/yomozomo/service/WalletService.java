@@ -24,12 +24,20 @@ public class WalletService {
     @Autowired
     private WalletLogRepository walletLogRepository;
 
+    @Transactional
+    public void increaseBalance(Long userId, int amount) {
+        UserWallet wallet = userWalletRepository.findByUserId(userId);
+
+        wallet.setBalance(wallet.getBalance() + amount); // balance 필드명 상황에 따라 다를 수 있음
+        userWalletRepository.save(wallet);
+    }
+
     // (1) 충전 내역 저장
     public void addChargeLog(Long userWalletId, int amount, String method) {
         WalletLog log = new WalletLog();
         log.setUserWalletId(userWalletId);
         log.setAmount(amount);
-        log.setType("충전");
+        log.setType("");
         walletLogMapper.insertLog(log);
     }
 

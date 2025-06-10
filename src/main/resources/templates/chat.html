@@ -566,8 +566,11 @@
         }
 
     </style>
+
+
 </head>
 <body>
+<button class="button p-grid-col5" onclick="location.href='http://localhost:8080';">메인 화면</button>
 <div class="chat-container">
     <div class="chat-header">
         <h3 id="chatHeader">
@@ -575,6 +578,7 @@
         </h3>
         <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserprofile_image}" alt="내 프로필">
     </div>
+
 
     <div class="chat-messages" id="chatMessages">
     </div>
@@ -900,12 +904,15 @@
 
 
         const attachmentButton = document.getElementById('button2'); // <input type="file">이 아닌 📎 버튼입니다.
-        const reportButton = document.getElementById('button3');    // 📅 버튼입니다.
-        // ⭐ 핵심: 페이지 로드 시 패널을 초기화 (숨김)합니다.
-        //      CSS의 `height: 0; padding: 0;`으로 기본적으로 숨겨져 있습니다.
-        //      여기서는 명시적으로 'active' 클래스를 제거하여 초기 상태를 보장합니다.
-        if (expandedPanel) {
-            expandedPanel.classList.remove('active');
+        const reportButton = document.getElementById('button4');
+        if (reportButton) {
+            reportButton.addEventListener('click', function () {
+                // 채팅방 ID와 유저 ID를 URL 파라미터로 넘김 (Thymeleaf 변수 사용!)
+                const url = `/report/new/${chatRoomId}?reporterId=${currentUserId}&reportedId=${chatPartnerId}`;
+                // 새 창 또는 같은 창에서 이동, 둘 중 원하는 방식으로!
+                window.open(url, '_blank');  // 새 탭
+                // 또는 window.location.href = url;  // 같은 탭
+            });
         }
 
         // ⭐ 초기 로드 시 기본 패널 콘텐츠가 활성화되도록 설정합니다.
@@ -1012,9 +1019,26 @@
 
         if (tradeCompleteBtn) {
             tradeCompleteBtn.addEventListener('click', function () {
-                // 리뷰 페이지로 이동 (렌탈번호 넘길 필요 없으면 /리뷰, 필요하면 /리뷰?rid= 등으로 수정)
                 toggleExpandedPanel(false);
-                window.location.href = '/리뷰';
+
+                fetch('/complete/' + currentRentalId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => {
+                        if (res.ok) {
+                            alert('거래가 완료되고 보증금이 반환되었습니다!');
+                            // 필요하다면 여기서 location.href로 이동
+                            // location.href = "/somewhere";
+                        } else {
+                            return res.text().then(msg => { throw new Error(msg); });
+                        }
+                    })
+                    .catch(err => {
+                        alert('거래 완료 처리 실패: ' + err.message);
+                    });
             });
         }
 

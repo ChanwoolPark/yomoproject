@@ -6,12 +6,14 @@ import com.project.yomozomo.service.CategoryService;
 import com.project.yomozomo.service.ProductListService;
 import com.project.yomozomo.service.SearchService;
 import com.project.yomozomo.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -33,15 +35,33 @@ public class SearchController {
     @GetMapping("/search")
     public String search(@RequestParam(required = false) Integer categoryId,
                          @RequestParam(required = false) String keyword,
+                         @RequestParam(required = false) String sourceTab,
                          Model model,
-                         Principal principal) {
+                         Principal principal,
+                         HttpSession session) {
+
+        // 🔍 최근 검색어 세션 저장
+        if (keyword != null && !keyword.isBlank()) {
+            List<String> recentKeywords = (List<String>) session.getAttribute("recentKeywords");
+            if (recentKeywords == null) recentKeywords = new ArrayList<>();
+
+            recentKeywords.remove(keyword);
+            recentKeywords.add(0, keyword);
+            if (recentKeywords.size() > 10) recentKeywords = recentKeywords.subList(0, 10);
+
+            session.setAttribute("recentKeywords", recentKeywords);
+        }
 
         model.addAttribute("isSearch", true);
+        model.addAttribute("isPriceFiltered", false); // 검색 시 정렬 비활성화
+
         model.addAttribute("categories", categoryService.getAllCategoriesWithSubCategories());
         if (categoryId != null) {
+            model.addAttribute("category", categoryService.getCategoryById(categoryId));
             model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         } else {
-            model.addAttribute("subCategories", List.of()); // 전체 검색 시에는 안 보이게
+            model.addAttribute("category", null);
+            model.addAttribute("subCategories", List.of());
         }
 
         List<ProductDto> products = (categoryId != null)
@@ -51,15 +71,11 @@ public class SearchController {
         model.addAttribute("products", products);
         model.addAttribute("selectedCategoryId", categoryId);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("sourceTab", sourceTab != null ? sourceTab : "recent");
 
-        // 최근 본 상품, 찜 목록도 동일하게 구성
         if (principal != null) {
             String username = principal.getName();
-            User
-
-
-
-                    user = userService.findByUsername(username);
+            User user = userService.findByUsername(username);
             Long userId = user.getId();
 
             model.addAttribute("wishlist", productListService.getWishlist(userId));

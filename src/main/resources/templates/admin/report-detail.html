@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>신고 상세</title>
+</head>
+<body>
+<h2>신고 상세정보</h2>
+<table>
+    <tr><th>채팅방 번호</th><td th:text="${report.chatRoomId}"></td></tr>
+    <tr><th>신고자</th><td th:text="${buyer.nickname}"></td></tr>
+    <tr><th>피신고자</th><td th:text="${seller.nickname}"></td></tr>
+    <tr><th>신고제목</th><td th:text="${report.title}"></td></tr>
+    <tr><th>신고내용</th><td th:text="${report.content}"></td></tr>
+    <tr><th>상태</th><td th:text="${report.status}"></td></tr>
+</table>
+
+<!-- 신고 상태 변경 폼 -->
+<h3>신고 상태 처리</h3>
+<form th:action="@{/admin/report/status}" method="post">
+    <input type="hidden" name="reportId" th:value="${report.reportId}" />
+    <select name="status">
+        <option value="처리중" th:selected="${report.status=='처리중'}">처리중</option>
+        <option value="완료" th:selected="${report.status=='완료'}">완료</option>
+        <option value="거절" th:selected="${report.status=='거절'}">거절</option>
+    </select>
+    <button type="submit">상태 변경</button>
+</form>
+
+<!-- 보증금 정산/지급 폼 -->
+<h3>보증금 정산</h3>
+<form th:action="@{/admin/report/deposit}" method="post">
+    <input type="hidden" name="reportId" th:value="${report.reportId}" />
+    <label>정산대상:
+        <select name="receiverId">
+            <option th:value="${seller.id}">판매자([[${seller.nickname}]])</option>
+            <option th:value="${buyer.id}">구매자([[${buyer.nickname}]])</option>
+        </select>
+    </label>
+    <label>지급 금액:
+        <input type="number" name="amount" value="0" min="0" th:max="${rental.product.deposit}" />
+        (보증금: <span th:text="${rental.product.deposit}"></span>)
+    </label>
+    <label>렌탈상태:
+        <select name="rentalStatus">
+            <option value="반납완료" th:selected="${rental.status=='반납완료'}">반납완료</option>
+            <option value="취소" th:selected="${rental.status=='취소'}">환불</option>
+        </select>
+    </label>
+    <button type="submit">정산 실행</button>
+</form>
+</body>
+</html>
