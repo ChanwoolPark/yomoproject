@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="'공지사항 - ' + ${notice.title}">공지사항</title>
+  <style>
+    body {
+      background: #f6f5ff;
+      font-family: 'Pretendard', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .notice-detail-container {
+      max-width: 660px;
+      margin: 70px auto 0 auto;
+      background: #fff;
+      border-radius: 25px;
+      box-shadow: 0 8px 30px #e3dbff45;
+      padding: 48px 40px 38px 40px;
+    }
+    .notice-title {
+      font-size: 27px;
+      color: #7c4dff;
+      font-weight: 700;
+      margin-bottom: 7px;
+      word-break: keep-all;
+    }
+    .notice-date {
+      color: #b8acdc;
+      font-size: 13px;
+      margin-bottom: 27px;
+    }
+    .notice-content {
+      color: #362c67;
+      font-size: 17px;
+      line-height: 1.7;
+      padding: 24px 17px 18px 17px;
+      background: #f6f0ff;
+      border-radius: 15px;
+      min-height: 140px;
+      white-space: pre-line;
+    }
+    .btn-back {
+      margin-top: 38px;
+      display: inline-block;
+      background: #ede5fd;
+      color: #7c4dff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 1px 5px #e8dbff;
+      cursor: pointer;
+      transition: background 0.14s;
+      text-decoration: none;
+    }
+    .btn-back:hover {
+      background: #dfccff;
+    }
+    @media (max-width: 600px) {
+      .notice-detail-container { padding: 18px 7px; }
+      .notice-title { font-size: 19px; }
+      .notice-content { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+<div class="notice-detail-container">
+  <div class="notice-title" th:text="${notice.title}"></div>
+  <div class="notice-date" th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}"></div>
+  <div class="notice-content" th:text="${notice.content}"></div>
+  <a th:href="${#authorization.expression('hasAuthority(''ADMIN'')') ? '/admin/notices' : '/support'}" class="btn-back">← 목록으로</a>
+</div>
+</body>
+</html>

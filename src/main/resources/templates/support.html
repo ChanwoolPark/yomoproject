@@ -175,10 +175,12 @@
     <!-- 탭 내용: 공지사항 -->
     <div class="tab-content" id="notice">
         <ul class="notice-list">
-            <li><a href="/support/notice/1">[공지] 요모 오픈 안내</a></li>
-            <li><a href="/support/notice/2">[안내] 6월 배송 지연 안내</a></li>
+            <li th:each="notice : ${notices}">
+                <a th:href="@{|/support/notice/${notice.id}|}" th:text="${notice.title}"></a>
+            </li>
         </ul>
     </div>
+
 </div>
 
 <script>

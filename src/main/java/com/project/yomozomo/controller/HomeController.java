@@ -2,7 +2,9 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.domain.SubCategory;
+import com.project.yomozomo.entity.Notice;
 import com.project.yomozomo.service.CategoryService;
+import com.project.yomozomo.service.NoticeService;
 import com.project.yomozomo.service.ProductListService;
 import com.project.yomozomo.service.SubCategoryService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class HomeController {
     private final CategoryService categoryService;
     private final ProductListService productListService;
     private final SubCategoryService subCategoryService;
+    private final NoticeService noticeService;
 
     @GetMapping("/")
     public String home(Model model, @AuthenticationPrincipal User user) {
@@ -69,8 +72,10 @@ public class HomeController {
     }
 
     @GetMapping("/support")
-    public String support() {
-        return "support";
+    public String supportPage(Model model) {
+        List<Notice> notices = noticeService.findAll(); // 최신순 정렬 원하면 정렬 쿼리 추가!
+        model.addAttribute("notices", notices);
+        return "support"; // 고객센터 메인 템플릿
     }
 
     @GetMapping("/explore")

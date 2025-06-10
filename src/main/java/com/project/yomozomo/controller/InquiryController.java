@@ -2,9 +2,13 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.dto.InquiryForm;
 import com.project.yomozomo.entity.Inquiry;
+import com.project.yomozomo.entity.Notice;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.InquiryRepository;
+import com.project.yomozomo.repository.NoticeRepository;
 import com.project.yomozomo.repository.UserRepository;
+import com.project.yomozomo.service.MailService;
+import com.project.yomozomo.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequestMapping("/support")
@@ -22,6 +27,8 @@ public class InquiryController {
 
     private final InquiryRepository inquiryRepo;
     private final UserRepository userRepo;
+    private final MailService mailService;
+    private final NoticeService noticeService;
 
     // 문의 목록
     @GetMapping("/inquiries")
@@ -51,6 +58,14 @@ public class InquiryController {
         inquiry.setCreatedAt(LocalDateTime.now());
         inquiry.setUser(user); // null 가능성 있으니 체크해도 됨
 
+        // 메일 발송
+        String userEmail = inquiry.getUser().getEmail();
+        String username1 = inquiry.getUser().getNickname(); // 이름 or 닉네임
+        String question = inquiry.getContent();
+        String answer = inquiry.getAnswer();
+
+        mailService.sendInquiryAnswerMail(userEmail, username1, question, answer);
+
         inquiryRepo.save(inquiry);
         return "redirect:/support/inquiries";
     }
@@ -61,6 +76,14 @@ public class InquiryController {
         Inquiry inquiry = inquiryRepo.findById(id).orElseThrow();
         model.addAttribute("inquiry", inquiry);
         return "support/inquiry-detail";
+    }
+
+
+    @GetMapping("/notice/{id}")
+    public String supportNoticeDetail(@PathVariable Long id, Model model) {
+        Notice notice = noticeService.findById(id);
+        model.addAttribute("notice", notice);
+        return "support/notice-detail"; // 공지 상세 템플릿
     }
 
 

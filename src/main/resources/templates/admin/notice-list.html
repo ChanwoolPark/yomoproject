@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항 관리</title>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #f8f8ff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 50px auto 0 auto;
+            background: #fff;
+            padding: 36px 40px 32px 40px;
+            border-radius: 22px;
+            box-shadow: 0 4px 16px rgba(124,77,255,0.05), 0 1.5px 8px #eee;
+        }
+        .list-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #7c4dff;
+            margin-bottom: 18px;
+            text-align: left;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .add-btn {
+            background: #7c4dff;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 22px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #f0e6ff;
+            transition: background 0.15s;
+        }
+        .add-btn:hover {
+            background: #4b1db7;
+        }
+        .notice-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .notice-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            background: #faf9ff;
+            border-radius: 13px;
+            box-shadow: 0 2px 4px #f3ecff;
+            margin-bottom: 14px;
+            padding: 18px 20px 16px 26px;
+            transition: box-shadow 0.15s, transform 0.13s;
+            cursor: pointer;
+        }
+        .notice-item:hover {
+            box-shadow: 0 6px 20px #d3c2ff66;
+            transform: translateY(-2px) scale(1.03);
+        }
+        .notice-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #362c67;
+            margin-bottom: 4px;
+            text-decoration: none;
+        }
+        .notice-date {
+            color: #9d94ba;
+            font-size: 13px;
+        }
+        .notice-preview {
+            color: #534285;
+            font-size: 15px;
+            margin-top: 3px;
+            max-width: 520px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .notice-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+            margin-left: 30px;
+        }
+        @media (max-width: 650px) {
+            .container { padding: 10px; }
+            .notice-title { font-size: 15px; }
+            .notice-preview { font-size: 13px; max-width: 180px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top-bar">
+        <div class="list-title">공지사항 목록</div>
+        <a href="/admin/notices/new">
+            <button class="add-btn">+ 새 공지 등록</button>
+        </a>
+    </div>
+    <ul class="notice-list">
+        <li th:each="notice : ${notices}"
+            class="notice-item"
+            th:onclick="|location.href='/support/notice/${notice.id}'|"
+            style="cursor:pointer;">
+            <div>
+                <!-- 제목은 그냥 텍스트(굵은 글씨)로만 하고, -->
+                <div class="notice-title" th:text="${notice.title}"></div>
+                <div class="notice-preview" th:text="${#strings.abbreviate(notice.content, 60)}"></div>
+                <div class="notice-date" th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}"></div>
+            </div>
+        </li>
+        <li th:if="${#lists.isEmpty(notices)}" style="color:#aaa;text-align:center; padding:30px 0;">
+            등록된 공지사항이 없습니다.
+        </li>
+    </ul>
+
+
+</div>
+</body>
+</html>
