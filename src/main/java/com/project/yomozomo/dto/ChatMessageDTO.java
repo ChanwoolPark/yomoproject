@@ -6,6 +6,8 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDateTime;
+
 // java.time.LocalDateTime은 DTO에서는 String으로 받는 것이 일반적입니다.
 // 클라이언트가 toISOString()으로 보내기 때문입니다.
 // import java.time.LocalDateTime;
@@ -15,8 +17,6 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessageDTO {
-    // 이 MessageType enum은 클라이언트와 서버 DTO 간의 타입을 명확히 하기 위해 존재합니다.
-    // ChatMessage 엔티티의 MessageType과 별개로 관리할 수 있습니다.
     public enum MessageType {
         TALK,
         JOIN,
@@ -27,11 +27,26 @@ public class ChatMessageDTO {
     }
 
     private Long roomId;
-    private Long senderId;     // ⭐ 클라이언트 JS와 동일하게 Long 타입의 senderId ⭐
-    private String message;    // ⭐ 클라이언트 JS와 동일하게 String 타입의 message ⭐
-    private MessageType messageType; // ⭐ MessageType enum 사용 ⭐
-    private String sendTime;   // ⭐ 클라이언트 JS와 동일하게 String 타입의 sendTime (ISO 문자열) ⭐
+    private Long senderId;
+    private String message;
+    private MessageType messageType;
+    private LocalDateTime sendTime; // 클라이언트에서 ISO 문자열로 보내면 스프링이 자동으로 LocalDateTime으로 변환합니다.
+    private String senderName; // 메시지 발신자의 닉네임을 담을 필드 (이전에 추가)
 
-    // (선택 사항) 이미지 URL 필드
-    private String imgUrl;
+    // ⭐⭐ 이 필드와 getter/setter를 추가해야 합니다. ⭐⭐
+    private String imgUrl; // 이미지 URL을 담을 필드
+    // Lombok의 @Getter/@Setter 어노테이션이 위에 선언되어 있으므로,
+    // 별도로 getImgUrl()과 setImgUrl() 메서드를 직접 작성할 필요는 없습니다.
+    // Lombok이 자동으로 생성해 줄 것입니다.
+
+    // 만약 Lombok을 사용하지 않는다면, 아래 메서드들을 직접 추가해야 합니다.
+    /*
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
+    */
 }
