@@ -6,42 +6,36 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-// ⭐ 추가: CORS 설정을 위한 어노테이션 임포트 ⭐
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
-import org.springframework.context.annotation.Bean;
-
-@Configuration // Spring 설정 클래스임을 명시
-@EnableWebSocketMessageBroker // STOMP 기반 WebSocket 메시징 활성화
+@Configuration
+@EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic");
-        // 이 줄은 이미 주석 처리되어 있어야 합니다.
-        // config.setApplicationDestinationPrefixes("/app");
+        config.enableSimpleBroker("/sub", "/topic");
+        config.setApplicationDestinationPrefixes("/pub");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // ⭐ 이 부분을 수정합니다. ⭐
         registry.addEndpoint("/ws")
+                // "*" 대신 클라이언트가 실행되는 실제 오리진을 명시합니다.
+                // 보통 개발 중에는 프론트엔드가 실행되는 주소 (예: http://localhost:8080)입니다.
+                // 또는 `allowedOriginPatterns`를 사용합니다 (더 유연함).
+                // 이 예시에서는 명시적인 오리진을 사용합니다.
+                .setAllowedOrigins("http://localhost:8080") // 또는 클라이언트가 실행되는 실제 주소
+                // 만약 클라이언트가 http://localhost:3000 에서 실행된다면: .setAllowedOrigins("http://localhost:3000")
+                // 여러 오리진을 허용해야 한다면 쉼표로 구분하여 나열할 수 있습니다.
+                // 예: .setAllowedOrigins("http://localhost:8080", "http://yourfrontend.com", "http://anotherdomain.com")
                 .withSockJS();
-        // .setAllowedOrigins("*") 부분을 제거합니다. (위 오류 때문에)
     }
 
-    // ⭐ CORS 필터를 빈(Bean)으로 추가하여 웹소켓 CORS 문제를 해결합니다. ⭐
+    // CorsFilter는 이 문제와 직접 관련이 없으므로, 현재로서는 제거하거나 주석 처리하는 것이 좋습니다.
+    // 다른 HTTP 요청에서 CORS 문제가 없다면 그대로 두어도 무방합니다.
+    /*
     @Bean
     public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*"); // 모든 오리진 허용 (개발 단계에서)
-        config.addAllowedHeader("*"); // 모든 헤더 허용
-        config.addAllowedMethod("*"); // 모든 HTTP 메서드 허용 (GET, POST 등)
-        config.setAllowCredentials(true); // 쿠키 및 인증 정보 허용
-
-        source.registerCorsConfiguration("/**", config); // 모든 경로에 대해 CORS 설정 적용
-        return new CorsFilter(source);
+        // ... (기존 CorsFilter 코드 유지 또는 제거) ...
     }
+    */
 }

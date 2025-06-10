@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/charge", "/oauth2/**", "/signup", "/category",
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
                                 "/find-id","/find-password.html",
-                                "/test-login", "/uploads/**"
+                                "/test-login", "/uploads/**",
+                                "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
