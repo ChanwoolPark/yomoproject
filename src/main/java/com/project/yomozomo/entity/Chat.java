@@ -6,11 +6,16 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
-
+import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "CHAT") // 테이블명은 'chat'으로 되어 있으니 그대로 사용
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "chat_seq") // 시퀀스 사용 예시

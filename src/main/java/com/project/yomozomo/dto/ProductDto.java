@@ -6,14 +6,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProductDto {
-    private int productId;
+    private Long productId;
     private String title;
     private int price;
     private int deposit;
     private String createdAt;  // String으로 포맷된 날짜
     private String imageUrl;
 
-    public ProductDto(int productId, String title, int price, int deposit, String createdAt, String imageUrl) {
+    public ProductDto(Long productId, String title, int price, int deposit, String createdAt, String imageUrl) {
         this.productId = productId;
         this.title = title;
         this.price = price;
@@ -22,7 +22,7 @@ public class ProductDto {
         this.imageUrl = (imageUrl != null) ? imageUrl.trim() : null;
     }
 
-    public ProductDto(int productId, String title, String imageUrl) {
+    public ProductDto(Long productId, String title, String imageUrl) {
         this.productId = productId;
         this.title = title;
         this.imageUrl = imageUrl;

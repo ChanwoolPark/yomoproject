@@ -1,6 +1,6 @@
+// src/main/java/com/project/yomozomo/config/SecurityConfig.java
 package com.project.yomozomo.config;
 
-import com.project.yomozomo.security.CustomAuthenticationEntryPoint;
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
 import com.project.yomozomo.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,53 +31,32 @@ public class SecurityConfig {
 
 
     private final OAuth2LoginSuccessHandler successHandler;
-    private final CustomAuthenticationEntryPoint customEntryPoint;
-    private final CustomUserDetailsService userDetailsService;
 
-    public SecurityConfig(OAuth2LoginSuccessHandler successHandler,
-                          CustomAuthenticationEntryPoint customEntryPoint,
-                          CustomUserDetailsService userDetailsService ) {
+
+    public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
         this.successHandler = successHandler;
-        this.customEntryPoint = customEntryPoint;
-        this.userDetailsService = userDetailsService;
     }
-
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         System.out.println("★ SecurityConfig 로드됨");
         http
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(customEntryPoint)  // 👈 이 줄 추가
-                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers(
                                 "/", "/index.html", "/login", "/login/form", "/login/**",
-                                "/login-page",
-                                "/css/**", "/js/**", "/images/**", "/oauth2/**",
-                                "/signup", "/category",
+                                "/css/**", "/js/**", "/images/**",
+                                "/charge", "/oauth2/**", "/signup", "/category",
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
                                 "/find-id","/find-password.html",
-                                "/test-login", "/uploads/**", "/login-required", "/subcategory/**",
-                                "/product/**","/mypage/profile/{username}"
+                                "/test-login", "/uploads/**"
                         ).permitAll()
                         .anyRequest().authenticated()
-
-
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login/form")
-                        .successHandler((request, response, authentication) -> {
-                            String redirectUrl = request.getParameter("redirect");
-
-                            if (redirectUrl != null && redirectUrl.startsWith("/")) {
-                                response.sendRedirect(redirectUrl);
-                            } else {
-                                response.sendRedirect("/");
-                            }
-                        })
+                        .loginPage("/login")  // ★★★ 로그인 진입 선택화면 ("/login")으로 지정
+                        .loginProcessingUrl("/login/form") // 실제 로그인 submit POST action
+                        .defaultSuccessUrl("/", true)
                         .failureUrl("/login/form?error=true")
                         .permitAll()
                 )
@@ -104,13 +82,6 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")
                         .permitAll()
                 )
-                .rememberMe(remember -> remember
-                        .key("yomozomo-remember-me-key")
-                        .tokenValiditySeconds(60 * 60 * 24 * 14)
-                        .rememberMeParameter("remember-me")
-                        .userDetailsService(userDetailsService)
-                )
-
 
                 .csrf(csrf -> csrf.disable());
 
@@ -119,7 +90,6 @@ public class SecurityConfig {
 
     /**
      * 네이버가 반환하는 JSON 구조(response 안에 id, name, email 등 있음)를
-     *
      * 언팩해서 DefaultOAuth2User를 만들어줍니다.
      */
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> naverOAuth2UserService() {
@@ -128,9 +98,6 @@ public class SecurityConfig {
             OAuth2User oauth2User = delegate.loadUser(userRequest);
             @SuppressWarnings("unchecked")
             Map<String, Object> resp = oauth2User.getAttribute("response");
-
-
-
             return new DefaultOAuth2User(
                     oauth2User.getAuthorities(),
                     resp,
