@@ -2,7 +2,9 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>1:1 실시간 채팅</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채팅방</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         /* =================================================== */
         /* 기본 레이아웃 및 컨테이너 스타일 */
@@ -13,13 +15,15 @@
             padding: 0;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Noto Sans KR', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 한글 폰트 우선 적용 */
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh; /* 뷰포트 높이의 최소 100% */
             background-color: #f0f2f5;
             overflow: hidden; /* 전체 페이지 스크롤 방지 */
+            -webkit-font-smoothing: antialiased; /* 폰트 안티앨리어싱 */
+            -moz-osx-font-smoothing: grayscale;
         }
         .chat-container {
             width: 100%;
@@ -31,7 +35,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; /* 내부 스크롤이 아닌, 컨테이너 자체의 오버플로우 숨김 */
             background-color: #fff;
             position: relative; /* 자식 요소 (expanded-panel)의 absolute 위치 기준 */
             z-index: 10; /* 모달보다는 아래, body 콘텐츠보다는 위에 */
@@ -41,36 +45,40 @@
         /* 채팅 헤더 스타일 */
         /* =================================================== */
         .chat-header {
-            display: flex; /* Flexbox로 변경 */
-            align-items: center; /* 세로 중앙 정렬 */
-            justify-content: space-between; /* 요소들을 양쪽 끝으로 밀어냄 */
-            background: #4477ee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(to right, #4477ee, #2b5cdb); /* 그라데이션 추가 */
             color: white;
-            padding: 15px;
-            font-size: 1.3rem;
+            padding: 15px 20px; /* 좌우 패딩 증가 */
+            font-size: 1.2rem; /* 폰트 크기 약간 조절 */
             font-weight: 600;
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
             position: relative;
             z-index: 20;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08); /* 헤더 그림자 추가 */
         }
 
         .chat-header h3 {
-            margin: 0; /* h3 기본 마진 제거 */
-            flex-grow: 1; /* 제목이 가능한 공간을 채우도록 */
-            text-align: center; /* 제목 텍스트 중앙 정렬 */
-            order: 2; /* 기본 순서 2 (가운데) */
+            margin: 0;
+            flex-grow: 1;
+            text-align: center;
+            order: 2;
         }
+        .chat-header h3 p {
+            margin: 0; /* p 태그 기본 마진 제거 */
+        }
+
         /* 프로필 이미지 스타일 (공통) */
         .profile-image-header {
-            width: 40px; /* 이미지 크기 조절 */
+            width: 40px;
             height: 40px;
-            border-radius: 50%; /* 원형으로 */
-            object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
-            border: 2px solid white; /* 흰색 테두리 */
-            flex-shrink: 0; /* 크기가 줄어들지 않도록 */
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.8); /* 투명도 있는 흰색 테두리 */
+            flex-shrink: 0;
         }
-        /* 이미지의 순서를 명시적으로 지정 */
         .profile-image-header.left {
             margin-right: 10px;
             order: 1;
@@ -89,11 +97,10 @@
             background-color: #ccc;
             border-radius: 50%;
             text-align: center;
-            line-height: 40px; /* 세로 중앙 정렬 */
+            line-height: 40px;
             font-size: 24px;
             color: #666;
         }
-        /* 이미지 src가 로드되면 ::before 내용을 숨김 */
         .profile-image-header[src]:before {
             content: none;
         }
@@ -110,7 +117,7 @@
             flex-direction: column;
             gap: 10px;
             transition: padding-bottom 0.3s ease-out; /* 패딩 변화 시 애니메이션 */
-            scroll-behavior: smooth;
+            scroll-behavior: smooth; /* 부드러운 스크롤 */
             position: relative;
             z-index: 1;
         }
@@ -119,17 +126,28 @@
         .message-wrapper {
             display: flex;
             flex-direction: column;
-            max-width: 75%;
-            word-wrap: break-word;
+            max-width: 75%; /* 최대 너비 설정 */
+            word-wrap: break-word; /* 긴 단어 줄바꿈 */
             flex-shrink: 0;
         }
 
         .message-content {
             padding: 10px 15px;
-            border-radius: 18px;
+            border-radius: 18px; /* 더 둥근 모서리 */
             line-height: 1.4;
             font-size: 0.95rem;
             box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            position: relative; /* 말풍선 꼬리 위치 기준 */
+        }
+
+        /* 말풍선 꼬리 (기본 스타일, 각 메시지 타입에서 색상 조절) */
+        .message-content::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 8px 8px 8px 0; /* 삼각형 크기 */
         }
 
         .message-time {
@@ -139,31 +157,52 @@
             opacity: 0.8;
         }
 
+        /* 상대방 메시지 스타일 */
         .message-wrapper.received {
-            align-self: flex-start; /* ⭐ 이 부분이 왼쪽에 정렬하는 역할을 합니다. ⭐ */
+            align-self: flex-start; /* 왼쪽에 정렬 */
+        }
+        .message-wrapper.received .sender-name {
+            align-self: flex-start; /* 이름도 왼쪽에 */
+            margin-left: 10px; /* 말풍선 여백에 맞춰 */
+            margin-bottom: 2px;
+            font-size: 0.85em;
+            color: #666;
         }
         .message-wrapper.received .message-content {
             background-color: #ffffff;
             color: #333;
             border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px; /* 꼬리 쪽 모서리 약간 덜 둥글게 */
         }
         .message-wrapper.received .message-time {
             text-align: left;
-            margin-left: 10px;
+            margin-left: 10px; /* 말풍선 여백에 맞춰 */
+        }
+        .message-wrapper.received .message-content::after {
+            border-color: transparent #ffffff transparent transparent; /* 흰색 꼬리 */
+            left: -7px; /* 메시지 버블 왼쪽 밖으로 */
+            bottom: 5px; /* 아래쪽으로 이동 */
         }
 
         /* 본인 메시지 스타일 */
         .message-wrapper.sent {
-            align-self: flex-end;
+            align-self: flex-end; /* 오른쪽에 정렬 */
         }
         .message-wrapper.sent .message-content {
             background-color: #4477ee;
             color: white;
+            border-bottom-right-radius: 4px; /* 꼬리 쪽 모서리 약간 덜 둥글게 */
         }
         .message-wrapper.sent .message-time {
             text-align: right;
-            margin-right: 10px;
+            margin-right: 10px; /* 말풍선 여백에 맞춰 */
         }
+        .message-wrapper.sent .message-content::after {
+            border-color: transparent transparent transparent #4477ee; /* 파란색 꼬리 */
+            right: -7px; /* 메시지 버블 오른쪽 밖으로 */
+            bottom: 5px; /* 아래쪽으로 이동 */
+        }
+
 
         /* 입장/퇴장 메시지 스타일 */
         .message-wrapper.event-message {
@@ -172,91 +211,90 @@
             font-style: italic;
             color: #666;
             font-size: 0.85rem;
-            max-width: 100%;
+            max-width: 90%; /* 이벤트 메시지는 좀 더 넓게 */
+            margin: 5px auto; /* 가운데 정렬 및 상하 여백 */
         }
         .message-wrapper.event-message .message-content {
-            background-color: transparent;
-            padding: 5px 0;
-            border-radius: 0;
+            background-color: #e0e0e0; /* 연한 회색 배경 */
+            padding: 5px 12px;
+            border-radius: 15px;
             border: none;
             box-shadow: none;
+            color: #555;
+            display: inline-block; /* 텍스트 내용에 맞게 너비 조절 */
+        }
+        .message-wrapper.event-message .message-content::after {
+            content: none; /* 이벤트 메시지는 꼬리 없음 */
         }
         .message-wrapper.event-message .message-time {
             text-align: center;
             margin: 0;
-        }
-        /* 렌탈 정보 영역 스타일 (이제 사용되지 않음) */
-        /*
-        .rental-info-area h4 {
-            margin-top: 0;
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 1rem;
-            border-bottom: 1px dashed #ddd;
-            padding-bottom: 5px;
+            margin-top: 2px;
         }
 
-        .rental-info-area p {
-            margin: 4px 0;
+        /* 발신자 이름 (상대방 메시지에만 표시) */
+        .sender-name {
+            font-weight: bold;
+            font-size: 0.8em; /* 메시지 내용보다 작게 */
+            color: #555;
+            margin-bottom: 2px;
+            margin-left: 10px; /* 메시지 버블과 정렬 */
         }
-        */
+
 
         /* =================================================== */
         /* 채팅 입력 영역 스타일 */
         /* =================================================== */
         .chat-input-area {
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            border-top: 1px solid #eee;
+            padding: 10px 15px;
             background-color: #fff;
-            position: relative;
-            z-index: 10;
+            border-top: 1px solid #eee;
+            flex-shrink: 0; /* 입력창이 줄어들지 않도록 */
+            position: relative; /* z-index를 위해 */
+            z-index: 10; /* 확장 패널과 겹치지 않게 */
         }
 
         .input-and-send {
             display: flex;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 10px;
+            gap: 10px;
+            margin-bottom: 10px; /* 툴바와의 간격 */
         }
 
         .chat-input-area input[type="text"] {
-            flex-grow: 1;
-            padding: 10px 15px;
+            flex-grow: 1; /* 최대한 공간 차지 */
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 25px;
-            margin-right: 10px;
+            border-radius: 25px; /* 더 둥근 입력창 */
             font-size: 1rem;
-            outline: none;
-            height: 40px;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
+            outline: none; /* 포커스 시 아웃라인 제거 */
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .chat-input-area input[type="text"]:focus {
             border-color: #4477ee;
+            box-shadow: 0 0 0 3px rgba(68, 119, 238, 0.2);
         }
 
-        .chat-input-area button.send-button {
-            background: #4477ee;
+        .send-button {
+            width: 45px; /* 버튼 크기 */
+            height: 45px;
+            background-color: #4477ee;
             color: white;
             border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.4rem;
+            border-radius: 50%; /* 원형 */
+            font-size: 1.5rem; /* 아이콘 크기 */
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s ease-out;
-            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            flex-shrink: 0; /* 크기 고정 */
         }
-        .chat-input-area button.send-button:hover {
-            background-color: #3355cc;
+        .send-button:hover {
+            background-color: #2b5cdb;
             transform: scale(1.05);
         }
-        .chat-input-area button.send-button:active {
+        .send-button:active {
             transform: scale(0.95);
         }
 
@@ -264,15 +302,15 @@
         .input-toolbar {
             display: flex;
             justify-content: flex-start;
-            gap: 10px;
+            gap: 8px; /* 버튼 간격 조절 */
             width: 100%;
-            padding: 0 5px;
+            padding: 0 0px; /* 툴바 자체의 좌우 패딩 제거 (컨테이너가 처리) */
         }
 
         .input-toolbar button {
-            width: 38px;
-            height: 38px;
-            font-size: 1.3rem;
+            width: 40px; /* 버튼 크기 조절 */
+            height: 40px;
+            font-size: 1.4rem; /* 아이콘 크기 */
             background: #e9ecef;
             color: #495057;
             border: none;
@@ -284,6 +322,7 @@
             transition: background-color 0.2s, color 0.2s, transform 0.1s ease-out;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             flex-shrink: 0;
+            padding: 0; /* 내부 패딩 제거 */
         }
         .input-toolbar button:hover {
             background-color: #dee2e6;
@@ -293,7 +332,6 @@
         .input-toolbar button:active {
             transform: scale(0.95);
         }
-
 
         /* =================================================== */
         /* 확장 패널 스타일 (핵심 변경 부분) */
@@ -309,14 +347,13 @@
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             transition: height 0.3s ease-out, padding 0.3s ease-out;
             overflow: hidden; /* 내부 콘텐츠가 넘치면 숨김 */
-            display: flex; /* Flexbox 레이아웃 유지 */
-            flex-direction: column; /* 자식 요소들을 세로로 정렬 */
+            display: flex;
+            flex-direction: column;
             justify-content: flex-start;
             align-items: center;
             padding: 0 15px; /* 초기 패딩을 0으로 설정 */
             box-sizing: border-box;
             z-index: 15;
-            /* JavaScript에서 active 클래스 토글 시 height, padding 변경 */
         }
 
         .expanded-panel.active {
@@ -325,50 +362,40 @@
             overflow-y: auto; /* 패널 내부 내용이 길어지면 스크롤바 생성 */
         }
 
-        /* 패널 내부의 각 컨테이너 (기본적으로는 expanded-panel에 의해 숨겨짐) */
-        /* expanded-panel이 active일 때 display: flex/grid/block이 되도록 설정 */
         .panel-header {
-            display: flex; /* flex로 설정 */
-            justify-content: flex-end; /* 닫기 버튼을 오른쪽으로 */
+            display: flex;
+            justify-content: flex-end;
             width: 100%;
-            padding-bottom: 10px; /* 아래 그리드와의 간격 */
-            flex-shrink: 0; /* 크기 고정 */
+            padding-bottom: 10px;
+            flex-shrink: 0;
         }
-        .inner-buttons-grid {
-            display: grid; /* grid로 설정 */
-            grid-template-columns: 1fr 1fr; /* 두 번째 줄부터 1:1 비율 */
-            gap: 15px; /* 버튼 사이의 간격 */
-            width: 100%;
-            max-width: 400px;
-            flex-shrink: 0; /* 버튼 그리드 높이 고정 */
-            margin-bottom: 20px; /* 섹션과의 간격 */
-        }
-        .panel-content-wrapper {
-            width: 100%;
-            flex-grow: 1; /* 남은 공간을 모두 차지하도록 */
-            position: relative; /* 자식 섹션의 absolute 위치를 위한 기준 */
-            overflow: hidden; /* 내부 섹션의 전환을 위해 오버플로우 숨김 */
-        }
-
-
-        .expanded-panel .panel-header button {
+        .panel-header button {
             background: none;
             border: none;
-            font-size: 1.8rem;
+            font-size: 2rem; /* 닫기 버튼 크기 키움 */
             color: #6c757d;
             cursor: pointer;
             transition: color 0.2s;
+            line-height: 1; /* 세로 정렬 위한 라인하이트 */
         }
-        .expanded-panel .panel-header button:hover {
+        .panel-header button:hover {
             color: #333;
         }
 
-        /* 첫 번째 버튼이 전체 너비를 차지하도록 하는 스타일 */
-        .expanded-panel .grid-item-full {
-            grid-column: 1 / span 2; /* 1번 컬럼부터 2칸(전체) 차지 */
+        .inner-buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px; /* 그리드 최대 너비 */
+            flex-shrink: 0;
+            margin-bottom: 20px;
+        }
+        .grid-item-full {
+            grid-column: 1 / span 2;
         }
 
-        /* 확장 패널 내부 버튼 (기존 스타일 유지, 상위 div가 크기를 조절) */
+        /* 확장 패널 내부 버튼 */
         .expanded-panel .inner-buttons-grid button {
             background-color: #007bff;
             color: white;
@@ -380,43 +407,64 @@
             transition: background-color 0.2s, transform 0.1s ease-out;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: center;
-            display: flex; /* 내부 아이콘과 텍스트 정렬을 위해 */
-            flex-direction: column; /* 아이콘 위에 텍스트 (또는 그 반대) */
+            display: flex;
+            flex-direction: column; /* 아이콘 위, 텍스트 아래 */
             justify-content: center;
             align-items: center;
-            height: auto; /* 내용에 따라 높이 자동 조절 */
-            min-height: 80px; /* 최소 높이 */
-            width: 100%; /* 부모 grid-item-half의 너비를 꽉 채움 */
-            box-sizing: border-box; /* padding이 너비에 포함되도록 */
+            height: auto;
+            min-height: 80px;
+            width: 100%;
+            box-sizing: border-box;
+            font-weight: 500; /* 글씨 두께 */
         }
-        /* 버튼 내부 아이콘 스타일 */
+        .expanded-panel .inner-buttons-grid button:hover {
+            background-color: #0056b3;
+        }
         .expanded-panel .inner-buttons-grid button .icon {
-            font-size: 1.8em; /* 아이콘 크기 키우기 */
-            margin-bottom: 5px; /* 텍스트와의 간격 */
+            font-size: 2em; /* 아이콘 크기 더 키우기 */
+            margin-bottom: 8px; /* 텍스트와의 간격 */
         }
+        /* 개별 버튼 색상 */
+        #paymentGoBtn { background-color: #28a745; } /* 초록색 */
+        #paymentGoBtn:hover { background-color: #218838; }
+        #innerButton2 { background-color: #ffc107; color: #333; } /* 노란색, 글자색 어둡게 */
+        #innerButton2:hover { background-color: #e0a800; }
+        #tradeCompleteBtn { background-color: #dc3545; } /* 빨간색 */
+        #tradeCompleteBtn:hover { background-color: #c82333; }
+
 
         /* =================================================== */
         /* 패널 내 콘텐츠 섹션 스타일 (새로 추가/수정) */
         /* =================================================== */
+        .panel-content-wrapper {
+            width: 100%;
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
         .panel-content-section {
-            position: absolute; /* 모든 섹션을 겹쳐 놓습니다. */
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%; /* 부모 .panel-content-wrapper에 맞춰 높이 설정 */
-            padding: 0 15px; /* 패널의 전체 패딩에 더해짐 */
+            height: 100%;
+            padding: 0 15px;
             box-sizing: border-box;
-            background-color: #f8f9fa; /* 패널 배경색과 일치 */
-            display: none; /* 기본적으로 모든 섹션을 숨깁니다. */
-            overflow-y: auto; /* 섹션 내부 내용이 길어지면 스크롤 가능 */
-            transition: opacity 0.3s ease-in-out; /* 부드러운 전환 효과 */
-            opacity: 0; /* 초기 투명도 */
-            pointer-events: none; /* 숨겨진 동안 클릭 이벤트 방지 */
+            background-color: #f8f9fa;
+            display: none;
+            overflow-y: auto;
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+            /* 내부 콘텐츠를 위한 flex 속성 추가 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* 상단부터 채우기 */
+            padding-top: 15px; /* 콘텐츠 상단 여백 */
         }
-
-        /* 현재 활성화된 패널 섹션만 보이도록 합니다. */
         .panel-content-section.active-panel-section {
-            display: block; /* 또는 flex, grid 등 해당 섹션에 맞는 display 속성 */
+            display: flex; /* 활성화 시 flex로 변경 */
             opacity: 1;
             pointer-events: auto;
         }
@@ -424,49 +472,130 @@
         /* 결재창 (paymentPanelContent) 내의 요소들 스타일 */
         #paymentPanelContent h4 {
             margin-top: 0;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #333;
             text-align: center;
+            font-size: 1.3rem;
+            width: 100%;
         }
-
         #paymentPanelContent label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
             color: #555;
+            width: 100%; /* 너비 100%로 설정 */
+            text-align: left; /* 라벨 왼쪽 정렬 */
+            padding-left: 10px; /* 입력 필드와 간격 맞춤 */
         }
-
         #paymentPanelContent input[type="number"] {
-            width: calc(100% - 22px); /* 패딩 고려 */
-            padding: 10px;
+            width: calc(100% - 20px); /* 패딩 고려, 라벨과 간격 맞춰 */
+            padding: 12px;
             margin-bottom: 20px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
+            border-radius: 8px; /* 더 둥근 모서리 */
+            font-size: 1.1rem;
             text-align: center;
+            -moz-appearance: textfield; /* Firefox에서 화살표 숨김 */
         }
-
+        /* 크롬, 사파리 등에서 숫자 입력 필드 화살표 숨김 */
+        #paymentPanelContent input[type="number"]::-webkit-outer-spin-button,
+        #paymentPanelContent input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
         #paymentPanelContent button#processPaymentBtn {
             width: 100%;
-            padding: 12px;
-            background-color: #28a745; /* 녹색 계열 */
+            padding: 15px;
+            background-color: #007bff; /* 기본 파란색으로 통일 */
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 1.1rem;
             cursor: pointer;
             transition: background-color 0.2s;
-            height: auto; /* 기본 버튼 스타일 오버라이드 */
+            height: auto;
             min-height: 0;
-            flex-direction: row;
+        }
+        #paymentPanelContent button#processPaymentBtn:hover {
+            background-color: #0056b3;
         }
 
-        #paymentPanelContent button#processPaymentBtn:hover {
-            background-color: #218838;
+        /* 금액 조절 패널 스타일 */
+        #priceAdjustmentPanelContent h4 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+            font-size: 1.3rem;
+            width: 100%;
+        }
+        #priceAdjustmentPanelContent label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            width: 100%;
+            text-align: left;
+            padding-left: 10px;
+        }
+        #priceAdjustmentPanelContent input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+        #priceAdjustmentPanelContent input[type="number"]::-webkit-outer-spin-button,
+        #priceAdjustmentPanelContent input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .panel-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        .panel-buttons button {
+            flex-grow: 1; /* 버튼 너비 동일하게 */
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        #confirmPricePanelBtn {
+            background-color: #007bff;
+            color: white;
+        }
+        #confirmPricePanelBtn:hover {
+            background-color: #0056b3;
+        }
+        #cancelPricePanelBtn {
+            background-color: #6c757d;
+            color: white;
+        }
+        #cancelPricePanelBtn:hover {
+            background-color: #5a6268;
+        }
+        /* 기본 패널 콘텐츠 스타일 */
+        #defaultPanelContent {
+            text-align: center;
+            color: #777;
+            padding-top: 50px; /* 상단 여백 추가 */
+        }
+        #defaultPanelContent p {
+            margin-bottom: 10px;
+            line-height: 1.5;
         }
 
 
         /* 💰 금액 조절 모달 스타일 (기존 유지) - 이 부분은 확장 패널 내부가 아닌 별도의 모달이므로 독립적임 */
+        /* 이 모달은 현재 확장 패널 내의 금액 조절 기능과 별개로 작동합니다. */
         .modal-overlay {
             display: none; /* 기본적으로 숨김 */
             position: fixed;
@@ -523,7 +652,7 @@
         }
 
         .modal-content input[type="number"] {
-            width: calc(100% - 22px); /* 패딩 고려 */
+            width: calc(100% - 22px);
             padding: 12px;
             margin-bottom: 20px;
             border: 1px solid #ddd;
@@ -545,7 +674,7 @@
             font-size: 1rem;
             transition: background-color 0.3s ease, transform 0.1s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex-grow: 1; /* 버튼이 동일 너비로 확장 */
+            flex-grow: 1;
         }
 
         #modalConfirmBtn {
@@ -563,66 +692,81 @@
         #modalCancelBtn:hover {
             background-color: #5a6268;
         }
-
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="chat-container">
     <div class="chat-header">
+        <img id="chatPartnerProfileImage" class="profile-image-header left" th:src="${chatPartnerProfileImage}" alt="상대방 프로필">
         <h3 id="chatHeader">
-            <p>채팅방 <span th:text="${currentRentalId}">[렌탈 ID]</span></p>
-        </h3>
-        <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserProfileImage}" alt="내 프로필"> </div>
+            <p th:text="${chatPartnerNickname + '님과의 채팅'}">[상대방 닉네임]</p> </h3>
+        <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserProfileImage}" alt="내 프로필">
+    </div>
 
     <div class="chat-messages" id="chatMessages">
+        <div th:each="message : ${chatHistory}"
+             th:classappend="${message.messageType == 'JOIN' or message.messageType == 'LEAVE' ? 'event-message' : (message.senderId == currentUserId ? 'sent' : 'received')}"
+             class="message-wrapper">
+            <span class="sender-name"
+                  th:if="${(message.senderId != currentUserId) and (message.messageType != 'JOIN') and (message.messageType != 'LEAVE')}"
+                  th:text="${message.senderName}"></span>
+            <div class="message-content" th:text="${message.message}">
+            </div>
+            <div class="message-time" th:text="${message.sendTime != null ? #temporals.format(message.sendTime, 'HH:mm') : '시간 없음'}">
+            </div>
+        </div>
     </div>
 
     <div class="chat-input-area">
         <div class="input-and-send">
-            <label for="messageInput"></label><input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
-            <button id="sendMessageBtn" class="send-button">▲</button>
+            <label for="messageInput" class="sr-only">메시지 입력</label> <input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
+            <button id="sendMessageBtn" class="send-button">
+                <span class="material-icons">send</span> </button>
         </div>
         <input type="file" id="fileInput" style="display: none;">
         <div class="input-toolbar">
-            <button id="togglePanelBtn" title="거래 메뉴">😊</button>
-            <button id="button2" title="파일 첨부">📎</button>
-            <button id="button3" title="달력 / 일정">📅</button>
-            <button id="button4" title="신고 / 문의">🚨</button>
+            <button id="togglePanelBtn" title="거래 메뉴">
+                <span class="material-icons">add_circle</span> </button>
+            <button id="attachmentButton" title="파일 첨부"> <span class="material-icons">attach_file</span> </button>
+            <button id="button3" title="달력 / 일정">
+                <span class="material-icons">event</span> </button>
+            <button id="reportButton" title="신고 / 문의"> <span class="material-icons">report_problem</span> </button>
         </div>
     </div>
 
     <div class="expanded-panel">
         <div class="panel-header">
-            <button id="closePanelBtn">✖</button>
+            <button id="closePanelBtn">
+                <span class="material-icons">close</span> </button>
         </div>
         <div class="inner-buttons-grid">
             <div class="grid-item-full">
                 <button id="paymentGoBtn" title="결제하기">
-                    <span class="icon">💳</span>결제하기
+                    <span class="icon material-icons">credit_card</span>결제하기
                 </button>
             </div>
             <div class="grid-item-half">
                 <button id="innerButton2" title="금액 조절">
-                    <span class="icon">💰</span>금액 조절
+                    <span class="icon material-icons">currency_exchange</span>금액 조절
                 </button>
             </div>
             <div class="grid-item-half">
                 <button id="tradeCompleteBtn" title="거래완료">
-                    <span class="icon">✅</span>거래완료
+                    <span class="icon material-icons">check_circle</span>거래완료
                 </button>
             </div>
         </div>
 
         <div class="panel-content-wrapper">
-            <div id="defaultPanelContent" class="panel-content-section">
-                <p>확장 패널의 기본 콘텐츠입니다.</p>
-                <p>위 버튼을 눌러 다른 기능을 사용해보세요.</p>
+            <div id="defaultPanelContent" class="panel-content-section active-panel-section">
+                <h4>추가 기능</h4>
+                <p>거래와 관련된 추가 기능을 사용해보세요.</p>
             </div>
             <div id="paymentPanelContent" class="panel-content-section">
                 <h4>결재 정보 입력</h4>
-                <p>여기에 결재에 필요한 입력 필드나 정보가 들어갑니다.</p>
                 <label for="paymentAmount">결재 금액:</label>
-                <input type="number" id="paymentAmount" value="0">
+                <input type="number" id="paymentAmount" value="0" min="0" placeholder="결재할 금액을 입력하세요">
                 <button id="processPaymentBtn">결재 진행</button>
             </div>
             <div id="priceAdjustmentPanelContent" class="panel-content-section">
@@ -638,11 +782,23 @@
     </div>
 </div>
 
+<div id="priceAdjustmentModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+        <h3>금액 조절 요청</h3>
+        <label for="newPriceInput">새로운 금액을 입력하세요:</label>
+        <input type="number" id="newPriceInput" placeholder="예: 25000" min="0">
+        <div class="modal-buttons">
+            <button id="modalConfirmBtn">확인</button>
+            <button id="modalCancelBtn">취소</button>
+        </div>
+    </div>
+</div>
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 <script th:inline="javascript">
     // =========================================================
-    // 1. 전역 변수 선언
+    // 1. 전역 변수 선언 (Thymeleaf 주입 값 포함)
     // =========================================================
     let stompClient = null;
     let chatMessagesDiv = null;
@@ -664,18 +820,26 @@
     let cancelPricePanelBtn = null;
 
     let paymentGoBtn = null;
-    let innerButton2 = null;
+    let innerButton2 = null; // '금액 조절' 버튼 (기존 innerButton2 유지)
     let tradeCompleteBtn = null;
     let innerButtonsGrid = null;
     let reportButton = null;
-    let attachmentButton = null;
+    let attachmentButton = null; // 버튼 변수 추가
     let fileInput = null;
+
+    // ⭐⭐ 새로 추가: 첫 연결 여부를 추적하는 플래그 ⭐⭐
+    let hasSentJoinMessage = false;
 
     // Thymeleaf에서 주입될 값 (전역 변수)
     const chatRoomId = /*[[${chatRoomId}]]*/ 0;
     const currentUserId = /*[[${currentUserId}]]*/ 0;
-    const currentRentalId = '[[${currentRentalId}]]';
+    const currentRentalId = /*[[${currentRentalId}]]*/ '';
     const chatPartnerId = /*[[${chatPartnerId}]]*/ 0;
+    const currentUserName = /*[[${currentUserName}]]*/ '나'; // 사용자 이름
+    const chatPartnerNickname = /*[[${chatPartnerNickname}]]*/ '상대방'; // 상대방 닉네임
+    const currentUserProfileImage = /*[[${currentUserProfileImage}]]*/ '/images/default_profile.png';
+    const chatPartnerProfileImage = /*[[${chatPartnerProfileImage}]]*/ '/images/default_profile.png';
+
 
     // =========================================================
     // 2. 헬퍼 함수 정의
@@ -695,7 +859,7 @@
             if (hideButtons) {
                 innerButtonsGrid.style.display = 'none';
             } else {
-                innerButtonsGrid.style.display = 'grid';
+                innerButtonsGrid.style.display = 'grid'; // 다시 그리드 표시
             }
         }
     }
@@ -706,267 +870,343 @@
 
         if (shouldShow) {
             expandedPanel.classList.add('active');
+            // 패널 열릴 때 기본 콘텐츠로 돌아가고 버튼 보이게 설정
             showPanelSection(defaultPanelContent, false);
         } else {
             expandedPanel.classList.remove('active');
+            // 패널 닫을 때 모든 섹션 숨김 (CSS transition 때문에 바로 display: none 하지 않음)
             showPanelSection(null);
             if (innerButtonsGrid) {
-                innerButtonsGrid.style.display = 'grid';
+                innerButtonsGrid.style.display = 'grid'; // 혹시 숨겨져 있었다면 다시 보이게
             }
         }
 
-        const inputAreaHeight = messageInput ? messageInput.offsetHeight : 0;
-        const panelHeight = shouldShow ? expandedPanel.offsetHeight : 0;
-        const totalBottomPadding = inputAreaHeight + panelHeight + 15;
+        // 메시지 영역의 하단 패딩을 동적으로 조절하여 메시지가 입력창/패널에 가려지지 않도록 함
+        updateChatMessagesPadding();
+    }
 
-        if (chatMessagesDiv) {
+    function updateChatMessagesPadding() {
+        if (chatMessagesDiv && messageInput && expandedPanel) {
+            const inputAreaHeight = document.querySelector('.chat-input-area').offsetHeight; // 전체 입력 영역 높이
+            const panelActiveHeight = expandedPanel.classList.contains('active') ? expandedPanel.clientHeight : 0;
+            const totalBottomPadding = inputAreaHeight + panelActiveHeight + 15; // 15px는 여유 공간
+
             chatMessagesDiv.style.paddingBottom = `${totalBottomPadding}px`;
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+            scrollToBottom();
         }
     }
 
-    function sendMessage(customMessageContent = null, messageType = 'TALK') { // messageType 인자 추가
-        let messageContent;
 
-        if (customMessageContent !== null) {
-            messageContent = customMessageContent.trim();
-        } else {
-            messageContent = messageInput.value.trim();
-        }
-
-        if (messageContent) {
-            const chatMessage = {
-                roomId: chatRoomId,
-                senderId: currentUserId,         // ⭐ DTO 필드명과 일치 ⭐
-                message: messageContent,         // ⭐ DTO 필드명과 일치 ⭐
-                messageType: messageType,        // ⭐ DTO 필드명과 일치 ⭐
-                sendTime: new Date().toISOString() // ISO 형식으로 전송
-            };
-
-            // 자신이 보낸 메시지로 즉시 화면에 추가
-            // showMessage 함수가 기대하는 필드명과 동일해야 합니다.
-            showMessage(chatMessage);
-
-            if (stompClient && stompClient.connected) {
-                // 메시지 타입에 따라 전송 경로를 분기할 필요는 없으며, 대부분 sendMessage로 통일하여 DTO에 타입 정보를 담습니다.
-                // 하지만 JOIN/LEAVE 메시지는 서버에서 특별 처리할 수 있으므로, 해당 경로가 있다면 그 경로를 사용합니다.
-                // 현재는 모든 메시지를 sendMessage 경로로 보내고, 서버에서 messageType으로 처리하도록 합니다.
-                stompClient.send(`/pub/chat.sendMessage/${chatRoomId}`, {}, JSON.stringify(chatMessage));
-                if (customMessageContent === null) {
-                    messageInput.value = '';
-                }
-            } else {
-                console.error('STOMP 클라이언트가 연결되지 않았습니다.');
-                alert('채팅 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
-            }
-        }
-    }
-
-    function connect() {
-        const socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-
-        stompClient.connect({}, function(frame) {
-            console.log('Connected: ' + frame);
-
-            // 채팅방 입장 메시지 서버로 전송
-            const joinMessage = {
-                roomId: chatRoomId,
-                senderId: currentUserId,
-                message: '님이 입장하셨습니다.',
-                messageType: 'JOIN', // ⭐ DTO 필드명과 일치 ⭐
-                sendTime: new Date().toISOString()
-            };
-            // 서버의 ChatController @MessageMapping 경로와 일치해야 합니다.
-            stompClient.send(`/pub/chat.addUser/${chatRoomId}`, {}, JSON.stringify(joinMessage));
-            console.log(`STOMP: 입장 메시지 전송 - /pub/chat.addUser/${chatRoomId}`);
-
-
-            stompClient.subscribe(`/sub/chat/room/${chatRoomId}`, function(messageOutput) {
-                // 서버에서 받은 메시지 객체를 파싱하여 showMessage에 전달
-                showMessage(JSON.parse(messageOutput.body));
-            });
-        }, function(error) {
-            console.error('STOMP 연결 오류:', error);
-            alert('채팅 서버 연결에 실패했습니다. 페이지를 새로고침하거나 잠시 후 다시 시도해주세요.');
-        });
-    }
-
+    // 채팅 메시지를 화면에 표시하는 함수
     function showMessage(message) {
         if (!chatMessagesDiv) return;
 
         const messageWrapper = document.createElement('div');
-        messageWrapper.classList.add('message-wrapper');
+        messageWrapper.classList.add('message-wrapper'); // message-wrapper 클래스는 기본적으로 붙어있어야 합니다.
+
+        // 메시지 타입에 따른 클래스 추가
+        if (message.messageType === 'JOIN' || message.messageType === 'LEAVE') {
+            messageWrapper.classList.add('event-message');
+        } else if (message.senderId === currentUserId) {
+            messageWrapper.classList.add('sent');
+        } else {
+            messageWrapper.classList.add('received');
+        }
+
+        // 발신자 이름 표시 로직 (상대방 메시지에만 표시)
+        // 'TALK', 'TEXT' 등의 일반 메시지 타입일 때만 발신자 이름 표시
+        const generalMessageTypes = ['TALK', 'TEXT', 'IMAGE', 'PAYMENT_REQUEST', 'PRICE_ADJUSTMENT_REQUEST', 'TRADE_COMPLETE_REQUEST'];
+        if (message.senderId !== currentUserId && generalMessageTypes.includes(message.messageType) && message.senderName) {
+            const senderNameElement = document.createElement('span');
+            senderNameElement.classList.add('sender-name');
+            senderNameElement.textContent = message.senderName;
+            messageWrapper.appendChild(senderNameElement);
+        }
 
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
 
-        const messageTime = document.createElement('div');
-        messageTime.classList.add('message-time');
-
-        // ⭐ DTO 필드명인 `messageType`과 `message`를 사용합니다. ⭐
-        if (message.messageType === 'JOIN' || message.messageType === 'LEAVE') {
-            messageWrapper.classList.add('event-message');
-            let displayMessage = "";
-            if (message.messageType === 'JOIN') {
-                displayMessage = `${message.senderId}님이 입장하셨습니다.`; // 닉네임을 보내는 것이 더 좋음
-            } else if (message.messageType === 'LEAVE') {
-                displayMessage = `${message.senderId}님이 퇴장하셨습니다.`;
-            }
-            messageContent.textContent = displayMessage;
-
-        } else { // 일반 TALK 메시지 및 기타 요청 메시지
-            messageContent.textContent = message.message; // ⭐ message.message 사용 ⭐
-            if (message.senderId === currentUserId) {
-                messageWrapper.classList.add('sent');
-            } else {
-                messageWrapper.classList.add('received');
-            }
+        // 메시지 내용 또는 이미지 표시
+        if (message.messageType === 'IMAGE' && message.imgUrl) {
+            const imgElement = document.createElement('img');
+            imgElement.src = message.imgUrl;
+            imgElement.alt = "전송된 이미지";
+            imgElement.style.maxWidth = '100%';
+            imgElement.style.height = 'auto';
+            imgElement.style.borderRadius = '8px';
+            messageContent.appendChild(imgElement);
+        } else {
+            messageContent.textContent = message.message;
         }
 
-        const date = new Date(message.sendTime);
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        messageTime.textContent = `${hours}:${minutes}`;
+
+        const messageTime = document.createElement('div');
+        messageTime.classList.add('message-time');
+        // sendTime이 ISO 문자열 형식으로 오면 파싱하여 HH:mm 형식으로 표시
+        if (message.sendTime) {
+            const date = new Date(message.sendTime);
+            messageTime.textContent = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        } else {
+            messageTime.textContent = '시간 없음';
+        }
 
         messageWrapper.appendChild(messageContent);
         messageWrapper.appendChild(messageTime);
         chatMessagesDiv.appendChild(messageWrapper);
+        scrollToBottom();
+    }
 
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    function scrollToBottom() {
+        if (chatMessagesDiv) {
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+    }
+
+    // =========================================================
+    // 3. 웹소켓 연결 및 구독
+    // =========================================================
+    function connect() {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, frame => {
+            console.log('Connected: ' + frame);
+
+            // 채팅방 구독
+            stompClient.subscribe('/sub/chat/room/' + chatRoomId, message => {
+                const receivedMessage = JSON.parse(message.body);
+                console.log("메시지 수신: ", receivedMessage); // 수신 메시지 로그
+                showMessage(receivedMessage);
+            });
+
+            // ⭐⭐ 여기: connect 성공 후 입장 메시지 전송 ⭐⭐
+            if (!hasSentJoinMessage) {
+                sendJoinMessage(); // 연결 성공 시 입장 메시지 전송
+            }
+
+            scrollToBottom();
+        }, error => {
+            console.error('STOMP Error:', error);
+            // 재연결 로직 추가 (선택 사항)
+            setTimeout(connect, 5000); // 5초 후 재연결 시도
+        });
+    }
+
+    // =========================================================
+    // 4. 메시지 전송 (핵심!)
+    // =========================================================
+    // messageContent: 메시지 내용 (또는 이미지 URL)
+    // type: 메시지 타입 (예: 'TALK', 'IMAGE', 'PAYMENT_REQUEST', 'PRICE_ADJUSTMENT_REQUEST', 'TRADE_COMPLETE_REQUEST')
+    function sendMessage(messageContent, type = 'TALK') {
+        const messageToSend = messageContent ? messageContent.trim() : ''; // messageContent가 null/undefined일 경우 대비
+        if (!messageToSend && type === 'TALK') { // 일반 TALK 메시지인데 내용이 없으면 전송 안 함
+            return;
+        }
+
+        if (stompClient) {
+            const chatMessage = {
+                roomId: chatRoomId,
+                senderId: currentUserId,
+                message: messageToSend,
+                messageType: type,
+                sendTime: new Date().toISOString() // 서버에서 LocalDateTime으로 파싱 가능
+            };
+
+            // 이미지 타입 메시지는 imgUrl 필드 추가
+            if (type === 'IMAGE') {
+                chatMessage.imgUrl = messageToSend; // messageContent가 이미지 URL임
+                chatMessage.message = "이미지를 보냈습니다."; // 일반 메시지 내용은 고정
+            }
+
+            console.log("전송할 메시지:", chatMessage); // 전송 직전 로그 추가
+
+            // ⭐⭐⭐ 문제의 핵심! 이 부분에 `/app` 프리픽스가 추가되었습니다. ⭐⭐⭐
+            stompClient.send("/app/pub/chat.sendMessage/" + chatRoomId, {}, JSON.stringify(chatMessage));
+
+            // 일반 메시지 전송 후 입력창 초기화
+            if (type === 'TALK') {
+                messageInput.value = '';
+            }
+            // 메시지 전송 후에도 스크롤을 하단으로 이동
+            scrollToBottom();
+        }
+    }
+
+    // 사용자 입장 메시지 전송
+    function sendJoinMessage() {
+        if (stompClient && !hasSentJoinMessage) { // hasSentJoinMessage 플래그 확인
+            const chatMessage = {
+                roomId: chatRoomId,
+                senderId: currentUserId,
+                message: currentUserName + "님이 입장하셨습니다.",
+                messageType: 'JOIN', // 입장 메시지 타입
+                sendTime: new Date().toISOString()
+            };
+            console.log("전송할 입장 메시지:", chatMessage);
+
+            // ⭐⭐⭐ 여기도 마찬가지로 `/app` 프리픽스가 추가되었습니다. ⭐⭐⭐
+            stompClient.send("/app/pub/chat.addUser/" + chatRoomId, {}, JSON.stringify(chatMessage));
+            hasSentJoinMessage = true; // 입장 메시지 전송 완료 플래그 설정
+        }
     }
 
 
     // =========================================================
-    // 3. DOMContentLoaded 이벤트 리스너 (페이지 로드 후 실행)
+    // 5. 이벤트 리스너 및 초기화
     // =========================================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM 요소 초기화
+    document.addEventListener('DOMContentLoaded', () => {
         chatMessagesDiv = document.getElementById('chatMessages');
         messageInput = document.getElementById('messageInput');
         sendMessageBtn = document.getElementById('sendMessageBtn');
         togglePanelBtn = document.getElementById('togglePanelBtn');
         closePanelBtn = document.getElementById('closePanelBtn');
-
-        expandedPanel = document.querySelector('.expanded-panel');
+        expandedPanel = document.getElementById('expandedPanel');
+        paymentGoBtn = document.getElementById('paymentGoBtn');
+        innerButton2 = document.getElementById('innerButton2'); // 금액 조절 버튼
+        tradeCompleteBtn = document.getElementById('tradeCompleteBtn');
+        innerButtonsGrid = document.querySelector('.inner-buttons-grid');
 
         defaultPanelContent = document.getElementById('defaultPanelContent');
         paymentPanelContent = document.getElementById('paymentPanelContent');
-        priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
-
         processPaymentBtn = document.getElementById('processPaymentBtn');
         paymentAmountInput = document.getElementById('paymentAmount');
+
+        priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
         newPriceInputPanel = document.getElementById('newPriceInputPanel');
         confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
         cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn');
 
-        paymentGoBtn = document.getElementById('paymentGoBtn');
-        innerButton2 = document.getElementById('innerButton2');
-        tradeCompleteBtn = document.getElementById('tradeCompleteBtn');
-
-        innerButtonsGrid = document.querySelector('.inner-buttons-grid');
-
-        attachmentButton = document.getElementById('button2');
-        reportButton = document.getElementById('button4');
+        attachmentButton = document.getElementById('attachmentButton');
         fileInput = document.getElementById('fileInput');
+        reportButton = document.getElementById('reportButton');
 
-        // 초기 로드 시 패널 초기화 (CSS와 연동)
-        if (expandedPanel) {
-            expandedPanel.classList.remove('active');
-        }
 
-        // 초기 로드 시 기본 패널 콘텐츠가 활성화되도록 설정
-        showPanelSection(defaultPanelContent, false);
-
-        // 이벤트 리스너 등록
-        if (sendMessageBtn) {
-            sendMessageBtn.addEventListener('click', () => sendMessage());
-        }
+        // 입력 필드에서 Enter 키 누를 시 메시지 전송
         if (messageInput) {
             messageInput.addEventListener('keypress', (event) => {
                 if (event.key === 'Enter') {
-                    sendMessage();
+                    sendMessage(messageInput.value); // 입력 필드 값으로 sendMessage 호출
                 }
             });
         }
+
+        // 전송 버튼 클릭 이벤트
+        if (sendMessageBtn) {
+            sendMessageBtn.addEventListener('click', () => sendMessage(messageInput.value)); // 기본 'TALK' 타입으로 전송
+        }
+
+        // 확장 패널 토글 버튼
         if (togglePanelBtn) {
             togglePanelBtn.addEventListener('click', () => toggleExpandedPanel());
         }
+
+        // 확장 패널 닫기 버튼
         if (closePanelBtn) {
             closePanelBtn.addEventListener('click', () => toggleExpandedPanel(false));
         }
 
-        // 확장 패널 내 버튼 이벤트 리스너
+        // '결제하기' 버튼 클릭 시
         if (paymentGoBtn) {
             paymentGoBtn.addEventListener('click', () => {
-                showPanelSection(paymentPanelContent, true);
-            });
-        }
-        if (innerButton2) {
-            innerButton2.addEventListener('click', () => {
-                showPanelSection(priceAdjustmentPanelContent, true);
+                showPanelSection(paymentPanelContent, true); // 결제 패널 표시, 그리드 버튼 숨김
             });
         }
 
-        // ⭐ 거래 완료 버튼 클릭 시 이벤트 리스너 추가 ⭐
-        if (tradeCompleteBtn) {
-            tradeCompleteBtn.addEventListener('click', () => {
-                if (confirm("거래를 완료하시겠습니까? 완료하시면 채팅방이 비활성화될 수 있습니다.")) {
-                    sendMessage("[거래 완료 요청] 거래 완료를 요청합니다.", "TRADE_COMPLETE_REQUEST");
-                    alert("거래 완료 요청이 전송되었습니다.");
-                    toggleExpandedPanel(false); // 패널 닫기
-                    // 여기에 거래 완료 후 채팅방 비활성화 등의 추가 로직 구현
-                }
-            });
-        }
-
-        // 결재 진행 버튼
+        // '결제 진행' 버튼 클릭 시 (paymentPanelContent 내)
         if (processPaymentBtn) {
             processPaymentBtn.addEventListener('click', () => {
                 const amount = paymentAmountInput.value;
                 if (amount && amount > 0) {
-                    sendMessage(`[결재 요청] ${amount}원`, "PAYMENT_REQUEST"); // MessageType 추가
-                    alert(`${amount}원 결재를 진행합니다.`);
-                    toggleExpandedPanel(false);
+                    sendMessage(`[결제 요청] ${amount}원`, "PAYMENT_REQUEST"); // 메세지 타입 추가
+                    alert(`결제 요청: ${amount}원`);
+                    toggleExpandedPanel(false); // 패널 닫기
                 } else {
-                    alert("올바른 금액을 입력해주세요.");
+                    alert('유효한 결제 금액을 입력해주세요.');
                 }
             });
         }
 
-        // 금액 조절 확인/취소 버튼
+        // '금액 조절' 버튼 클릭 시 (확장 패널 내부)
+        if (innerButton2) {
+            innerButton2.addEventListener('click', () => {
+                showPanelSection(priceAdjustmentPanelContent, true); // 금액 조절 패널 표시, 그리드 버튼 숨김
+            });
+        }
+
+        // '금액 조절' 확인 버튼 클릭 시 (priceAdjustmentPanelContent 내)
         if (confirmPricePanelBtn) {
             confirmPricePanelBtn.addEventListener('click', () => {
                 const newPrice = newPriceInputPanel.value;
                 if (newPrice && newPrice >= 0) {
-                    sendMessage(`[금액 조절] ${newPrice}원으로 변경 요청`, "PRICE_ADJUSTMENT_REQUEST"); // MessageType 추가
-                    alert(`금액이 ${newPrice}원으로 조절 요청되었습니다.`);
-                    toggleExpandedPanel(false);
+                    sendMessage(`[금액 조절 요청] ${newPrice}원으로 변경`, "PRICE_ADJUSTMENT_REQUEST"); // 메세지 타입 추가
+                    alert(`금액 조절 요청: ${newPrice}원`);
+                    toggleExpandedPanel(false); // 패널 닫기
                 } else {
                     alert("유효한 금액을 입력해주세요.");
                 }
             });
         }
 
+        // '금액 조절' 취소 버튼 클릭 시 (priceAdjustmentPanelContent 내)
         if (cancelPricePanelBtn) {
             cancelPricePanelBtn.addEventListener('click', () => {
-                toggleExpandedPanel(false);
+                showPanelSection(defaultPanelContent, false); // 기본 패널로 돌아가기
+            });
+        }
+
+        // '거래완료' 버튼 클릭 시
+        if (tradeCompleteBtn) {
+            tradeCompleteBtn.addEventListener('click', () => {
+                const confirmTrade = confirm("거래를 완료하시겠습니까? 거래 완료는 되돌릴 수 없습니다.");
+                if (confirmTrade) {
+                    sendMessage("[거래 완료 요청]", "TRADE_COMPLETE_REQUEST");
+                    alert("거래 완료 요청을 보냈습니다.");
+                    toggleExpandedPanel(false); // 패널 닫기
+                }
             });
         }
 
         // 파일 첨부 버튼 (📎)
         if (attachmentButton) {
             attachmentButton.addEventListener('click', () => {
-                fileInput.click();
+                fileInput.click(); // 숨겨진 파일 입력창 클릭
             });
         }
 
-        // 파일 선택 시 (아직 파일 전송 로직 없음)
+        // 파일 선택 시 (파일 전송 로직 추가)
         if (fileInput) {
-            fileInput.addEventListener('change', (event) => {
+            fileInput.addEventListener('change', async (event) => { // async 추가
                 const file = event.target.files[0];
                 if (file) {
-                    alert(`파일이 선택되었습니다: ${file.name} (아직 전송 기능은 구현되지 않았습니다.)`);
+                    alert(`파일이 선택되었습니다: ${file.name} (전송을 시도합니다.)`);
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('chatRoomId', chatRoomId); // 룸 ID도 함께 전송
+                        formData.append('senderId', currentUserId); // 발신자 ID도 함께 전송
+
+                        // 서버의 이미지 업로드 API 엔드포인트로 변경하세요.
+                        const response = await fetch('/api/chat/image-upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            const imageUrl = result.imgUrl; // 서버에서 반환된 이미지 URL
+                            sendMessage(imageUrl, "IMAGE"); // 이미지 URL을 메시지로 전송, 타입은 IMAGE
+                            alert('파일 전송 성공 및 메시지 발송!');
+                        } else {
+                            const errorText = await response.text();
+                            alert(`파일 전송 실패: ${errorText}`);
+                            console.error('파일 업로드 실패:', response.status, errorText);
+                        }
+                    } catch (error) {
+                        console.error('파일 업로드 중 오류 발생:', error);
+                        alert('파일 업로드 중 예상치 못한 오류가 발생했습니다.');
+                    } finally {
+                        fileInput.value = ''; // 동일 파일 재선택 가능하도록 input 초기화
+                    }
                 }
             });
         }
@@ -974,13 +1214,49 @@
         // 신고/문의 버튼 (🚨)
         if (reportButton) {
             reportButton.addEventListener('click', () => {
-                window.location.href = '/chat/reportForm';
+                window.location.href = '/chat/reportForm'; // 신고/문의 폼으로 리다이렉트
             });
         }
 
         // STOMP 연결 시작
         connect();
+
+        // 초기 로드 시 기존 메시지 로드 (Thymeleaf 모델에서 받은 데이터 사용)
+        const initialChatHistory = /*[[${chatHistory}]]*/ [];
+        initialChatHistory.forEach(message => showMessage(message));
+        scrollToBottom(); // 모든 메시지 로드 후 스크롤
+        updateChatMessagesPadding(); // 초기 패딩 설정 (필요하다면)
     });
+
+    // 참고: modal 관련 JavaScript는 HTML의 modal-overlay와 modal-content에 연결되어 있지만
+    // 현재 코드에서는 이 부분이 DOMContentLoaded 밖에 정의되어 있고, 명시적으로 사용되지 않음.
+    // (이 모달은 확장 패널 내부의 '금액 조절' 기능과 별개로 작동합니다.)
+    const priceAdjustmentModal = document.getElementById('priceAdjustmentModal');
+    const newPriceInputModal = document.getElementById('newPriceInput');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', () => priceAdjustmentModal.classList.remove('active'));
+    }
+    if (modalCancelBtn) {
+        modalCancelBtn.addEventListener('click', () => priceAdjustmentModal.classList.remove('active'));
+    }
+    if (modalConfirmBtn) {
+        modalConfirmBtn.addEventListener('click', () => {
+            const newPrice = newPriceInputModal.value;
+            if (newPrice && newPrice >= 0) {
+                // 모달을 통한 금액 조절 요청은 일반 메시지가 아니므로 messageType을 'PRICE_ADJUSTMENT_REQUEST' 등으로 지정
+                sendMessage(`[모달 금액 조절] ${newPrice}원으로 변경 요청`, "PRICE_ADJUSTMENT_REQUEST"); // 메세지 타입 추가
+                alert(`모달을 통한 금액이 ${newPrice}원으로 조절 요청되었습니다.`);
+                priceAdjustmentModal.classList.remove('active');
+            } else {
+                alert("유효한 금액을 입력해주세요.");
+            }
+        });
+    }
+
 </script>
 </body>
 </html>
