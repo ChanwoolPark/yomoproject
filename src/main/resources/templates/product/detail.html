@@ -115,7 +115,10 @@
       <div class="seller-profile">
         <img th:src="@{${seller.profileImageUrl}}" class="profile-img" alt="프로필 이미지"/>
         <div>
-          <strong th:text="${seller.nickname}">닉네임</strong><br/>
+          <a th:href="@{'/mypage/profile/' + ${seller.username}}"
+             style="font-weight: bold; text-decoration: none; color: inherit;">
+            <span th:text="${seller.nickname}">닉네임</span>
+          </a><br/>
           <span th:text="${seller.grade}">등급</span>
         </div>
       </div>
@@ -170,7 +173,7 @@
         찜 취소
       </button>
 
-      <button type="button" onclick="openReservationModal()">예약 신청</button>
+      <button type="button" class="reservation-btn" onclick="handleReservationClick()">예약 신청</button>
     </div>
 
     <!-- 하단: 수정, 삭제, 목록 (판매자만 수정/삭제 가능) -->
@@ -185,7 +188,7 @@
   </span>
 
       <!-- 항상 보이는 목록 버튼 -->
-      <button type="button" onclick="alert('신고 기능은 준비 중입니다.')">신고하기</button>
+      <button type="button" onclick="openReportModal()">신고하기</button>
       <a th:href="@{'/category/' + ${product.subCategory.category.categoryId}}" style="margin-left: auto;">
         <button type="button">목록</button>
       </a>
@@ -204,6 +207,25 @@
         </div>
       </div>
     </div>
+
+    <!-- 상품 리뷰 영역 -->
+    <div class="product-review-section" style="margin-top: 40px;">
+      <h3>이 상품에 대한 리뷰</h3>
+      <div th:if="${#lists.isEmpty(productReviews)}" style="color:#888; font-size: 0.97rem; margin-top:10px;">
+        아직 작성된 리뷰가 없습니다.
+      </div>
+      <div th:each="review : ${productReviews}" style="margin-top: 16px; padding: 14px; border-radius: 8px; border: 1px solid #eee; background: #f9f9f9;">
+        <a th:href="@{'/mypage/profile/' + ${review.target.username}}" style="font-weight: bold; color: #3849c7; text-decoration: none;">
+          <span th:text="${review.reviewer.nickname}">닉네임</span>
+        </a>
+        <div style="margin-top: 6px; font-size: 0.95rem;" th:text="${review.reviewText}">리뷰 내용</div>
+        <div style="margin-top: 4px; font-size: 0.85rem; color: #aaa;">
+          평점:
+          <span th:text="${review.rating}">5.0</span> / 5.0
+        </div>
+      </div>
+    </div>
+
 
 
     <!-- 삭제 확인 스크립트 -->
@@ -244,56 +266,103 @@
 <div id="overlay" onclick="closeReservationModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
 
 
+<!-- 신고하기 모달 부분(뷰) -->
+<div id="reportModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
+  <h3>신고하기</h3>
+  <form id="reportForm">
+    <input type="hidden" name="productId" th:value="${product.productId}" />
+
+    <div>
+      <label>작성자:</label>
+      <input type="text" th:value="${#authentication.name}" readonly />
+    </div>
+
+    <div>
+      <label>신고 대상자:</label>
+      <input type="text" th:value="${product.seller.username}" readonly />
+    </div>
+
+    <div>
+      <label>신고 상품:</label>
+      <input type="text" th:value="${product.title}" readonly />
+    </div>
+
+    <div>
+      <label for="title">신고 제목:</label>
+      <input type="text" id="title" name="title" required />
+    </div>
+
+    <div>
+      <label for="details">신고 내용:</label>
+      <textarea id="details" name="details" rows="5" required></textarea>
+    </div>
+
+    <button type="submit">신고 제출</button>
+    <button type="button" onclick="closeReportModal()">닫기</button>
+  </form>
+</div>
+
+<!-- 신고 모달 오버레이 -->
+<div id="reportOverlay" onclick="closeReportModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999;"></div>
+
 <div th:replace="fragments/footer :: footer"></div>
 
 
 <!-- 지도 API KEY -->
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&libraries=services"></script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0324e5b17b169aaaebebdc6eb1e8b20c&autoload=false&libraries=services"></script>
 
 <script th:inline="javascript">
   document.addEventListener("DOMContentLoaded", function () {
-    const sellerAddress = /*[[${seller.address}]]*/ "";
+    kakao.maps.load(function () {
+      const sellerAddress = /*[[${seller.address}]]*/ "";
 
-    const mapContainer = document.getElementById('map');
-    const mapOption = {
-      center: new kakao.maps.LatLng(37.5665, 126.9780),
-      level: 3
-    };
+      const mapContainer = document.getElementById('map');
+      const mapOption = {
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 3
+      };
 
-    const map = new kakao.maps.Map(mapContainer, mapOption);
+      const map = new kakao.maps.Map(mapContainer, mapOption);
+      const geocoder = new kakao.maps.services.Geocoder();
 
-
-
-    const geocoder = new kakao.maps.services.Geocoder();
-
-    geocoder.addressSearch(sellerAddress, function(result, status) {
-      if (status === kakao.maps.services.Status.OK) {
-        console.log("주소:", sellerAddress); // ✅ 주소 확인
-        console.log("변환 좌표:", result[0]); // ✅ 변환된 위도/경도 확인
-
-        const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-        const marker = new kakao.maps.Marker({
-          map: map,
-          position: coords
-        });
-        map.setCenter(coords);
-      } else {
-        console.warn("주소 변환 실패:", sellerAddress);
-      }
+      geocoder.addressSearch(sellerAddress, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+          const marker = new kakao.maps.Marker({
+            map: map,
+            position: coords
+          });
+          map.setCenter(coords);
+        } else {
+          console.warn("주소 변환 실패:", sellerAddress);
+        }
+      });
     });
   });
 </script>
 
 <!-- 찜하기 버튼 -->
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  function handleReservationClick() {
+    if (!isLoggedIn) {
+      alert("로그인이 필요한 서비스입니다.");
+      window.location.href = "/login?needAuth=true";
+      return;
+    }
+    openReservationModal();
+  }
 
-    // 찜하기 버튼
+  document.addEventListener('DOMContentLoaded', function () {
     const wishlistBtn = document.querySelector('.wishlist-btn');
     if (wishlistBtn) {
       wishlistBtn.addEventListener('click', function () {
-        const productId = this.dataset.productId;
+        if (!isLoggedIn) {
+          alert("로그인이 필요한 서비스입니다.");
+          window.location.href = "/login?needAuth=true";
+          return;
+        }
 
+        const productId = this.dataset.productId;
         fetch('/wishlist', {
           method: 'POST',
           headers: {
@@ -313,7 +382,6 @@
       });
     }
 
-    // 찜취소 버튼
     const unwishlistBtn = document.querySelector('.unwishlist-btn');
     if (unwishlistBtn) {
       unwishlistBtn.addEventListener('click', function () {
@@ -333,9 +401,9 @@
                 });
       });
     }
-
   });
 </script>
+
 
 <!-- 예약 부분 캘린더 JS 코드 -->
 <script th:inline="javascript">
@@ -380,7 +448,7 @@
               const end = new Date(event.end);
               start.setHours(0, 0, 0, 0);
               end.setHours(0, 0, 0, 0);
-              return clickedDate >= start && clickedDate <= end;
+              return clickedDate >= start && clickedDate < end;
             });
 
             if (isDisabled) {
@@ -405,7 +473,7 @@
                 const end = new Date(event.end);
                 start.setHours(0, 0, 0, 0);
                 end.setHours(0, 0, 0, 0);
-                return clickedDate >= start && selectedStart <= end;
+                return clickedDate >= start && selectedStart < end;
               });
 
               if (overlap) {
@@ -555,7 +623,6 @@
     });
   }
 </script>
-
 
 </body>
 </html>

@@ -35,29 +35,33 @@ public class SearchController {
     @GetMapping("/search")
     public String search(@RequestParam(required = false) Integer categoryId,
                          @RequestParam(required = false) String keyword,
-                         @RequestParam(required = false) String sourceTab,  // ← 추가
+                         @RequestParam(required = false) String sourceTab,
                          Model model,
-                         Principal principal, HttpSession session) {
+                         Principal principal,
+                         HttpSession session) {
 
         // 🔍 최근 검색어 세션 저장
         if (keyword != null && !keyword.isBlank()) {
             List<String> recentKeywords = (List<String>) session.getAttribute("recentKeywords");
             if (recentKeywords == null) recentKeywords = new ArrayList<>();
 
-            // 중복 제거 & 최대 10개 유지
             recentKeywords.remove(keyword);
-            recentKeywords.add(0, keyword); // 맨 앞에 추가
+            recentKeywords.add(0, keyword);
             if (recentKeywords.size() > 10) recentKeywords = recentKeywords.subList(0, 10);
 
             session.setAttribute("recentKeywords", recentKeywords);
         }
 
         model.addAttribute("isSearch", true);
+        model.addAttribute("isPriceFiltered", false); // 검색 시 정렬 비활성화
+
         model.addAttribute("categories", categoryService.getAllCategoriesWithSubCategories());
         if (categoryId != null) {
+            model.addAttribute("category", categoryService.getCategoryById(categoryId));
             model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         } else {
-            model.addAttribute("subCategories", List.of()); // 전체 검색 시에는 안 보이게
+            model.addAttribute("category", null);
+            model.addAttribute("subCategories", List.of());
         }
 
         List<ProductDto> products = (categoryId != null)
@@ -69,14 +73,9 @@ public class SearchController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("sourceTab", sourceTab != null ? sourceTab : "recent");
 
-        // 최근 본 상품, 찜 목록도 동일하게 구성
         if (principal != null) {
             String username = principal.getName();
-            User
-
-
-
-                    user = userService.findByUsername(username);
+            User user = userService.findByUsername(username);
             Long userId = user.getId();
 
             model.addAttribute("wishlist", productListService.getWishlist(userId));

@@ -106,5 +106,39 @@ public class ProductListService {
     }
 
 
+    /*가격 필터 (대카테고리용)*/
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsByCategoryAndPriceRange(int categoryId, Integer minPrice, Integer maxPrice) {
+        List<Product> products = productRepo.findByCategoryWithPriceFilter(categoryId, minPrice, maxPrice);
+        return mapProductsToDto(products);
+    }
+    /*가격 필터 (서브카테고리용)*/
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsBySubCategoryAndPriceRange(int subCategoryId, Integer minPrice, Integer maxPrice) {
+        List<Product> products = productRepo.findBySubCategoryWithPriceFilter(subCategoryId, minPrice, maxPrice);
+        return mapProductsToDto(products);
+    }
+
+    /*정렬 메서드*/
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsByCategorySorted(int categoryId, String sort) {
+        List<Product> products = switch (sort) {
+            case "views" -> productRepo.findByCategoryOrderByCountDesc(categoryId);
+            case "price" -> productRepo.findByCategoryOrderByPriceAsc(categoryId);
+            default -> productRepo.findByCategoryOrderByCreatedAtDesc(categoryId); // 최신순
+        };
+
+        return mapProductsToDto(products);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsBySubCategorySorted(int subCategoryId, String sort) {
+        List<Product> products = switch (sort) {
+            case "views" -> productRepo.findBySubCategoryOrderByCountDesc(subCategoryId);
+            case "price" -> productRepo.findBySubCategoryOrderByPriceAsc(subCategoryId);
+            default -> productRepo.findBySubCategoryOrderByCreatedAtDesc(subCategoryId); // 최신순
+        };
+        return mapProductsToDto(products);
+    }
     
 }
