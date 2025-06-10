@@ -1,29 +1,32 @@
 package com.project.yomozomo.service;
 
-import com.project.yomozomo.entity.Chat;
+// import com.project.yomozomo.entity.Chat; // Chat 엔티티는 더 이상 사용하지 않는다면 제거
+import com.project.yomozomo.entity.ChatMessage; // ChatMessage 엔티티 사용
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.domain.Rental; // Rental의 실제 위치가 domain이라면 유지
-import com.project.yomozomo.repository.ChatRepository;
+// import com.project.yomozomo.repository.ChatRepository; // ChatRepository는 더 이상 사용하지 않는다면 제거
+import com.project.yomozomo.repository.ChatMessageRepository; // ⭐ChatMessageRepository 사용⭐
 import com.project.yomozomo.repository.ChatRoomRepository;
 import com.project.yomozomo.repository.RentalRepository;
 import com.project.yomozomo.repository.UserRepository;
-
+import lombok.extern.slf4j.Slf4j; // log를 사용하기 위해 추가
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional; // Optional 임포트는 한 번만 필요합니다.
+import java.util.Optional;
 import java.time.LocalDateTime;
 
 @Service
-@Slf4j
+@Slf4j // 로그 사용을 위해 추가
 @RequiredArgsConstructor
 public class ChatService {
 
-    private final ChatRepository chatRepository;
+    // ⭐ ChatRepository 대신 ChatMessageRepository를 사용합니다. ⭐
+    private final ChatMessageRepository chatMessageRepository; // 메시지 저장을 위한 레포지토리
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final RentalRepository rentalRepository;
@@ -49,65 +52,90 @@ public class ChatService {
 
         if (existingRoom.isPresent()) {
             // 기존 채팅방이 존재하면 해당 채팅방의 ID를 반환
-            return existingRoom.get().getRoomId(); // ⭐ getId()로 수정 (ChatRoom 엔티티의 PK 필드 이름에 따름) ⭐
+            return existingRoom.get().getRoomId(); // ChatRoom 엔티티의 PK 필드 이름이 roomId라면
         } else {
             // 3. 존재하지 않으면 새 채팅방 생성
-            // roomName은 "상품명_구매자_판매자" 형식으로 생성
             String productName = "알 수 없는 상품"; // 기본값
             if (rental.getProduct() != null && rental.getProduct().getTitle() != null) {
-                // Product 엔티티에 getTitle() 메서드가 있는지 확인 필수
                 productName = rental.getProduct().getTitle();
             }
 
-            // ⭐ roomName 필드가 ChatRoom 엔티티에 있어야 합니다. ⭐
+            // ChatRoom 엔티티에 roomName 필드가 있다고 가정
             String roomName = productName + " 대여 채팅 (" + buyer.getNickname() + " - " + seller.getNickname() + ")";
 
             ChatRoom newChatRoom = ChatRoom.builder()
-                    .roomName(roomName) // ⭐ roomName 필드 설정 (ChatRoom 엔티티에 존재해야 함) ⭐
+                    .roomName(roomName)
                     .buyer(buyer)
                     .seller(seller)
                     .rental(rental)
                     .build();
-                    /*.updatedAt(LocalDateTime.now())  최신 업데이트 시간을 명시적으로 설정     builde 위로*/
 
             ChatRoom savedRoom = chatRoomRepository.save(newChatRoom);
-            return savedRoom.getRoomId(); // ⭐ getId()로 수정 (ChatRoom 엔티티의 PK 필드 이름에 따름) ⭐
+            return savedRoom.getRoomId(); // ChatRoom 엔티티의 PK 필드 이름이 roomId라면
         }
     }
 
 
     // --- 메시지 관리 ---
 
+
+
+
     @Transactional
-    public Chat saveChatMessage(Long chatRoomId, Long senderUserId, String messageContent,
-                                String imgUrl, String messageType) {
-        // 1. chatRoomId로 ChatRoom 엔티티를 찾습니다.
+    public ChatMessage saveChatMessage(Long chatRoomId, Long senderUserId, String messageContent,
+                                       String imgUrl, String messageType) {
+        log.info("DEBUG: ChatService.saveChatMessage 호출됨. chatRoomId: {}, senderUserId: {}", chatRoomId, senderUserId);
+
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다. ID: " + chatRoomId));
+                .orElseThrow(() -> {
+                    log.error("ERROR: 채팅방 찾기 실패. ID: {}", chatRoomId);
+                    return new IllegalArgumentException("채팅방을 찾을 수 없습니다. ID: " + chatRoomId);
+                });
+        log.info("DEBUG: 채팅방 찾음: {}", chatRoom.getRoomId());
 
-        // 2. senderUserId로 User 엔티티를 찾습니다.
         User sender = userRepository.findById(senderUserId)
-                .orElseThrow(() -> new IllegalArgumentException("발신자 사용자를 찾을 수 없습니다. ID: " + senderUserId));
+                .orElseThrow(() -> {
+                    log.error("ERROR: 발신자 사용자 찾기 실패. ID: {}", senderUserId);
+                    return new IllegalArgumentException("발신자 사용자를 찾을 수 없습니다. ID: " + senderUserId);
+                });
+        log.info("DEBUG: 발신자 찾음: {} (ID: {})", sender.getNickname(), sender.getId());
 
-        // 3. Chat 엔티티 생성 및 저장
-        Chat chat = new Chat(); // Chat 엔티티에 @Builder가 없다면 이 방식이 맞습니다.
-        chat.setChatRoom(chatRoom);
-        chat.setUser(sender);
-        chat.setMessage(messageContent);
-        chat.setImgUrl(imgUrl);
-        // ⭐ 아래 두 줄은 Chat 엔티티의 @PrePersist가 처리한다면 제거해도 됩니다. ⭐
-        // 만약 @PrePersist가 없다면 유지해야 합니다.
-        // chat.setHasImage(imgUrl != null && !imgUrl.isEmpty() ? 'Y' : 'N');
-        // chat.setMessageType(messageType != null ? messageType : "TEXT");
+        // ⭐ 챗 메시지 타입 매핑 로직 추가 ⭐
+        String finalMessageType = messageType;
+        if ("JOIN".equalsIgnoreCase(messageType) || "LEAVE".equalsIgnoreCase(messageType)) {
+            finalMessageType = "SYSTEM"; // DB 제약조건에 맞춰 'SYSTEM'으로 저장
+            log.info("INFO: messageType '{}'를 'SYSTEM'으로 매핑하여 저장합니다.", messageType);
+        } else if (!("TEXT".equalsIgnoreCase(messageType) || "IMAGE".equalsIgnoreCase(messageType) || "SYSTEM".equalsIgnoreCase(messageType))) {
+            // 정의되지 않은 messageType인 경우, 기본값 또는 예외 처리
+            log.warn("WARN: 알 수 없는 messageType '{}'가 감지되었습니다. 'TEXT'로 기본 설정합니다.", messageType);
+            finalMessageType = "TEXT"; // 혹은 IllegalArgumentException을 발생시켜 유효하지 않은 타입임을 알릴 수도 있습니다.
+        }
 
-        return chatRepository.save(chat);
+
+        // ⭐ ChatMessage 엔티티를 생성하고 필드를 설정합니다. ⭐
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setRoomId(chatRoomId);
+        chatMessage.setSenderId(senderUserId); // DB의 USER_ID 컬럼에 매핑될 것임
+        chatMessage.setMessage(messageContent);
+        chatMessage.setImgUrl(imgUrl); // ⭐ imgUrl 설정 활성화 ⭐
+        chatMessage.setMessageType(finalMessageType); // ⭐ 매핑된 messageType 사용 ⭐
+        // chatMessage.setSendTime(LocalDateTime.now()); // ⭐ sendTime은 ChatMessage 엔티티의 @PrePersist에서 설정하는 것을 권장 ⭐
+
+        log.info("DEBUG: ChatMessage 엔티티 생성 완료. chatRoomId: {}, senderId: {}, message: {}, imgUrl: {}, messageType: {}",
+                chatMessage.getRoomId(), chatMessage.getSenderId(), chatMessage.getMessage(), chatMessage.getImgUrl(), chatMessage.getMessageType());
+
+        // ⭐ ChatMessageRepository를 사용하여 저장합니다. ⭐
+        ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
+        log.info("DEBUG: ChatMessage 엔티티 DB 저장 완료. Message ID: {}", savedChatMessage.getMessageId());
+
+        return savedChatMessage;
     }
 
+    // ⭐⭐⭐ ChatController에서 호출하는 getChatMessagesByRoomId 메서드 추가 (List<ChatMessage> 반환) ⭐⭐⭐
     @Transactional(readOnly = true)
-    public List<Chat> getChatMessagesByRoom(Long roomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다. ID: " + roomId));
-        return chatRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom);
+    public List<ChatMessage> getChatMessagesByRoomId(Long roomId) {
+        // ChatMessageRepository에 findByRoomIdOrderBySendTimeAsc 메서드가 정의되어 있어야 합니다.
+        return chatMessageRepository.findByRoomIdOrderBySendTimeAsc(roomId);
     }
 
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정
