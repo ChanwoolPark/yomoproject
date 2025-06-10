@@ -3,8 +3,9 @@ package com.project.yomozomo.repository;
 
 import com.project.yomozomo.entity.ChatMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
 
-@Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
+    // 이 메서드가 ChatService에서 호출되므로 반드시 존재해야 합니다.
+    List<ChatMessage> findByRoomIdOrderBySendTimeAsc(Long roomId);
 }
