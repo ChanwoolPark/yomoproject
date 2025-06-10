@@ -2,11 +2,14 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.*;
 import com.project.yomozomo.dto.ProductDto;
+import com.project.yomozomo.entity.CustomUserDetails;
+import com.project.yomozomo.entity.Inquiry;
 import com.project.yomozomo.entity.Review;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.*;
 import com.project.yomozomo.service.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +38,7 @@ public class MyPageController {
     private final UserWalletRepository userWalletRepository;
     private final WalletService walletService;
     private final CategoryService categoryService;
+    private final InquiryRepository inquiryRepository;
 
 
 
@@ -228,8 +232,11 @@ public class MyPageController {
 
 
     @GetMapping("/inquiries")
-    public String inquiriesFragment() {
-        return "mypage/fragments/inquiries :: content";
+    public String viewMyInquiries(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        List<Inquiry> myInquiries = inquiryRepository.findByUserId(userId);
+        model.addAttribute("inquiries", myInquiries);
+        return "mypage/fragments/inquiries";
     }
 
     @GetMapping("/{menuName}")

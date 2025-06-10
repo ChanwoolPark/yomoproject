@@ -1,5 +1,9 @@
 package com.project.yomozomo.controller;
 
+import com.project.yomozomo.entity.Inquiry;
+import com.project.yomozomo.repository.InquiryRepository;
+import lombok.RequiredArgsConstructor;
+import org.antlr.v4.runtime.tree.pattern.ParseTreePattern;
 import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.domain.WithdrawalRequest;
 import com.project.yomozomo.entity.ChatRoom;
@@ -14,10 +18,17 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RequiredArgsConstructor
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    private final InquiryRepository inquiryRepo;
 
     private final WithdrawalService withdrawalService;
     private final ChatroomReportService chatroomReportService;
@@ -45,11 +56,30 @@ public class AdminController {
 
     // 2. 문의 관리 (고객센터)
     @GetMapping("/inquiries")
-    public String inquiryList(Model model) {
-        // model.addAttribute("inquiries", inquiryService.findAll());
+    public String showAdminInquiryList(Model model) {
+        List<Inquiry> inquiries = inquiryRepo.findAll(); // 혹은 최신순 정렬
+        model.addAttribute("inquiries", inquiries);
         return "admin/inquiry-list";
     }
 
+    @GetMapping("/inquiries/{id}")
+    public String showInquiryDetail(@PathVariable Long id, Model model) {
+        Inquiry inquiry = inquiryRepo.findById(id).orElseThrow();
+        model.addAttribute("inquiry", inquiry);
+        return "admin/inquiry-detail";
+    }
+
+    @PostMapping("/inquiries/{id}/reply")
+    public String submitReply(@PathVariable Long id, @RequestParam String answer) {
+        Inquiry inquiry = inquiryRepo.findById(id).orElseThrow();
+        inquiry.setAnswer(answer);
+        inquiry.setAnsweredAt(LocalDateTime.now());
+        inquiry.setIsAnswered(true);
+        inquiryRepo.save(inquiry);
+
+        // 이메일 전송 기능은 선택 옵션 (추후 추가)
+        return "redirect:/admin/inquiries";
+    }
     // 3. 출금 정산
     @GetMapping("/list")
     public String adminWithdrawalList(Model model) {
@@ -89,7 +119,7 @@ public class AdminController {
         model.addAttribute("buyer", buyer);
 
         return "admin/report-detail"; // templates/admin/report-detail.html
-    }
+
 
     // 4-2. 신고 상태 변경 (처리중/완료/거절)
     @PostMapping("/report/status")

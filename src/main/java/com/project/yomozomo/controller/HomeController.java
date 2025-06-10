@@ -31,12 +31,6 @@ public class HomeController {
         List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
         model.addAttribute("categories", categories);
 
-        // 배너 이미지 리스트
-        /*List<String> imageList = List.of(
-                "banner1.png",
-                "banner2.png",
-                "banner3.png"
-        );*/
         List<Map<String, String>> imageList = new ArrayList<>();
         imageList.add(Map.of("file", "banner1.png" +
                 "" +
@@ -51,25 +45,6 @@ public class HomeController {
         model.addAttribute("imageList", imageList);
 
         return "index";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 
@@ -93,19 +68,9 @@ public class HomeController {
         return "redirect:/category/" + categoryId + "/subcategory/" + subCategoryId;
     }
 
-/*    @GetMapping("/my")
-    public String myPage() {
-        return "redirect:/my.html";
-    }*/
-
-//    @GetMapping("/chatbot")
-//    public String chatbot() {
-//        return "redirect:/chatbot.html";
-//    }
-
     @GetMapping("/support")
     public String support() {
-        return "redirect:/support.html";
+        return "support";
     }
 
     @GetMapping("/explore")

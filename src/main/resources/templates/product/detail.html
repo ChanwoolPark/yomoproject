@@ -173,7 +173,7 @@
         찜 취소
       </button>
 
-      <button type="button" class="reservation-btn" onclick="handleReservationClick()">예약 신청</button>
+      <button type="button" class="reservation-btn">예약 신청</button>
     </div>
 
     <!-- 하단: 수정, 삭제, 목록 (판매자만 수정/삭제 가능) -->
@@ -353,8 +353,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-
-    // 찜하기 버튼
     const wishlistBtn = document.querySelector('.wishlist-btn');
     if (wishlistBtn) {
       wishlistBtn.addEventListener('click', function () {
@@ -406,6 +404,7 @@
     }
   });
 </script>
+
 
 <!-- 예약 부분 캘린더 JS 코드 -->
 <script th:inline="javascript">
@@ -627,10 +626,27 @@
 
 
 </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const reservationBtn = document.querySelector('.reservation-btn');
+    if (reservationBtn) {
+      reservationBtn.addEventListener('click', function () {
+        if (!isLoggedIn) {
+          alert("로그인이 필요한 서비스입니다.");
+          window.location.href = "/login?needAuth=true";
+          return;
+        }
+        openReservationModal();
+      });
+    }
+  });
+</script>
 
 <script th:inline="javascript">
   const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
 </script>
+
+
 
 <script>
   // 모달 열기
