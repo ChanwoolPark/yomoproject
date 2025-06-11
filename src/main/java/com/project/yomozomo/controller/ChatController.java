@@ -21,9 +21,7 @@ import com.project.yomozomo.entity.ChatMessage;
 import com.project.yomozomo.dto.ChatMessageDTO;
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,8 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,46 +58,55 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", "업로드할 파일이 없습니다."));
         }
 
+
+
         try {
-            // ⭐⭐⭐ 변경된 부분 시작 ⭐⭐⭐
-            // 현재 이미지들이 실제로 저장되고 있는 경로로 설정합니다.
-            // C:\Users\soldesk\IdeaProjects\yomoproject\\uploaded-files\image-chatimage
+            // ... (baseUploadDir 및 specificUploadPathStr 설정) ...
             String baseUploadDir = "C:" + File.separator + "Users" + File.separator + "soldesk" +
-                    File.separator + "IdeaProjects" + File.separator + "yomoproject" +
+                    File.separator + "IdeaProjects" + File.separator + "yomoproject" + // ⭐⭐ 실제 프로젝트 폴더명 재확인!!
                     File.separator + "uploaded-files"; // 'uploaded-files'까지의 기본 경로
 
-            String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString(); // 'image-chatimage' 하위 폴더
+            String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString();
 
             File uploadPath = new File(specificUploadPathStr);
 
-            // 디렉토리 생성 확인 (없으면 생성)
             if (!uploadPath.exists()) {
                 Files.createDirectories(uploadPath.toPath());
                 log.info("업로드 디렉토리 생성 완료: {}", uploadPath.getAbsolutePath());
             }
 
             String originalFileName = file.getOriginalFilename();
-            String storedFileName = System.currentTimeMillis() + "_" + originalFileName;
+            // ⭐⭐⭐ 이 부분이 이전 제안에서 수정되지 않은 부분입니다. ⭐⭐⭐
+            // 파일 확장자를 정확하게 추출하여 사용할 것.
+            String fileExtension = "";
+            int dotIndex = originalFileName.lastIndexOf('.');
+            if (dotIndex > 0 && dotIndex < originalFileName.length() - 1) {
+                fileExtension = originalFileName.substring(dotIndex); // .png, .jpg 등 확장자
+            }
+            // UUID를 사용하여 고유한 파일명 생성
+            String storedFileName =  UUID.randomUUID().toString() + fileExtension;
+            // ⭐⭐⭐ 수정 끝 ⭐⭐⭐
+
             File dest = new File(uploadPath, storedFileName);
 
             log.info("DEBUG: final destination path for transfer = {}", dest.getAbsolutePath());
+            log.info("DEBUG: storedFileName with correct extension = {}", storedFileName); // 로그 추가
 
-            // 파일 복사 (저장)
             Files.copy(file.getInputStream(), dest.toPath());
 
-            // ⭐ 클라이언트에서 접근할 수 있는 파일의 웹 URL 생성 ⭐
             // WebConfig에서 '/uploaded-chat-images/**' 로 매핑할 것이므로, 이에 맞춰 URL 생성
-            String fileUrl = "/uploaded-chat-images/" + storedFileName;
-            // ⭐⭐⭐ 변경된 부분 끝 ⭐⭐⭐
+            String fileUrl = "/uploaded-chat-images/" + storedFileName; // 이제 이 fileUrl에는 올바른 확장자(.jpg 또는 .png)가 포함됩니다.
 
             log.info("파일 업로드 성공: originalFileName={}, storedFileName={}, roomId={}, senderId={}, fileUrl={}",
                     originalFileName, storedFileName, roomId, senderId, fileUrl);
 
             Map<String, String> response = new HashMap<>();
             response.put("imgUrl", fileUrl);
-            response.put("messageType", "IMAGE");
+            response.put("messageType", "IMAGE"); // DTO에서 IMAGE로 인식하도록 보냄
 
             return ResponseEntity.ok(response);
+
+
 
         } catch (IOException e) {
             log.error("파일 업로드 중 IO 오류 발생: {}", e.getMessage(), e);

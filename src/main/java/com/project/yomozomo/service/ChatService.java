@@ -147,21 +147,21 @@ public class ChatService {
 
         // ⭐⭐⭐ 이 부분이 수정된 로직입니다 ⭐⭐⭐
         // DB의 message_type 체크 제약조건 ('TEXT', 'IMAGE', 'SYSTEM')에 맞추기 위해 타입 변환
-        String finalMessageType = "TEXT"; // 기본값을 "TEXT"로 설정
-        List<String> allowedMessageTypes = Arrays.asList("TEXT", "IMAGE", "SYSTEM");
+        String finalMessageType = "TALK"; //
+        List<String> allowedMessageTypes = Arrays.asList("TALK", "TEXT", "IMAGE", "JOIN", "LEAVE", "SYSTEM","PAYMENT_REQUEST", "TRADE_COMPLETE_REQUEST"); //
+
 
         if (messageType != null) {
             String upperCaseMessageType = messageType.toUpperCase();
             if (allowedMessageTypes.contains(upperCaseMessageType)) {
-                finalMessageType = upperCaseMessageType; // 허용된 타입이면 그대로 사용
+                finalMessageType = upperCaseMessageType;
             } else {
-                log.warn("알 수 없는 messageType '{}'가 감지되었습니다. 'TEXT'로 기본 설정합니다.", upperCaseMessageType);
-                // "TALK"과 같은 허용되지 않는 타입은 "TEXT"로 강제 변환
-                finalMessageType = "TEXT";
+                log.warn("알 수 없는 messageType '{}'가 감지되었습니다. 'TALK'로 기본 설정합니다.", upperCaseMessageType);
+                finalMessageType = "TALK"; // 알 수 없는 타입은 기본값으로
             }
         } else {
-            // messageType이 null인 경우에도 "TEXT"로 유지
-            log.debug("messageType이 null입니다. 'TEXT'로 기본 설정합니다.");
+            log.debug("messageType이 null입니다. 'TALK'로 기본 설정합니다.");
+            finalMessageType = "TALK";
         }
         // ⭐⭐⭐ 수정된 로직 끝 ⭐⭐⭐
 
@@ -172,12 +172,9 @@ public class ChatService {
         chatMessage.setMessage(messageContent);
         // DB의 img_url이 VARCHAR2(500)으로 정의되어 있고, CLOB이 아니라면 빈 문자열도 괜찮습니다.
         // null을 허용한다면 null을 보내는 것이 더 좋습니다. 여기서는 테이블 정의에 맞게 처리.
-        chatMessage.setImgUrl(imgUrl != null ? imgUrl : null); // null을 허용하는 경우 null로 설정
-
-        // has_image 처리: imgUrl이 null이 아니면 'Y', null이면 'N'
+        chatMessage.setImgUrl(imgUrl); // 이미지 URL을 그대로 저장
         chatMessage.setHasImage(imgUrl != null && !imgUrl.trim().isEmpty() ? 'Y' : 'N');
-
-        chatMessage.setMessageType(finalMessageType); // 변환된 messageType 사용
+        chatMessage.setMessageType(finalMessageType); // 최종 결정된 messageType 사용
         chatMessage.setSendTime(LocalDateTime.now());
 
         log.debug("ChatMessage 엔티티 생성 완료. chatRoomId: {}, senderId: {}, message: {}, imgUrl: {}, messageType: {}, sendTime: {}",
