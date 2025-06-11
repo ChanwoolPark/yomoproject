@@ -1,8 +1,10 @@
 package com.project.yomozomo.config;
 
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.security.CustomAuthenticationEntryPoint;
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
 import com.project.yomozomo.service.CustomUserDetailsService;
+import com.project.yomozomo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,13 +36,17 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler successHandler;
     private final CustomAuthenticationEntryPoint customEntryPoint;
     private final CustomUserDetailsService userDetailsService;
+    private final UserService userService;
 
     public SecurityConfig(OAuth2LoginSuccessHandler successHandler,
                           CustomAuthenticationEntryPoint customEntryPoint,
-                          CustomUserDetailsService userDetailsService ) {
+                          CustomUserDetailsService userDetailsService,
+                          UserService userService) {
         this.successHandler = successHandler;
         this.customEntryPoint = customEntryPoint;
         this.userDetailsService = userDetailsService;
+        this.userService = userService;
+
     }
 
 
@@ -71,6 +77,29 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/login/form")
                         .successHandler((request, response, authentication) -> {
+                            // 로그인 성공한 유저 정보 꺼내기
+                            String username = authentication.getName(); // username (DB 컬럼 값)
+
+                            // 빈 주입 방법에 따라 UserService 접근
+                            // 예: 만약 UserService를 @Autowired로 필드에 올려둔다면
+                            // userService.updateLastLoginDate(userService.getUserByUsername(username));
+
+                            // ↓ 람다 안이라 this.userService가 바로 접근 안됨 → SecurityConfig의 필드로 UserService 추가 필요!
+                            // 만약 UserService userService; 를 필드로 추가했다면 아래처럼!
+                            User user = userService.getUserByUsername(username);
+                            userService.updateLastLoginDate(user);
+
+                            // ⬇️ 이거 추가!
+                            if ("Y".equals(user.getIsWithdrawn())) {
+                                userService.recoverWithdrawn(user);
+                            }
+
+                            if ("Y".equals(user.getIsDormant())) {
+                                response.sendRedirect("/dormant-info"); // 휴면 안내 페이지로 보냄
+                                return;
+                            }
+
+
                             String redirectUrl = request.getParameter("redirect");
 
                             if (redirectUrl != null && redirectUrl.startsWith("/")) {

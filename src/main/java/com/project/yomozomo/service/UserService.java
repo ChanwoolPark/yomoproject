@@ -4,6 +4,7 @@ import com.project.yomozomo.dto.SignupForm;
 import com.project.yomozomo.repository.ReviewRepository;
 import com.project.yomozomo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -51,10 +55,12 @@ public class UserService {
         return userRepo.existsByUsernameAndEmail(username, email);
     }
 
+    @Transactional
     public void updatePassword(String username, String newPassword) {
         userRepo.findByUsername(username).ifPresent(user -> {
             user.setPassword(passwordEncoder.encode(newPassword)); // 반드시 암호화!
             userRepo.save(user);
+            userRepo.flush();
         });
     }
 
@@ -81,7 +87,6 @@ public class UserService {
         u.setAddressDetail(form.getAddressDetail()); // 상세 주소
 
         u.setRole("ROLE_USER");
-
         userRepo.save(u);
 
         // --- 여기서 바로 로그인 처리 추가 ---
@@ -93,6 +98,13 @@ public class UserService {
     }
 
 
+    @Transactional
+    public void updateLastLoginDate(User user) {
+        System.out.println("로그인 날짜 갱신! " + user.getUsername());
+        user.setLastLoginDate(LocalDate.now());
+        System.out.println("user.getLastLoginDate() = " + user.getLastLoginDate());
+        userRepo.save(user);
+    }
 
     // 현재 로그인한 user 아이디로 User 조회
     public User findByUsername(String username) {
@@ -120,7 +132,77 @@ public class UserService {
         user.setReviewCount(cnt);   // 리뷰 개수 저장 (review_count 컬럼)
         userRepo.save(user);
     }
+    // 휴면 처리
+    @Transactional
+    public void markDormant(User user) {
+        user.setIsDormant("Y");
+        user.setDormantDate(LocalDate.now());
+        userRepo.save(user);
+    }
+
+    // 휴면 해제 (로그인 시 처리)
+    @Transactional
+    public void clearDormant(User user) {
+        user.setIsDormant("N");
+        user.setDormantDate(null);
+        userRepo.save(user);
+    }
+
+    // 회원 탈퇴(soft delete)
+    @Transactional
+    public void withdraw(User user) {
+        user.setIsWithdrawn("Y");
+        user.setWithdrawnAt(LocalDateTime.now());
+        userRepo.save(user);
+    }
+
+    // 탈퇴 복구 (30일 이내 로그인)
+    @Transactional
+    public void recoverWithdrawn(User user) {
+        user.setIsWithdrawn("N");
+        user.setWithdrawnAt(null);
+        userRepo.save(user);
+    }
+
+    // 30일 지난 탈퇴자 개인정보 초기화
+    @Transactional
+    public void anonymizeWithdrawnUsersOlderThan(LocalDateTime threshold) {
+        List<User> users = userRepo.findByIsWithdrawnAndWithdrawnAtBefore("Y", threshold);
+        for (User user : users) {
+            user.setName("탈퇴회원");
+            user.setEmail("withdrawn_" + user.getUsername() + "@deleted.com");
+            user.setNickname("탈퇴회원" + user.getUsername());
+            user.setPhone(null);
+            user.setProfileImageUrl(null);
+            user.setAddress(null);
+            user.setAddressDetail(null);
+            user.setReferral(null);
+            user.setUsername("탈퇴한 사용자");
+            user.setBirthdate(null);
+            user.setGender(null);
+            user.setGrade(null);
+            user.setZipNo(null);
+        }
+        userRepo.saveAll(users);
+    }
+
+    public List<User> getDormantUsers() {
+        return userRepo.findByIsDormant("Y");
+    }
+
+    @Transactional
+    public void markDormantUsersOlderThan(LocalDate standardDate) {
+        List<User> users = userRepo.findByIsDormantAndLastLoginDateBefore("N", standardDate);
+        for (User user : users) {
+            user.setIsDormant("Y");
+            user.setDormantDate(LocalDate.now());
+        }
+        userRepo.saveAll(users);
+    }
 
 
+    public Optional<User> getUserByEmail(String email) {
+        return userRepo.findByEmail(email);
+    }
 
 }

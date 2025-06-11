@@ -21,6 +21,21 @@
             color: #4a90e2;
             text-decoration: underline;
             cursor: pointer;
+            font-weight: bold;
+        }
+        .product-link {
+            color: #7c4dff;
+            text-decoration: underline;
+            font-size: 15px;
+            font-weight: 600;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        .review-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -31,9 +46,15 @@
         아직 내가 작성한 리뷰가 없습니다.
     </div>
     <div th:each="review : ${myWrittenReviews}" class="card-box">
-        <!-- 리뷰 대상자(판매자/구매자 등) 프로필로 이동 -->
-        <a th:href="@{'/mypage/profile/' + ${review.target.username}}" class="card-link"
-           th:text="'[대상] ' + ${review.target.name}"></a>
+        <div class="review-meta">
+            <!-- 상품명(상세로), 대상자(프로필로) 둘 다 링크 -->
+            <a th:href="@{'/product/' + ${review.product.productId}}"
+               class="product-link"
+               th:text="'[' + ${review.product.title} + ']'"></a>
+            <a th:href="@{'/mypage/profile/' + ${review.target.username}}"
+               class="card-link"
+               th:text="'[대상] ' + ${review.target.name}"></a>
+        </div>
         <p th:text="${review.reviewText}" style="margin: 6px 0 2px;"></p>
         <small th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}" style="color: #888;">날짜</small>
     </div>
