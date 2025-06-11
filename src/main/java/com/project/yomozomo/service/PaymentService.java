@@ -74,7 +74,7 @@ public class PaymentService {
                 .sender(buyer)
                 .receiver(product.getSeller())
                 .product(product)
-                .amount(price)  // 혹은 totalPrice, 입맛에 맞게
+                .amount(price)
                 .status("결제완료")
                 .build();
         transactionHistoryRepository.save(history);

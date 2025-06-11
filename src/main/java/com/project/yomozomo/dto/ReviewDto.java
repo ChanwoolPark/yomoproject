@@ -11,4 +11,8 @@ public class ReviewDto {
     private Long productId;  // 상품 ID
     private BigDecimal rating; // 평점
     private String reviewText; // 리뷰 내용
+    private String productTitle;
+    private String targetUsername; // ← 추가!!
+    private String targetName;     // ← 추가!!
+    private String createdAt;
 }
