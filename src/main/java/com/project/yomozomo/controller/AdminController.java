@@ -6,8 +6,11 @@ import com.project.yomozomo.domain.WithdrawalRequest;
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.ChatroomReport;
 import com.project.yomozomo.entity.Inquiry;
+import com.project.yomozomo.entity.Notice;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.InquiryRepository;
+import com.project.yomozomo.service.InquiryService;
+import com.project.yomozomo.service.NoticeService;
 import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.ChatroomReportService;
 import com.project.yomozomo.service.ReportService;
@@ -27,6 +30,8 @@ import java.util.List;
 public class AdminController {
 
     private final InquiryRepository inquiryRepo;
+    private final InquiryService inquiryService;
+    private final NoticeService noticeService;
     private final ReportService reportService;
     private final WithdrawalService withdrawalService;
     private final ChatroomReportService chatroomReportService;
@@ -72,13 +77,7 @@ public class AdminController {
 
     @PostMapping("/inquiries/{id}/reply")
     public String submitReply(@PathVariable Long id, @RequestParam String answer) {
-        Inquiry inquiry = inquiryRepo.findById(id).orElseThrow();
-        inquiry.setAnswer(answer);
-        inquiry.setAnsweredAt(LocalDateTime.now());
-        inquiry.setIsAnswered(true);
-        inquiryRepo.save(inquiry);
-
-        // 이메일 전송 기능은 선택 옵션 (추후 추가)
+        inquiryService.answerInquiry(id, answer);
         return "redirect:/admin/inquiries";
     }
     // 3. 출금 정산
@@ -140,4 +139,26 @@ public class AdminController {
         chatroomReportService.processDeposit(reportId, receiverId, amount, rentalStatus);
         return "redirect:/admin/report/" + reportId;
     }
+
+    // 공지사항 목록 (관리자/유저 겸용)
+    @GetMapping("/notices")
+    public String adminNoticeList(Model model) {
+        List<Notice> notices = noticeService.findAll();
+        model.addAttribute("notices", notices);
+        return "admin/notice-list"; // 관리자 전용 공지사항 목록
+    }
+
+    // 공지사항 작성 폼
+    @GetMapping("/notices/new")
+    public String noticeForm() {
+        return "admin/notice-form";
+    }
+
+    // 공지사항 등록 처리
+    @PostMapping("/notices/new")
+    public String submitNotice(@RequestParam String title, @RequestParam String content) {
+        noticeService.createNotice(title, content);
+        return "redirect:/admin/notices";
+    }
+
 }
