@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.product;
 
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.SubCategory;

@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.user;
 
 import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.domain.Report;
@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -163,6 +162,30 @@ public class AdminController {
     @PostMapping("/notices/new")
     public String submitNotice(@RequestParam String title, @RequestParam String content) {
         noticeService.createNotice(title, content);
+        return "redirect:/admin/notices";
+    }
+
+    // 공지 수정 폼
+    @GetMapping("/notices/edit/{id}")
+    public String editNoticeForm(@PathVariable Long id, Model model) {
+        Notice notice = noticeService.findById(id);
+        model.addAttribute("notice", notice);
+        return "admin/notice-edit-form"; // 수정 폼 템플릿
+    }
+
+    // 공지 수정 처리
+    @PostMapping("/notices/edit/{id}")
+    public String editNoticeSubmit(@PathVariable Long id,
+                                   @RequestParam String title,
+                                   @RequestParam String content) {
+        noticeService.updateNotice(id, title, content);
+        return "redirect:/admin/notices";
+    }
+
+    // 공지 삭제
+    @PostMapping("/notices/delete/{id}")
+    public String deleteNotice(@PathVariable Long id) {
+        noticeService.deleteNotice(id);
         return "redirect:/admin/notices";
     }
 

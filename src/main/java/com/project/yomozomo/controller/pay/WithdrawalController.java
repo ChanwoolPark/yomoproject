@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.pay;
 
 import com.project.yomozomo.domain.UserWallet;
 import com.project.yomozomo.domain.WithdrawalRequest;

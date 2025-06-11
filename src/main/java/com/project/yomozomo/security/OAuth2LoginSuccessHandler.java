@@ -1,5 +1,6 @@
 package com.project.yomozomo.security;
 
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -40,6 +42,26 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             request.getSession().setAttribute("oauthUser", oauthUser);
             response.sendRedirect("/signup");
         } else {
+            Optional<User> userOpt = userService.getUserByEmail(email);
+
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+
+                // 1. 탈퇴 상태 복구(30일 이내라면)
+                if ("Y".equals(user.getIsWithdrawn())) {
+                    userService.recoverWithdrawn(user);
+                }
+
+                // 2. 로그인 날짜 갱신
+                userService.updateLastLoginDate(user);
+
+                // 3. 휴면 상태 체크 → 휴면이면 안내페이지
+                if ("Y".equals(user.getIsDormant())) {
+                    response.sendRedirect("/dormant-info");
+                    return;
+                }
+            }
+
             response.sendRedirect("/");
         }
     }

@@ -1,5 +1,5 @@
 // src/main/java/com/project/yomozomo/controller/ChatRoomAdminController.java
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.chat;
 
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.service.ChatService;

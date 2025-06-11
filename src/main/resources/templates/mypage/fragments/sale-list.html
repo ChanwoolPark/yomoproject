@@ -50,6 +50,10 @@
     <h3 class="list-title">판매중인 목록</h3>
     <div th:if="${#lists.isEmpty(sellingList)}" class="card-box">상품이 없습니다.</div>
     <div th:each="item : ${sellingList}" class="card-box">
+        <img th:src="${item.thumbnailUrl} != null ? ${item.thumbnailUrl} : '/images/no-image.png'"
+             alt="상품 이미지"
+             style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; margin-right: 18px;"
+             onerror="this.onerror=null;this.src='/images/no-image.png';">
         <!-- 상품명 클릭 시 상세로 이동 -->
         <a th:href="@{'/product/' + ${item.productId}}" class="card-link" th:text="${item.title}"></a>
         <span style="margin-left: 10px; color: #888;" th:text="'(' + ${item.status} + ')'"></span>

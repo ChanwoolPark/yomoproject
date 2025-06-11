@@ -1,5 +1,5 @@
 // src/main/java/com/project/yomozomo/controller/ChatRoomApiController.java (이름 변경 추천)
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.chat;
 
 import com.project.yomozomo.repository.RentalRepository;
 import com.project.yomozomo.repository.UserRepository;

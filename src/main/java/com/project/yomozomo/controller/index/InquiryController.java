@@ -1,24 +1,21 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.index;
 
 import com.project.yomozomo.dto.InquiryForm;
 import com.project.yomozomo.entity.Inquiry;
 import com.project.yomozomo.entity.Notice;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.InquiryRepository;
-import com.project.yomozomo.repository.NoticeRepository;
 import com.project.yomozomo.repository.UserRepository;
 import com.project.yomozomo.service.MailService;
 import com.project.yomozomo.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Controller
 @RequestMapping("/support")

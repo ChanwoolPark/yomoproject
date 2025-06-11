@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.user;
 
 import com.project.yomozomo.dto.UserEditForm;
 import com.project.yomozomo.entity.User;
