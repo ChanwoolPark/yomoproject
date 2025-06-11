@@ -692,6 +692,62 @@
         #modalCancelBtn:hover {
             background-color: #5a6268;
         }
+        /* =================================================== */
+        /* 이미지 팝업 모달 스타일 (새로 추가) */
+        /* =================================================== */
+        .image-modal-overlay {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* 어두운 배경 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* 모든 콘텐츠 위에 표시되도록 높은 z-index 설정 */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .image-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .image-modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex; /* 이미지를 중앙에 배치하기 위함 */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* 이미지가 잘리지 않고 전체 보이도록 */
+            border-radius: 5px; /* 약간의 모서리 둥글게 */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); /* 밝은 그림자 */
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 2001; /* 팝업 이미지 위로 */
+            transition: color 0.2s;
+        }
+
+        .image-modal-close:hover {
+            color: #bbb;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
@@ -711,7 +767,19 @@
             <span class="sender-name"
                   th:if="${(message.senderId != currentUserId) and (message.messageType != 'JOIN') and (message.messageType != 'LEAVE')}"
                   th:text="${message.senderName}"></span>
-            <div class="message-content" th:text="${message.message}">
+
+            <div class="message-content">
+                <th:block th:if="${message.messageType == 'IMAGE'}">
+                    <img th:src="${message.imgUrl}"
+                         th:alt="${message.message ?: '전송된 이미지'}"
+                         style="max-width: 250px; height: auto; border-radius: 8px;">
+                    <span th:if="${message.message != null and message.message.trim() != ''}"
+                          th:text="${message.message}"
+                          style="display: block; margin-top: 5px;"></span>
+                </th:block>
+                <th:block th:unless="${message.messageType == 'IMAGE'}">
+                    <th:block th:text="${message.message}"></th:block>
+                </th:block>
             </div>
             <div class="message-time" th:text="${message.sendTime != null ? #temporals.format(message.sendTime, 'HH:mm') : '시간 없음'}">
             </div>
@@ -792,8 +860,13 @@
             <button id="modalConfirmBtn">확인</button>
             <button id="modalCancelBtn">취소</button>
         </div>
-    </div>
-</div>
+        <div id="imageModal" class="image-modal-overlay">
+            <div class="image-modal-content">
+                <span class="image-modal-close material-icons">&times;</span>
+                <img id="modalImage" src="" alt="확대된 이미지">
+            </div>
+        </div>
+
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 <script th:inline="javascript">
@@ -842,7 +915,7 @@
 
 
     // =========================================================
-    // 2. 헬퍼 함수 정의
+    // 2. 하단 패널 함수 정의
     // =========================================================
 
     function showPanelSection(sectionToShow, hideButtons = false) {
@@ -901,11 +974,14 @@
     function showMessage(message) {
         if (!chatMessagesDiv) return;
 
+        // 디버깅을 위한 로그 추가
+        console.log('showMessage 함수 호출됨:', message);
+
         const messageWrapper = document.createElement('div');
-        messageWrapper.classList.add('message-wrapper'); // message-wrapper 클래스는 기본적으로 붙어있어야 합니다.
+        messageWrapper.classList.add('message-wrapper');
 
         // 메시지 타입에 따른 클래스 추가
-        if (message.messageType === 'JOIN' || message.messageType === 'LEAVE') {
+        if (message.messageType === 'JOIN' || message.messageType === 'LEAVE' || message.messageType === 'SYSTEM') {
             messageWrapper.classList.add('event-message');
         } else if (message.senderId === currentUserId) {
             messageWrapper.classList.add('sent');
@@ -914,9 +990,9 @@
         }
 
         // 발신자 이름 표시 로직 (상대방 메시지에만 표시)
-        // 'TALK', 'TEXT' 등의 일반 메시지 타입일 때만 발신자 이름 표시
-        const generalMessageTypes = ['TALK', 'TEXT', 'IMAGE', 'PAYMENT_REQUEST', 'PRICE_ADJUSTMENT_REQUEST', 'TRADE_COMPLETE_REQUEST'];
-        if (message.senderId !== currentUserId && generalMessageTypes.includes(message.messageType) && message.senderName) {
+        // JOIN, LEAVE, SYSTEM 메시지 타입이 아니고, senderId가 현재 사용자가 아니며, senderName이 존재할 때
+        const noSenderNameTypes = ['JOIN', 'LEAVE', 'SYSTEM'];
+        if (message.senderId !== currentUserId && !noSenderNameTypes.includes(message.messageType) && message.senderName) {
             const senderNameElement = document.createElement('span');
             senderNameElement.classList.add('sender-name');
             senderNameElement.textContent = message.senderName;
@@ -926,42 +1002,102 @@
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
 
-        // 메시지 내용 또는 이미지 표시
-        console.log('Message type:', message.messageType, 'Image URL:', message.imgUrl, 'Message Text:', message.message);//error
-        if (message.messageType === 'IMAGE' && message.imgUrl) {
-            const imgElement = document.createElement('img');
-            imgElement.src = message.imgUrl;
-            imgElement.alt = "전송된 이미지";
-            imgElement.style.maxWidth = '100%';
-            imgElement.style.height = 'auto';
-            imgElement.style.borderRadius = '8px';
-            messageContent.appendChild(imgElement);
-        } else {
+        // ⭐⭐⭐ 핵심 수정 부분: messageType에 따른 콘텐츠 렌더링 로직 ⭐⭐⭐
+        // console.log('showMessage - Message type:', message.messageType, 'Image URL:', message.imgUrl, 'Message Text:', message.message); // 이 로그는 이미 위에서 찍고 있으므로 주석 처리
+
+        if (message.messageType === 'IMAGE') {
+            if (message.imgUrl) {
+                const imgElement = document.createElement('img');
+                imgElement.src = message.imgUrl;
+                imgElement.alt = message.message || "전송된 이미지"; // alt 텍스트는 message 필드를 사용하거나 기본값
+                imgElement.style.maxWidth = '250px';
+                imgElement.style.height = 'auto';
+                imgElement.style.borderRadius = '8px';
+                messageContent.appendChild(imgElement);
+
+                // 이미지를 보냈을 때 추가 텍스트(예: "이미지를 보냈습니다.")가 있다면 함께 표시
+                if (message.message && message.message.trim() !== '') {
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = message.message;
+                    textSpan.style.display = 'block'; // 줄 바꿈
+                    textSpan.style.marginTop = '5px'; // 이미지와의 간격
+                    messageContent.appendChild(textSpan);
+                }
+            } else {
+                // imgUrl이 없는 경우
+                messageContent.textContent = message.message || "이미지 로드 실패: URL 없음";
+                console.warn("WARNING: IMAGE 타입 메시지에 imgUrl이 없습니다.", message);
+            }
+        } else if (message.messageType === 'JOIN' || message.messageType === 'LEAVE' || message.messageType === 'SYSTEM') {
+            // JOIN, LEAVE, SYSTEM 메시지는 messageContent의 텍스트로 처리
+            messageContent.textContent = message.message;
+            messageContent.style.backgroundColor = '#e0e0e0'; // 배경색
+            messageContent.style.color = '#555'; // 글자색
+            messageContent.style.padding = '5px 12px'; // 패딩
+            messageContent.style.borderRadius = '15px'; // 둥근 모서리
+            messageContent.style.boxShadow = 'none'; // 그림자 제거
+            messageContent.style.display = 'inline-block'; // 내용에 맞게 너비 조절
+            // 꼬리 제거
+            messageContent.style.setProperty('--pseudo-element-display', 'none'); // CSS 변수를 사용하거나 직접 after pseudo-element를 제거하는 로직 필요
+        } else { // TALK, TEXT, PAYMENT_REQUEST, PRICE_ADJUSTMENT_REQUEST, TRADE_COMPLETE 등 일반 텍스트 메시지
             messageContent.textContent = message.message;
         }
-
-
-        const messageTime = document.createElement('div');
-        messageTime.classList.add('message-time');
-        // sendTime이 ISO 문자열 형식으로 오면 파싱하여 HH:mm 형식으로 표시
-        if (message.sendTime) {
-            const date = new Date(message.sendTime);
-            messageTime.textContent = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-        } else {
-            messageTime.textContent = '시간 없음';
-        }
+        // ⭐⭐⭐ 핵심 수정 부분 끝 ⭐⭐⭐
 
         messageWrapper.appendChild(messageContent);
-        messageWrapper.appendChild(messageTime);
+
+        const messageTimeDiv = document.createElement('div');
+        messageTimeDiv.classList.add('message-time');
+        // sendTime이 존재하면 서버에서 받은 시간을 포맷하여 표시, 없으면 현재 시간
+        if (message.sendTime) {
+            // sendTime이 문자열("yyyy-MM-ddTHH:mm:ss")일 경우 Date 객체로 변환
+            const sentDate = new Date(message.sendTime);
+            if (!isNaN(sentDate)) { // 유효한 날짜인지 확인
+                messageTimeDiv.textContent = sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                messageTimeDiv.textContent = '시간 오류';
+                console.warn("Invalid sendTime format:", message.sendTime);
+            }
+        } else {
+            messageTimeDiv.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        messageWrapper.appendChild(messageTimeDiv);
+
         chatMessagesDiv.appendChild(messageWrapper);
         scrollToBottom();
     }
 
+    // 스크롤을 최하단으로 이동하는 함수
     function scrollToBottom() {
-        if (chatMessagesDiv) {
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-        }
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    }// 이미지 팝업 관련 함수
+    function openImageModal(imageUrl) {
+        modalImage.src = imageUrl;
+        imageModal.classList.add('active');
+        // 모달이 열리면 뒤 배경 스크롤 방지
+        document.body.style.overflow = 'hidden';
     }
+
+    function closeImageModal() {
+        imageModal.classList.remove('active');
+        // 모달이 닫히면 뒤 배경 스크롤 허용
+        document.body.style.overflow = '';
+    }
+
+    // ⭐⭐ 새로 추가: 모든 이미지에 클릭 리스너 추가 함수 ⭐⭐
+    // 이 함수는 초기 로딩 시와 새 메시지가 추가될 때마다 호출됩니다.
+    function addClickListenersToImages() {
+        const images = chatMessagesDiv.querySelectorAll('.message-content img');
+        images.forEach(img => {
+            // 이미 onclick이 설정되어 있으면 다시 추가하지 않음 (중복 방지)
+            if (!img.dataset.hasClickListener) {
+                img.onclick = () => openImageModal(img.src);
+                img.style.cursor = 'pointer';
+                img.dataset.hasClickListener = 'true'; // 플래그 설정
+            }
+        });
+    }
+
     // =========================================================
     // 확장 패널 관련 함수
     // =========================================================
