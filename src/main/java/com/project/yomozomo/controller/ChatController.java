@@ -64,11 +64,11 @@ public class ChatController {
 
         try {
             // ⭐⭐⭐ 변경된 부분 시작 ⭐⭐⭐
-            // 지정된 절대 경로를 사용하여 파일 저장 경로 설정
-            // C:\Users\\soldesk\\IdeaProjects\\yomoproject\\uploads\\image-chatimage
+            // 현재 이미지들이 실제로 저장되고 있는 경로로 설정합니다.
+            // C:\Users\soldesk\IdeaProjects\yomoproject\\uploaded-files\image-chatimage
             String baseUploadDir = "C:" + File.separator + "Users" + File.separator + "soldesk" +
                     File.separator + "IdeaProjects" + File.separator + "yomoproject" +
-                    File.separator + "uploads"; // 'uploads'까지의 기본 경로
+                    File.separator + "uploaded-files"; // 'uploaded-files'까지의 기본 경로
 
             String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString(); // 'image-chatimage' 하위 폴더
 
@@ -90,8 +90,8 @@ public class ChatController {
             Files.copy(file.getInputStream(), dest.toPath());
 
             // ⭐ 클라이언트에서 접근할 수 있는 파일의 웹 URL 생성 ⭐
-            // WebConfig에서 /uploaded-chat-images/** 로 매핑할 것이므로, 이에 맞춰 URL 생성
-            String fileUrl = "/uploaded-chat-images/" + storedFileName; // 예: /uploaded-chat-images/12345_abc.jpg
+            // WebConfig에서 '/uploaded-chat-images/**' 로 매핑할 것이므로, 이에 맞춰 URL 생성
+            String fileUrl = "/uploaded-chat-images/" + storedFileName;
             // ⭐⭐⭐ 변경된 부분 끝 ⭐⭐⭐
 
             log.info("파일 업로드 성공: originalFileName={}, storedFileName={}, roomId={}, senderId={}, fileUrl={}",
@@ -113,7 +113,6 @@ public class ChatController {
                     .body(Map.of("error", "파일 업로드 처리 중 오류가 발생했습니다."));
         }
     }
-
 
     // ====================================================================================
     // ⭐⭐ 웹소켓 메시지 처리 로직 ⭐⭐

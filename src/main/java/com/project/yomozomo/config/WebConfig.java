@@ -9,15 +9,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 기존 /uploaded-files/** 매핑은 그대로 두거나 제거할 수 있습니다.
-        // 현재 이미지 파일은 이 경로에 저장되지 않으므로, 이 매핑이 필요 없으면 제거해도 됩니다.
-        registry.addResourceHandler("/uploaded-files/**")
-                .addResourceLocations("file:///C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files/");
+        // 기존 /uploaded-files/** 매핑은 그대로 두거나 제거.
 
-        // ⭐⭐⭐ 새로 추가되는 이미지 파일 매핑 ⭐⭐⭐
-        // ChatController에서 파일을 저장할 경로와 동일하게 설정합니다.
-        // C:/Users/soldesk/IdeaProjects/yomoproject/uploads/image-chatimage
-        registry.addResourceHandler("/uploaded-chat-images/**") // 웹에서 접근할 URL 경로
-                .addResourceLocations("file:///C:/Users/soldesk/IdeaProjects/yomoproject/uploads/image-chatimage/"); // 실제 파일 시스템 경로
+        // ⭐⭐⭐ 이 부분이 가장 중요합니다. ⭐⭐⭐
+        // ChatController에서 파일을 저장하는 실제 경로와 정확히 일치해야 합니다.
+        // 그리고 'file:///' 접두사 다음에 오는 경로 구분자는 항상 슬래시 '/'여야 합니다.
+        registry.addResourceHandler("/uploaded-chat-images/**") // 클라이언트가 요청할 웹 URL (예: http://localhost:8080/uploaded-chat-images/my_image.png)
+                .addResourceLocations("file:///C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files/image-chatimage/"); // 실제 파일 시스템 경로 (슬래시 주의!)
     }
 }
