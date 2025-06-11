@@ -6,7 +6,7 @@
 <body>
 <div th:if="${successMsg}" style="color:green;">
     <h3 th:text="${successMsg}"></h3>
-    <a th:href="@{/withdrawal/history}">내 출금내역 보기</a>
+    <a th:href="@{/mypage(menu='history')}">내 출금내역 보기</a>
 </div>
 <div th:if="${errorMsg}" style="color:red;">
     <h3 th:text="${errorMsg}"></h3>

@@ -54,15 +54,5 @@ public class WithdrawalController {
         }
     }
 
-    // 3. 본인 출금 요청 내역
-    @GetMapping("/history")
-    public String withdrawalHistory(Model model, Principal principal) {
-        String username = principal.getName();
-        User user = userRepository.findByUsername(username).orElseThrow();
-        List<WithdrawalRequest> list = withdrawalService.getUserRequests(user.getId());
-        model.addAttribute("requests", list);
-        return "withdrawal/history";
-    }
-
 
 }

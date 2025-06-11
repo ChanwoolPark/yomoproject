@@ -2,10 +2,7 @@ package com.project.yomozomo.controller.user;
 
 import com.project.yomozomo.domain.*;
 import com.project.yomozomo.dto.ProductDto;
-import com.project.yomozomo.entity.CustomUserDetails;
-import com.project.yomozomo.entity.Inquiry;
-import com.project.yomozomo.entity.Review;
-import com.project.yomozomo.entity.User;
+import com.project.yomozomo.entity.*;
 import com.project.yomozomo.repository.*;
 import com.project.yomozomo.service.*;
 import jakarta.transaction.Transactional;
@@ -38,7 +35,9 @@ public class MyPageController {
     private final WalletService walletService;
     private final CategoryService categoryService;
     private final InquiryRepository inquiryRepository;
-
+    private final ChatroomReportService chatroomReportService;
+    private final WithdrawalService withdrawalService;
+    private final UserRepository userRepository;
 
 
     @GetMapping({"/", ""})
@@ -124,13 +123,15 @@ public class MyPageController {
 
         return "mypage/fragments/profile";
     }
+    @GetMapping("/history")
+    public String withdrawalHistory(Model model, Principal principal) {
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        List<WithdrawalRequest> list = withdrawalService.getUserRequests(user.getId());
+        model.addAttribute("requests", list);
+        return "mypage/fragments/history";
+    }
 
-
-
-    /*@GetMapping("/yomopay")
-    public String yomopayFragment() {
-        return "mypage/fragments/yomopay";
-    }*/
 
     // ────── 대여 관리 ──────
     @GetMapping("/rent-list")
@@ -180,7 +181,10 @@ public class MyPageController {
 
 
     @GetMapping("/cancel-list")
-    public String cancelListFragment() {
+    public String cancelListFragment(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        List<ChatroomReport> myReports = chatroomReportService.getReportsByReporter(userId);
+        model.addAttribute("myReports", myReports);
         return "mypage/fragments/cancel-list";
     }
 
