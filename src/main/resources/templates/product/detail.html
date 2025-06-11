@@ -178,7 +178,7 @@
 
     <!-- 하단: 수정, 삭제, 목록 (판매자만 수정/삭제 가능) -->
     <div class="buttons" style="display: flex; gap: 10px;">
-  <span th:if="${userId == product.seller.id}">
+  <span th:if="${userId == product.seller.id or userRole == 'ADMIN'}">
     <a th:href="@{'/product/edit/' + ${product.productId}}">
       <button type="button">글 수정</button>
     </a>
@@ -193,7 +193,6 @@
         <button type="button">목록</button>
       </a>
     </div>
-
 
     <!--사용자의 다른 판매글-->
     <div class="seller-other-products">

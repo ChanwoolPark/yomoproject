@@ -45,9 +45,12 @@ public class ProductController {
 
         Long userId = null;
         User user = null;
+        String role = null;
         if (!"anonymousUser".equals(username)) {
             user = userService.findByUsername(username);
             userId = user.getId();
+            role = user.getRole();
+
             productDetailService.saveViewedProduct(userId, productId);
         }
 
@@ -85,6 +88,7 @@ public class ProductController {
         model.addAttribute("categories", categories);
         model.addAttribute("productReviews", productReviews); // ✅ 추가!
         model.addAttribute("isLoggedIn", user != null);
+        model.addAttribute("userRole", role);
 
         return "product/detail";
     }
