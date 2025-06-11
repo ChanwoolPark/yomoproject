@@ -6,27 +6,35 @@ import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.RentalService;
 import com.project.yomozomo.service.UserService;
-
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import com.project.yomozomo.entity.ChatMessage;
 import com.project.yomozomo.dto.ChatMessageDTO;
-
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional; // 이 Optional 임포트는 이제 더 이상 사용되지 않을 수도 있습니다. (getChatRoomById 등에서 Optional을 사용하는 경우 제외)
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import org.springframework.web.bind.annotation.PostMapping; // 추가
+import org.springframework.web.bind.annotation.RequestParam; // 추가
+import org.springframework.web.bind.annotation.ResponseBody; // 추가: JSON 응답을 위해
+import org.springframework.web.multipart.MultipartFile; // 추가: 파일 업로드 위해
+import org.springframework.http.ResponseEntity; // 추가
+import org.springframework.http.HttpStatus; // 추가
+import java.io.File; // 추가
+import java.io.IOException; // 추가
+import java.util.HashMap; // 추가
+import java.util.Map; // 추가
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +50,60 @@ public class ChatController {
     private final RentalService rentalService;
     private final SimpMessagingTemplate messagingTemplate;
 
+    @PostMapping("/uploadFile") // 클라이언트의 fetch 요청 URL과 일치해야 합니다.
+    @ResponseBody // 이 어노테이션이 있어야 메서드 반환 값이 HTTP 응답 본문으로 직접 전송됩니다 (JSON 형태).
+    public ResponseEntity<Map<String, String>> uploadFile(
+            @RequestParam("file") MultipartFile file, // 클라이언트에서 formData.append('file', file)로 보낸 것을 받음
+            @RequestParam("roomId") Long roomId,      // 클라이언트에서 formData.append('roomId', chatRoomId)로 보낸 것을 받음
+            @RequestParam("senderId") Long senderId) { // 클라이언트에서 formData.append('senderId', currentUserId)로 보낸 것을 받음
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "업로드할 파일이 없습니다."));
+        }
+
+        try {
+            // ⭐ 파일 저장 경로 설정 변경 ⭐
+            // 프로젝트 루트 디렉토리(예: C:\YomoProject) 아래에 'uploads' 폴더를 생성하고 그 안에 저장합니다.
+            // 이렇게 하면 JAR 파일 내부에 쓰려는 시도 자체가 없어집니다.
+            // File.separator는 OS에 따라 '\' 또는 '/'를 자동으로 붙여줍니다.
+            String baseUploadDir = "uploads"; // 프로젝트 루트에 uploads 폴더를 생성한다고 가정
+            String specificUploadDir = baseUploadDir + File.separator + "image-chatimage";
+
+            File uploadPath = new File(specificUploadDir); // 'uploads/image-chatimage'
+            if (!uploadPath.exists()) {
+                Files.createDirectories(Paths.get(specificUploadDir)); // 상위 디렉토리까지 모두 생성
+                log.info("업로드 디렉토리 생성 완료: {}", specificUploadDir);
+            }
+
+            String originalFileName = file.getOriginalFilename();
+            String storedFileName = System.currentTimeMillis() + "_" + originalFileName;
+            File dest = new File(uploadPath, storedFileName);
+            file.transferTo(dest); // 파일 저장
+
+            // ⭐ 클라이언트에서 접근할 수 있는 파일의 웹 URL 생성 ⭐
+            // WebConfig에서 '/uploads/**'를 매핑할 것이므로 URL도 이에 맞춰 변경합니다.
+            String fileUrl = "/" + baseUploadDir + "/image-chatimage/" + storedFileName; // 예: /uploads/image-chatimage/12345_abc.jpg
+
+            log.info("파일 업로드 성공: originalFileName={}, storedFileName={}, roomId={}, senderId={}, fileUrl={}",
+                    originalFileName, storedFileName, roomId, senderId, fileUrl);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("imgUrl", fileUrl);
+            response.put("messageType", "IMAGE");
+
+            return ResponseEntity.ok(response);
+
+        } catch (IOException e) {
+            log.error("파일 업로드 중 IO 오류 발생: {}", e.getMessage(), e);
+            // 디렉토리 생성 또는 파일 쓰기 실패 시 사용자에게 알림
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "파일 저장 중 오류가 발생했습니다. 저장 경로를 확인하거나 권한을 부여하십시오."));
+        } catch (Exception e) {
+            log.error("파일 업로드 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "파일 업로드 처리 중 오류가 발생했습니다."));
+        }
+    }
     // ====================================================================================
     // ⭐⭐ 웹소켓 메시지 처리 로직 ⭐⭐
     // 이 두 메서드의 주석을 해제해야 합니다.
