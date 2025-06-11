@@ -16,19 +16,16 @@ import org.springframework.context.annotation.Bean;
 @EnableWebSocketMessageBroker // STOMP 기반 WebSocket 메시징 활성화
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic");
-        // 이 줄은 이미 주석 처리되어 있어야 합니다.
-        // config.setApplicationDestinationPrefixes("/app");
-    }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // ⭐ 이 부분을 수정합니다. ⭐
-        registry.addEndpoint("/ws")
-                .withSockJS();
-        // .setAllowedOrigins("*") 부분을 제거합니다. (위 오류 때문에)
+        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/sub", "/topic");
+        config.setApplicationDestinationPrefixes("/app");
     }
 
     // ⭐ CORS 필터를 빈(Bean)으로 추가하여 웹소켓 CORS 문제를 해결합니다. ⭐

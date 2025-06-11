@@ -2,22 +2,18 @@
 package com.project.yomozomo.config;
 
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
-import com.project.yomozomo.service.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +45,7 @@ public class SecurityConfig {
                                 "/charge", "/oauth2/**", "/signup", "/category",
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
                                 "/find-id","/find-password.html",
-                                "/test-login", "/uploads/**"
+                                "/test-login", "/uploads/**", "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

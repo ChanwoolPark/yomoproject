@@ -800,466 +800,121 @@
 
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-<script th:inline="javascript">
+
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 <script th:inline="javascript">
-    // =========================================================
-    // 1. 전역 변수 선언 (Thymeleaf 주입 값 포함)
-    // =========================================================
+    // ========== 전역 변수 ==========
     let stompClient = null;
     let chatMessagesDiv = null;
     let messageInput = null;
     let sendMessageBtn = null;
-    let togglePanelBtn = null;
-    let closePanelBtn = null;
+    let currentUserId = /*[[${currentUserId}]]*/ 0;
+    let chatRoomId = /*[[${chatRoomId}]]*/ 0;
+    let currentUserName = /*[[${currentUserName}]]*/ '나';
 
-    let expandedPanel = null;
-
-    let defaultPanelContent = null;
-    let paymentPanelContent = null;
-    let processPaymentBtn = null;
-    let paymentAmountInput = null;
-
-    let priceAdjustmentPanelContent = null;
-    let newPriceInputPanel = null;
-    let confirmPricePanelBtn = null;
-    let cancelPricePanelBtn = null;
-
-    let paymentGoBtn = null;
-    let innerButton2 = null; // '금액 조절' 버튼 (기존 innerButton2 유지)
-    let tradeCompleteBtn = null;
-    let innerButtonsGrid = null;
-    let reportButton = null;
-    let attachmentButton = null;
-    let fileInput = null;
-
-    // ⭐⭐ 새로 추가: 첫 연결 여부를 추적하는 플래그 ⭐⭐
-    let hasSentJoinMessage = false;
-
-    // Thymeleaf에서 주입될 값 (전역 변수)
-    const chatRoomId = /*[[${chatRoomId}]]*/ 0;
-    const currentUserId = /*[[${currentUserId}]]*/ 0;
-    const currentRentalId = /*[[${currentRentalId}]]*/ '';
-    const chatPartnerId = /*[[${chatPartnerId}]]*/ 0;
-    const currentUserName = /*[[${currentUserName}]]*/ '나'; // 사용자 이름
-    const chatPartnerNickname = /*[[${chatPartnerNickname}]]*/ '상대방'; // 상대방 닉네임
-    const currentUserProfileImage = /*[[${currentUserProfileImage}]]*/ '/images/default_profile.png';
-    const chatPartnerProfileImage = /*[[${chatPartnerProfileImage}]]*/ '/images/default_profile.png';
-
-
-    // =========================================================
-    // 2. 헬퍼 함수 정의
-    // =========================================================
-
-    function showPanelSection(sectionToShow, hideButtons = false) {
-        const sections = document.querySelectorAll('.panel-content-section');
-        sections.forEach(section => {
-            section.classList.remove('active-panel-section');
-        });
-
-        if (sectionToShow) {
-            sectionToShow.classList.add('active-panel-section');
-        }
-
-        if (innerButtonsGrid) {
-            if (hideButtons) {
-                innerButtonsGrid.style.display = 'none';
-            } else {
-                innerButtonsGrid.style.display = 'grid'; // 다시 그리드 표시
-            }
-        }
-    }
-
-    function toggleExpandedPanel(show) {
-        const isPanelCurrentlyActive = expandedPanel.classList.contains('active');
-        const shouldShow = show === undefined ? !isPanelCurrentlyActive : show;
-
-        if (shouldShow) {
-            expandedPanel.classList.add('active');
-            // 패널 열릴 때 기본 콘텐츠로 돌아가고 버튼 보이게 설정
-            showPanelSection(defaultPanelContent, false);
-        } else {
-            expandedPanel.classList.remove('active');
-            // 패널 닫을 때 모든 섹션 숨김 (CSS transition 때문에 바로 display: none 하지 않음)
-            showPanelSection(null);
-            if (innerButtonsGrid) {
-                innerButtonsGrid.style.display = 'grid'; // 혹시 숨겨져 있었다면 다시 보이게
-            }
-        }
-
-        // 메시지 영역의 하단 패딩을 동적으로 조절하여 메시지가 입력창/패널에 가려지지 않도록 함
-        updateChatMessagesPadding();
-    }
-
-    function updateChatMessagesPadding() {
-        if (chatMessagesDiv && messageInput && expandedPanel) {
-            const inputAreaHeight = document.querySelector('.chat-input-area').offsetHeight; // 전체 입력 영역 높이
-            const panelActiveHeight = expandedPanel.classList.contains('active') ? expandedPanel.clientHeight : 0;
-            const totalBottomPadding = inputAreaHeight + panelActiveHeight + 15; // 15px는 여유 공간
-
-            chatMessagesDiv.style.paddingBottom = `${totalBottomPadding}px`;
-            scrollToBottom();
-        }
-    }
-
-
-    // 채팅 메시지를 화면에 표시하는 함수
+    // ========== 메시지 표시 ==========
     function showMessage(message) {
         if (!chatMessagesDiv) return;
 
-        const messageWrapper = document.createElement('div');
-        messageWrapper.classList.add('message-wrapper');
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('message-wrapper');
 
-        // 발신자 이름 표시를 위한 요소 (본인 메시지가 아니고 시스템/이벤트 메시지가 아닐 때만)
-        const nonSystemOrEventTypes = ['TALK', 'TEXT', 'IMAGE', 'PAYMENT_REQUEST', 'PRICE_ADJUSTMENT_REQUEST', 'TRADE_COMPLETE_REQUEST'];
-        if (message.senderId !== currentUserId && nonSystemOrEventTypes.includes(message.messageType) && message.senderName) {
-            const senderNameElement = document.createElement('span');
-            senderNameElement.classList.add('sender-name');
-            senderNameElement.textContent = message.senderName;
-            messageWrapper.appendChild(senderNameElement);
+        const content = document.createElement('div');
+        content.classList.add('message-content');
+        content.textContent = message.message;
+
+        if (message.senderId === currentUserId) {
+            wrapper.classList.add('my-message');
+        } else {
+            wrapper.classList.add('received');
         }
 
-        const messageContent = document.createElement('div');
-        messageContent.classList.add('message-content');
-
-        const messageTime = document.createElement('div');
-        messageTime.classList.add('message-time');
-
-        // ⭐ DTO 필드명인 `messageType`과 `message`를 사용합니다. ⭐
-        // 이 부분은 기존 로직과 동일하게 유지됩니다.
-        if (message.messageType === 'JOIN' || message.messageType === 'LEAVE' || message.messageType === 'SYSTEM') { // SYSTEM 추가
-            messageWrapper.classList.add('event-message');
-            let displayMessage = message.message;
-            if (!displayMessage || displayMessage.trim() === '') {
-                const senderDisplayName = message.senderName || (message.senderId === currentUserId ? '나' : chatPartnerNickname); // 상대방 닉네임 사용
-                if (message.messageType === 'JOIN') {
-                    displayMessage = `${senderDisplayName}님이 입장하셨습니다.`;
-                } else if (message.messageType === 'LEAVE') {
-                    displayMessage = `${senderDisplayName}님이 퇴장하셨습니다.`;
-                } else if (message.messageType === 'SYSTEM') {
-                    displayMessage = `[시스템 메시지]: ${message.message}`;
-                }
-            }
-            messageContent.textContent = displayMessage;
-        } else { // 일반 TALK 메시지 및 기타 요청 메시지
-            messageContent.textContent = message.message;
-            if (message.senderId === currentUserId) {
-                messageWrapper.classList.add('my-message'); // ⭐ 변경: 'sent' 대신 'my-message' 사용 ⭐
-            } else {
-                messageWrapper.classList.add('received');
-            }
-        }
-
-        // sendTime이 유효한지 확인하고 포맷팅
+        const time = document.createElement('div');
+        time.classList.add('message-time');
         if (message.sendTime) {
             const date = new Date(message.sendTime);
-            if (!isNaN(date.getTime())) {
-                const hours = date.getHours().toString().padStart(2, '0');
-                const minutes = date.getMinutes().toString().padStart(2, '0');
-                messageTime.textContent = `${hours}:${minutes}`;
-            } else {
-                messageTime.textContent = '시간 오류';
-                console.warn('Invalid sendTime received:', message.sendTime);
-            }
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            time.textContent = `${hours}:${minutes}`;
         } else {
-            messageTime.textContent = '시간 정보 없음';
-            console.warn('sendTime field is missing in message:', message);
+            time.textContent = '시간 없음';
         }
 
-        // ⭐⭐ 메시지 정렬을 위해 messageWrapper에 직접 클래스를 추가 (CSS와 매칭) ⭐⭐
-        // 이 부분은 messageWrapper.classList.add('my-message') 또는 ('received')로 충분하므로 제거
-        // 위에서 이미 클래스를 추가했음
-        // if (message.senderId === currentUserId && message.messageType !== 'JOIN' && message.messageType !== 'LEAVE' && message.messageType !== 'SYSTEM') {
-        //     messageWrapper.classList.add('my-message-row');
-        // } else if (message.senderId !== currentUserId && message.messageType !== 'JOIN' && message.messageType !== 'LEAVE' && message.messageType !== 'SYSTEM') {
-        //     messageWrapper.classList.add('other-message-row');
-        // }
-
-
-        messageWrapper.appendChild(messageContent);
-        messageWrapper.appendChild(messageTime);
-        chatMessagesDiv.appendChild(messageWrapper);
-
-        scrollToBottom();
+        wrapper.appendChild(content);
+        wrapper.appendChild(time);
+        chatMessagesDiv.appendChild(wrapper);
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
     }
 
-
-    // 메시지 전송 함수 (하나로 통일)
-    function sendMessage(customMessageContent = null, messageType = 'TALK') {
-        let messageContent;
-
-        if (customMessageContent !== null) {
-            messageContent = customMessageContent.trim();
-        } else {
-            if (!messageInput) {
-                console.error('messageInput이 초기화되지 않았습니다.');
-                return;
-            }
-            messageContent = messageInput.value.trim();
+    // ========== 메시지 전송 ==========
+    function sendMessage() {
+        if (!messageInput || !stompClient || !stompClient.connected) {
+            console.error('STOMP 클라이언트가 연결되지 않았습니다.');
+            alert('채팅 서버에 연결할 수 없습니다.');
+            return;
         }
 
-        if (messageContent) {
-            const chatMessage = {
-                chatRoomId: chatRoomId,
-                senderId: currentUserId,
-                message: messageContent,
-                messageType: messageType,
-                // sendTime은 서버에서 생성하도록 가정 (클라이언트에서 보내지 않음)
-            };
+        const content = messageInput.value.trim();
+        if (!content) return;
 
-            // 자신이 보낸 메시지로 즉시 화면에 추가
-            // 클라이언트에서 시간을 생성하여 미리 보여주려면 여기에 sendTime 필드를 추가합니다.
-            const clientSideMessage = {
-                chatRoomId: chatRoomId,
-                senderId: currentUserId,
-                message: messageContent,
-                messageType: messageType,
-                sendTime: new Date().toISOString(), // 클라이언트 시간으로 미리 표시
-                senderName: currentUserName, // 현재 사용자 이름 추가
-            };
-            showMessage(clientSideMessage);
+        const chatMessage = {
+            chatRoomId: chatRoomId,
+            senderId: currentUserId,
+            message: content,
+            messageType: 'TALK'
+        };
 
+        stompClient.send(`/app/pub/chat.sendMessage/${chatRoomId}`, {}, JSON.stringify(chatMessage));
 
-            if (stompClient && stompClient.connected) {
-                stompClient.send(`/pub/chat.sendMessage/${chatRoomId}`, {}, JSON.stringify(chatMessage));
-                if (customMessageContent === null) {
-                    messageInput.value = ''; // 일반 메시지일 경우에만 입력창 비움
-                }
-            } else {
-                console.error('STOMP 클라이언트가 연결되지 않았습니다.');
-                alert('채팅 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
-            }
-        }
+        // 즉시 클라이언트에 표시
+        showMessage({
+            senderId: currentUserId,
+            message: content,
+            messageType: 'TALK',
+            sendTime: new Date().toISOString()
+        });
+
+        messageInput.value = '';
     }
 
-    // 웹소켓 연결 함수 (하나로 통일)
-    function connect() {
+    // ========== WebSocket 연결 ==========
+    function connectWebSocket() {
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
 
-        stompClient.connect({}, function(frame) {
-            console.log('Connected: ' + frame);
-
-            // ⭐⭐ JOIN 메시지 전송 조건 추가 ⭐⭐
-            if (!hasSentJoinMessage) {
-                // 채팅방 입장 메시지 서버로 전송
-                const joinMessage = {
-                    chatRoomId: chatRoomId,
-                    senderId: currentUserId,
-                    message: '님이 입장하셨습니다.', // 이 메시지는 서버에서 재가공될 수 있음
-                    messageType: 'JOIN',
-                    // sendTime은 서버에서 생성하도록 가정
-                };
-                stompClient.send(`/pub/chat.addUser/${chatRoomId}`, {}, JSON.stringify(joinMessage));
-                console.log(`STOMP: 입장 메시지 전송 - /pub/chat.addUser/${chatRoomId}`);
-                hasSentJoinMessage = true; // 플래그를 true로 설정하여 다시 보내지 않도록
-            }
-
-
-            // 특정 채팅방의 메시지를 구독
-            stompClient.subscribe(`/sub/chat/room/${chatRoomId}`, function(messageOutput) {
-                showMessage(JSON.parse(messageOutput.body));
-            }, { id: 'chatRoomSubscription' }); // 구독 ID 추가
-
-        }, function(error) {
-            console.error('STOMP 연결 오류:', error);
-            // 오류 발생 시 사용자에게 알림
-            alert('채팅 서버 연결에 실패했습니다. 페이지를 새로고침하거나 잠시 후 다시 시도해주세요.');
-            // 연결 실패 시 플래그 초기화 (재시도 시 다시 보낼 수 있도록)
-            hasSentJoinMessage = false;
+        stompClient.connect({}, function (frame) {
+            console.log('✅ WebSocket 연결 성공:', frame);
+            stompClient.subscribe(`/sub/chat/room/${chatRoomId}`, function (message) {
+                const parsed = JSON.parse(message.body);
+                console.log('📩 수신 메시지:', parsed);
+                showMessage(parsed);
+            });
+        }, function (error) {
+            console.error('❌ WebSocket 연결 실패:', error);
+            alert('채팅 서버에 연결할 수 없습니다.');
         });
     }
 
-    // 메시지 영역을 가장 아래로 스크롤하는 함수
-    function scrollToBottom() {
-        if (chatMessagesDiv) {
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-        }
-    }
-
-
-    // =========================================================
-    // 3. DOMContentLoaded 이벤트 리스너 (페이지 로드 후 실행)
-    // =========================================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM 요소 초기화 (전역 변수에 할당)
+    // ========== 초기화 ==========
+    document.addEventListener('DOMContentLoaded', function () {
         chatMessagesDiv = document.getElementById('chatMessages');
         messageInput = document.getElementById('messageInput');
         sendMessageBtn = document.getElementById('sendMessageBtn');
-        togglePanelBtn = document.getElementById('togglePanelBtn');
-        closePanelBtn = document.getElementById('closePanelBtn');
 
-        expandedPanel = document.querySelector('.expanded-panel');
-
-        defaultPanelContent = document.getElementById('defaultPanelContent');
-        paymentPanelContent = document.getElementById('paymentPanelContent');
-        priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
-
-        processPaymentBtn = document.getElementById('processPaymentBtn');
-        paymentAmountInput = document.getElementById('paymentAmount');
-        newPriceInputPanel = document.getElementById('newPriceInputPanel');
-        confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
-        cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn');
-
-        paymentGoBtn = document.getElementById('paymentGoBtn');
-        innerButton2 = document.getElementById('innerButton2');
-        tradeCompleteBtn = document.getElementById('tradeCompleteBtn');
-
-        innerButtonsGrid = document.querySelector('.inner-buttons-grid');
-
-        attachmentButton = document.getElementById('button2');
-        reportButton = document.getElementById('button4');
-        fileInput = document.getElementById('fileInput');
-
-        // 초기 로드 시 패널 초기화 (CSS와 연동)
-        // expanded-panel에 'active' 클래스가 기본으로 붙어있으면 제거
-        if (expandedPanel) {
-            expandedPanel.classList.remove('active');
+        if (!messageInput || !sendMessageBtn || !chatMessagesDiv) {
+            console.error('필수 DOM 요소가 없습니다.');
+            return;
         }
 
-        // 초기 로드 시 기본 패널 콘텐츠가 활성화되도록 설정 (updateChatMessagesPadding 때문에 toggleExpandedPanel 호출)
-        toggleExpandedPanel(false); // 패널 닫힌 상태로 시작 (패딩 초기화 포함)
-
-        // 이벤트 리스너 등록
-        if (sendMessageBtn) {
-            sendMessageBtn.addEventListener('click', () => sendMessage());
-        }
-        if (messageInput) {
-            messageInput.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-        }
-        if (togglePanelBtn) {
-            togglePanelBtn.addEventListener('click', () => toggleExpandedPanel());
-        }
-        if (closePanelBtn) {
-            closePanelBtn.addEventListener('click', () => toggleExpandedPanel(false));
-        }
-
-        // 확장 패널 내 버튼 이벤트 리스너
-        if (paymentGoBtn) {
-            paymentGoBtn.addEventListener('click', () => {
-                showPanelSection(paymentPanelContent, true); // 버튼 숨김
-            });
-        }
-        if (innerButton2) {
-            innerButton2.addEventListener('click', () => {
-                showPanelSection(priceAdjustmentPanelContent, true); // 버튼 숨김
-            });
-        }
-
-        // ⭐ 거래 완료 버튼 클릭 시 이벤트 리스너 ⭐
-        if (tradeCompleteBtn) {
-            tradeCompleteBtn.addEventListener('click', () => {
-                if (confirm("거래를 완료하시겠습니까? 완료하시면 채팅방이 비활성화될 수 있습니다.")) {
-                    sendMessage("[거래 완료 요청] 거래 완료를 요청합니다.", "TRADE_COMPLETE_REQUEST");
-                    alert("거래 완료 요청이 전송되었습니다.");
-                    toggleExpandedPanel(false); // 패널 닫기
-                    // 여기에 거래 완료 후 채팅방 비활성화 등의 추가 로직 구현 (예: 특정 URL로 리다이렉트)
-                }
-            });
-        }
-
-        // 결재 진행 버튼
-        if (processPaymentBtn) {
-            processPaymentBtn.addEventListener('click', () => {
-                const amount = paymentAmountInput.value;
-                if (amount && amount > 0) {
-                    sendMessage(`[결재 요청] ${amount}원`, "PAYMENT_REQUEST"); // MessageType 추가
-                    alert(`${amount}원 결재를 진행합니다.`);
-                    toggleExpandedPanel(false);
-                } else {
-                    alert("올바른 금액을 입력해주세요.");
-                }
-            });
-        }
-
-        // 금액 조절 확인/취소 버튼 (패널 내)
-        if (confirmPricePanelBtn) {
-            confirmPricePanelBtn.addEventListener('click', () => {
-                const newPrice = newPriceInputPanel.value;
-                if (newPrice && newPrice >= 0) {
-                    sendMessage(`[금액 조절] ${newPrice}원으로 변경 요청`, "PRICE_ADJUSTMENT_REQUEST"); // MessageType 추가
-                    alert(`금액이 ${newPrice}원으로 조절 요청되었습니다.`);
-                    toggleExpandedPanel(false);
-                } else {
-                    alert("유효한 금액을 입력해주세요.");
-                }
-            });
-        }
-
-        if (cancelPricePanelBtn) {
-            cancelPricePanelBtn.addEventListener('click', () => {
-                toggleExpandedPanel(false); // 취소 시 패널 닫기
-            });
-        }
-
-        // 파일 첨부 버튼 (📎)
-        if (attachmentButton) {
-            attachmentButton.addEventListener('click', () => {
-                fileInput.click(); // 숨겨진 파일 입력창 클릭
-            });
-        }
-
-        // 파일 선택 시 (아직 파일 전송 로직 없음)
-        if (fileInput) {
-            fileInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    alert(`파일이 선택되었습니다: ${file.name} (아직 전송 기능은 구현되지 않았습니다.)`);
-                }
-            });
-        }
-
-        // 신고/문의 버튼 (🚨)
-        if (reportButton) {
-            reportButton.addEventListener('click', () => {
-                window.location.href = '/chat/reportForm'; // 신고/문의 폼으로 리다이렉트
-            });
-        }
-
-        // STOMP 연결 시작
-        connect();
-
-        // 초기 로드 시 기존 메시지 로드 (Thymeleaf 모델에서 받은 데이터 사용)
-        const initialChatHistory = /*[[${chatHistory}]]*/ [];
-        initialChatHistory.forEach(message => showMessage(message));
-        scrollToBottom(); // 모든 메시지 로드 후 스크롤
-        updateChatMessagesPadding(); // 초기 패딩 설정 (필요하다면)
-    });
-
-    // 참고: modal 관련 JavaScript는 HTML의 modal-overlay와 modal-content에 연결되어 있지만
-    // 현재 코드에서는 이 부분이 DOMContentLoaded 밖에 정의되어 있고, 명시적으로 사용되지 않음.
-    // (이 모달은 확장 패널 내부의 '금액 조절' 기능과 별개로 작동합니다.)
-    const priceAdjustmentModal = document.getElementById('priceAdjustmentModal');
-    const newPriceInputModal = document.getElementById('newPriceInput');
-    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
-    const modalCancelBtn = document.getElementById('modalCancelBtn');
-    const modalCloseBtn = document.getElementById('modalCloseBtn');
-
-    if (modalCloseBtn) {
-        modalCloseBtn.addEventListener('click', () => priceAdjustmentModal.classList.remove('active'));
-    }
-    if (modalCancelBtn) {
-        modalCancelBtn.addEventListener('click', () => priceAdjustmentModal.classList.remove('active'));
-    }
-    if (modalConfirmBtn) {
-        modalConfirmBtn.addEventListener('click', () => {
-            const newPrice = newPriceInputModal.value;
-            if (newPrice && newPrice >= 0) {
-                sendMessage(`[모달 금액 조절] ${newPrice}원으로 변경 요청`, "PRICE_ADJUSTMENT_REQUEST");
-                alert(`모달을 통한 금액이 ${newPrice}원으로 조절 요청되었습니다.`);
-                priceAdjustmentModal.classList.remove('active');
-            } else {
-                alert("유효한 금액을 입력해주세요.");
-            }
+        sendMessageBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
         });
-    }
 
+        connectWebSocket();
+    });
 </script>
-</script>
+
 </body>
 </html>
