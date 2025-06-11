@@ -64,12 +64,13 @@ public class ChatController {
 
         try {
             // ⭐⭐⭐ 변경된 부분 시작 ⭐⭐⭐
-            // 프로젝트 루트 디렉토리를 기준으로 `src/main/resources/static` 경로를 찾습니다.
-            String projectRoot = System.getProperty("user.dir");
-            String staticResourcesPath = Paths.get(projectRoot, "src", "main", "resources", "static").toString();
+            // 지정된 절대 경로를 사용하여 파일 저장 경로 설정
+            // C:/Users/soldesk/IdeaProjects/yomoproject/uploads/image-chatimage
+            String baseUploadDir = "C:" + File.separator + "Users" + File.separator + "soldesk" +
+                    File.separator + "IdeaProjects" + File.separator + "yomoproject" +
+                    File.separator + "uploads"; // 'uploads'까지의 기본 경로
 
-            // static/images/chatimage 폴더를 업로드 경로로 지정
-            String specificUploadPathStr = Paths.get(staticResourcesPath, "images", "chatimage").toString();
+            String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString(); // 'image-chatimage' 하위 폴더
 
             File uploadPath = new File(specificUploadPathStr);
 
@@ -89,8 +90,8 @@ public class ChatController {
             Files.copy(file.getInputStream(), dest.toPath());
 
             // ⭐ 클라이언트에서 접근할 수 있는 파일의 웹 URL 생성 ⭐
-            // `static` 폴더 아래에 있으므로, `/images/chatimage/` 경로로 바로 접근 가능합니다.
-            String fileUrl = "/images/chatimage/" + storedFileName; // 예: /images/chatimage/12345_abc.jpg
+            // WebConfig에서 /uploaded-chat-images/** 로 매핑할 것이므로, 이에 맞춰 URL 생성
+            String fileUrl = "/uploaded-chat-images/" + storedFileName; // 예: /uploaded-chat-images/12345_abc.jpg
             // ⭐⭐⭐ 변경된 부분 끝 ⭐⭐⭐
 
             log.info("파일 업로드 성공: originalFileName={}, storedFileName={}, roomId={}, senderId={}, fileUrl={}",
@@ -107,7 +108,7 @@ public class ChatController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "파일 저장 중 오류가 발생했습니다. 저장 경로를 확인하거나 권한을 부여하십시오."));
         } catch (Exception e) {
-            log.error("파일 업로드 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            log.error("파일 업로드 중 예기치 않은 오류 발생: {}. 상세 스택 트레이스:", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "파일 업로드 처리 중 오류가 발생했습니다."));
         }
