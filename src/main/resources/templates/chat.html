@@ -961,7 +961,65 @@
             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
     }
+    // =========================================================
+    // 확장 패널 관련 함수
+    // =========================================================
 
+    function toggleExpandedPanel(forceClose = undefined) {
+        const isActive = expandedPanel.classList.contains('active');
+        if (forceClose !== undefined) {
+            if (forceClose) {
+                expandedPanel.classList.add('active');
+                innerButtonsGrid.style.display = 'grid'; // 패널 열릴 때 그리드 버튼 보이도록
+                showPanelSection(defaultPanelContent, false); // 기본 패널 콘텐츠 보여주기 (그리드 버튼 숨김 안 함)
+            } else {
+                expandedPanel.classList.remove('active');
+                // 패널 닫을 때는 모든 패널 콘텐츠 숨기기
+                document.querySelectorAll('.panel-content-section').forEach(section => {
+                    section.classList.remove('active-panel-section');
+                });
+                innerButtonsGrid.style.display = 'grid'; // 그리드 버튼 다시 보이게
+                // 닫을 때 스크롤 위치 조정
+                chatMessagesDiv.style.paddingBottom = '15px';
+            }
+        } else {
+            // forceClose가 undefined일 때 (토글)
+            if (isActive) {
+                expandedPanel.classList.remove('active');
+                // 패널 닫을 때는 모든 패널 콘텐츠 숨기기
+                document.querySelectorAll('.panel-content-section').forEach(section => {
+                    section.classList.remove('active-panel-section');
+                });
+                innerButtonsGrid.style.display = 'grid'; // 그리드 버튼 다시 보이게
+                chatMessagesDiv.style.paddingBottom = '15px'; // 닫을 때 패딩 원래대로
+            } else {
+                expandedPanel.classList.add('active');
+                innerButtonsGrid.style.display = 'grid'; // 패널 열릴 때 그리드 버튼 보이도록
+                showPanelSection(defaultPanelContent, false); // 기본 패널 콘텐츠 보여주기 (그리드 버튼 숨김 안 함)
+                // 열릴 때 메시지 영역 패딩 조정
+                chatMessagesDiv.style.paddingBottom = 'calc(15px + (70vh / 2))'; // 패널 높이만큼 패딩 추가
+                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // 맨 아래로 스크롤
+            }
+        }
+    }
+
+
+    function showPanelSection(sectionToShow, hideGridButtons = false) {
+        // 모든 패널 콘텐츠 섹션을 비활성화
+        document.querySelectorAll('.panel-content-section').forEach(section => {
+            section.classList.remove('active-panel-section');
+        });
+
+        // 선택된 섹션 활성화
+        sectionToShow.classList.add('active-panel-section');
+
+        // 그리드 버튼 숨김 여부
+        if (hideGridButtons) {
+            innerButtonsGrid.style.display = 'none';
+        } else {
+            innerButtonsGrid.style.display = 'grid';
+        }
+    }
     // =========================================================
     // 3. 웹소켓 연결 및 구독
     // =========================================================
@@ -1052,66 +1110,183 @@
 
 
     // =========================================================
-    // 5. 이벤트 리스너 및 초기화
+    // 확장 패널 관련 함수
     // =========================================================
+
+    function toggleExpandedPanel(forceClose = undefined) {
+        const isActive = expandedPanel.classList.contains('active');
+        if (forceClose !== undefined) {
+            if (forceClose) {
+                expandedPanel.classList.add('active');
+                innerButtonsGrid.style.display = 'grid'; // 패널 열릴 때 그리드 버튼 보이도록
+                showPanelSection(defaultPanelContent, false); // 기본 패널 콘텐츠 보여주기 (그리드 버튼 숨김 안 함)
+            } else {
+                expandedPanel.classList.remove('active');
+                // 패널 닫을 때는 모든 패널 콘텐츠 숨기기
+                document.querySelectorAll('.panel-content-section').forEach(section => {
+                    section.classList.remove('active-panel-section');
+                });
+                innerButtonsGrid.style.display = 'grid'; // 그리드 버튼 다시 보이게
+                // 닫을 때 스크롤 위치 조정
+                chatMessagesDiv.style.paddingBottom = '15px';
+            }
+        } else {
+            // forceClose가 undefined일 때 (토글)
+            if (isActive) {
+                expandedPanel.classList.remove('active');
+                // 패널 닫을 때는 모든 패널 콘텐츠 숨기기
+                document.querySelectorAll('.panel-content-section').forEach(section => {
+                    section.classList.remove('active-panel-section');
+                });
+                innerButtonsGrid.style.display = 'grid'; // 그리드 버튼 다시 보이게
+                chatMessagesDiv.style.paddingBottom = '15px'; // 닫을 때 패딩 원래대로
+            } else {
+                expandedPanel.classList.add('active');
+                innerButtonsGrid.style.display = 'grid'; // 패널 열릴 때 그리드 버튼 보이도록
+                showPanelSection(defaultPanelContent, false); // 기본 패널 콘텐츠 보여주기 (그리드 버튼 숨김 안 함)
+                // 열릴 때 메시지 영역 패딩 조정
+                chatMessagesDiv.style.paddingBottom = 'calc(15px + (70vh / 2))'; // 패널 높이만큼 패딩 추가
+                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // 맨 아래로 스크롤
+            }
+        }
+    }
+
+
+    function showPanelSection(sectionToShow, hideGridButtons = false) {
+        // 모든 패널 콘텐츠 섹션을 비활성화
+        document.querySelectorAll('.panel-content-section').forEach(section => {
+            section.classList.remove('active-panel-section');
+        });
+
+        // 선택된 섹션 활성화
+        sectionToShow.classList.add('active-panel-section');
+
+        // 그리드 버튼 숨김 여부
+        if (hideGridButtons) {
+            innerButtonsGrid.style.display = 'none';
+        } else {
+            innerButtonsGrid.style.display = 'grid';
+        }
+    }
+    // =========================================================
+    // 5. 이벤트 리스너 등록
+    // =========================================================
+
     document.addEventListener('DOMContentLoaded', () => {
+        console.log("--- DEBUG: DOMContentLoaded 이벤트 발생! ---");
+
+        // 모든 요소들을 여기서 초기화
         chatMessagesDiv = document.getElementById('chatMessages');
         messageInput = document.getElementById('messageInput');
         sendMessageBtn = document.getElementById('sendMessageBtn');
         togglePanelBtn = document.getElementById('togglePanelBtn');
         closePanelBtn = document.getElementById('closePanelBtn');
-        expandedPanel = document.getElementById('expandedPanel');
-        paymentGoBtn = document.getElementById('paymentGoBtn');
-        innerButton2 = document.getElementById('innerButton2'); // 금액 조절 버튼
-        tradeCompleteBtn = document.getElementById('tradeCompleteBtn');
-        innerButtonsGrid = document.querySelector('.inner-buttons-grid');
-
+        expandedPanel = document.querySelector('.expanded-panel'); // .expanded-panel로 수정
         defaultPanelContent = document.getElementById('defaultPanelContent');
         paymentPanelContent = document.getElementById('paymentPanelContent');
         processPaymentBtn = document.getElementById('processPaymentBtn');
         paymentAmountInput = document.getElementById('paymentAmount');
-
         priceAdjustmentPanelContent = document.getElementById('priceAdjustmentPanelContent');
         newPriceInputPanel = document.getElementById('newPriceInputPanel');
         confirmPricePanelBtn = document.getElementById('confirmPricePanelBtn');
         cancelPricePanelBtn = document.getElementById('cancelPricePanelBtn');
-
+        paymentGoBtn = document.getElementById('paymentGoBtn');
+        innerButton2 = document.getElementById('innerButton2');
+        tradeCompleteBtn = document.getElementById('tradeCompleteBtn');
+        innerButtonsGrid = document.querySelector('.inner-buttons-grid');
+        reportButton = document.getElementById('reportButton');
         attachmentButton = document.getElementById('attachmentButton');
         fileInput = document.getElementById('fileInput');
-        reportButton = document.getElementById('reportButton');
+
+        // 모달 관련 요소 초기화 (확장 패널과 별개로 작동)
+        priceAdjustmentModal = document.getElementById('priceAdjustmentModal');
+        modalCloseBtn = document.getElementById('modalCloseBtn');
+        newPriceInput = document.getElementById('newPriceInput');
+        modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        modalCancelBtn = document.getElementById('modalCancelBtn');
 
 
-        // 입력 필드에서 Enter 키 누를 시 메시지 전송
+        // ⭐⭐ 각 변수가 제대로 할당되었는지 확인 (매우 중요!) ⭐⭐
+        console.log("DEBUG: togglePanelBtn:", togglePanelBtn);
+        console.log("DEBUG: expandedPanel:", expandedPanel);
+        console.log("DEBUG: defaultPanelContent:", defaultPanelContent);
+        console.log("DEBUG: innerButtonsGrid:", innerButtonsGrid);
+        console.log("DEBUG: paymentGoBtn:", paymentGoBtn);
+
+
+        // 1. 메시지 전송 관련
+        if (sendMessageBtn) {
+            sendMessageBtn.addEventListener('click', () => {
+                sendMessage(messageInput.value, "TALK");
+                messageInput.value = '';
+            });
+        }
+
         if (messageInput) {
             messageInput.addEventListener('keypress', (event) => {
                 if (event.key === 'Enter') {
-                    sendMessage(messageInput.value); // 입력 필드 값으로 sendMessage 호출
+                    event.preventDefault(); // 기본 Enter 동작(줄바꿈) 방지
+                    sendMessageBtn.click();
                 }
             });
         }
 
-        // 전송 버튼 클릭 이벤트
-        if (sendMessageBtn) {
-            sendMessageBtn.addEventListener('click', () => sendMessage(messageInput.value)); // 기본 'TALK' 타입으로 전송
-        }
-
-        // 확장 패널 토글 버튼
+        // 2. 확장 패널 토글 버튼 (+ 버튼)
         if (togglePanelBtn) {
-            togglePanelBtn.addEventListener('click', () => toggleExpandedPanel());
+            togglePanelBtn.addEventListener('click', () => {
+                console.log("--- DEBUG: '거래 메뉴' 버튼 클릭됨! ---");
+                toggleExpandedPanel();
+            });
+        } else {
+            console.error("--- DEBUG: 'togglePanelBtn' 요소를 찾을 수 없습니다! ---");
         }
 
-        // 확장 패널 닫기 버튼
+        // 3. 확장 패널 닫기 버튼 (X 버튼)
         if (closePanelBtn) {
-            closePanelBtn.addEventListener('click', () => toggleExpandedPanel(false));
+            closePanelBtn.addEventListener('click', () => {
+                console.log("--- DEBUG: '패널 닫기' 버튼 클릭됨! ---");
+                toggleExpandedPanel(false); // 명시적으로 패널 닫기
+            });
         }
 
-        // '결제하기' 버튼 클릭 시
+        // 4. 확장 패널 내부 버튼들
+        // '결제하기' 버튼 클릭 시 (paymentGoBtn)
         if (paymentGoBtn) {
             paymentGoBtn.addEventListener('click', () => {
+                console.log("--- DEBUG: '결제하기' 버튼 클릭됨! ---");
                 showPanelSection(paymentPanelContent, true); // 결제 패널 표시, 그리드 버튼 숨김
             });
         }
 
+        // '금액 조절' 버튼 클릭 시 (확장 패널 내부)
+        if (innerButton2) {
+            innerButton2.addEventListener('click', () => {
+                console.log("--- DEBUG: '금액 조절' 버튼 클릭됨! ---");
+                // showPanelSection(priceAdjustmentPanelContent, true); // 금액 조절 패널 표시, 그리드 버튼 숨김 (모달로 변경)
+                priceAdjustmentModal.classList.add('active'); // 모달 활성화
+            });
+        }
+
+        // '거래 완료' 버튼 클릭 시 (tradeCompleteBtn)
+        if (tradeCompleteBtn) {
+            tradeCompleteBtn.addEventListener('click', () => {
+                console.log("--- DEBUG: '거래완료' 버튼 클릭됨! ---");
+                if (confirm('거래를 완료하시겠습니까? 완료 후에는 채팅을 할 수 없습니다.')) {
+                    sendMessage("거래를 완료했습니다.", "TRADE_COMPLETE"); // 메시지 전송
+                    alert("거래가 완료되었습니다.");
+                    toggleExpandedPanel(false); // 패널 닫기
+                    // 거래 완료 후 추가 로직 (예: 채팅방 비활성화 등)
+                    messageInput.disabled = true;
+                    sendMessageBtn.disabled = true;
+                    togglePanelBtn.disabled = true;
+                    attachmentButton.disabled = true;
+                    document.getElementById('button3').disabled = true; // 달력 버튼도 비활성화
+                    reportButton.disabled = true; // 신고 버튼도 비활성화
+                }
+            });
+        }
+
+        // 5. 패널 내부 콘텐츠 버튼들
         // '결제 진행' 버튼 클릭 시 (paymentPanelContent 내)
         if (processPaymentBtn) {
             processPaymentBtn.addEventListener('click', () => {
@@ -1120,16 +1295,10 @@
                     sendMessage(`[결제 요청] ${amount}원`, "PAYMENT_REQUEST"); // 메세지 타입 추가
                     alert(`결제 요청: ${amount}원`);
                     toggleExpandedPanel(false); // 패널 닫기
+                    showPanelSection(defaultPanelContent, false); // 기본 패널로 돌아오기
                 } else {
                     alert('유효한 결제 금액을 입력해주세요.');
                 }
-            });
-        }
-
-        // '금액 조절' 버튼 클릭 시 (확장 패널 내부)
-        if (innerButton2) {
-            innerButton2.addEventListener('click', () => {
-                showPanelSection(priceAdjustmentPanelContent, true); // 금액 조절 패널 표시, 그리드 버튼 숨김
             });
         }
 
@@ -1141,8 +1310,9 @@
                     sendMessage(`[금액 조절 요청] ${newPrice}원으로 변경`, "PRICE_ADJUSTMENT_REQUEST"); // 메세지 타입 추가
                     alert(`금액 조절 요청: ${newPrice}원`);
                     toggleExpandedPanel(false); // 패널 닫기
+                    showPanelSection(defaultPanelContent, false); // 기본 패널로 돌아오기
                 } else {
-                    alert("유효한 금액을 입력해주세요.");
+                    alert('유효한 금액을 입력해주세요.');
                 }
             });
         }
@@ -1150,112 +1320,60 @@
         // '금액 조절' 취소 버튼 클릭 시 (priceAdjustmentPanelContent 내)
         if (cancelPricePanelBtn) {
             cancelPricePanelBtn.addEventListener('click', () => {
-                showPanelSection(defaultPanelContent, false); // 기본 패널로 돌아가기
+                console.log("--- DEBUG: '금액 조절' 취소 버튼 클릭됨! ---");
+                showPanelSection(defaultPanelContent, false); // 기본 패널로 돌아오기
             });
         }
 
-        // '거래완료' 버튼 클릭 시
-        if (tradeCompleteBtn) {
-            tradeCompleteBtn.addEventListener('click', () => {
-                const confirmTrade = confirm("거래를 완료하시겠습니까? 거래 완료는 되돌릴 수 없습니다.");
-                if (confirmTrade) {
-                    sendMessage("[거래 완료 요청]", "TRADE_COMPLETE_REQUEST");
-                    alert("거래 완료 요청을 보냈습니다.");
-                    toggleExpandedPanel(false); // 패널 닫기
-                }
-            });
-        }
-
-        // 파일 첨부 버튼 (📎)
+        // 6. 파일 첨부 버튼
         if (attachmentButton) {
             attachmentButton.addEventListener('click', () => {
-                fileInput.click(); // 숨겨진 파일 입력창 클릭
+                fileInput.click(); // 숨겨진 파일 입력 필드 클릭
             });
         }
 
-        // 파일 선택 시 (파일 전송 로직 추가)
         if (fileInput) {
-            fileInput.addEventListener('change', async (event) => { // async 추가
+            fileInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (file) {
-                    alert(`파일이 선택되었습니다: ${file.name} (전송을 시도합니다.)`);
-                    try {
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        formData.append('chatRoomId', chatRoomId); // 룸 ID도 함께 전송
-                        formData.append('senderId', currentUserId); // 발신자 ID도 함께 전송
-
-                        // 서버의 이미지 업로드 API 엔드포인트로 변경하세요.
-                        const response = await fetch('/api/chat/image-upload', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        if (response.ok) {
-                            const result = await response.json();
-                            const imageUrl = result.imgUrl; // 서버에서 반환된 이미지 URL
-                            sendMessage(imageUrl, "IMAGE"); // 이미지 URL을 메시지로 전송, 타입은 IMAGE
-                            alert('파일 전송 성공 및 메시지 발송!');
-                        } else {
-                            const errorText = await response.text();
-                            alert(`파일 전송 실패: ${errorText}`);
-                            console.error('파일 업로드 실패:', response.status, errorText);
-                        }
-                    } catch (error) {
-                        console.error('파일 업로드 중 오류 발생:', error);
-                        alert('파일 업로드 중 예상치 못한 오류가 발생했습니다.');
-                    } finally {
-                        fileInput.value = ''; // 동일 파일 재선택 가능하도록 input 초기화
-                    }
+                    // 여기에 파일 업로드 로직 추가
+                    // 현재는 간단히 메시지로 알림
+                    sendMessage(`[파일 첨부] ${file.name} (${(file.size / 1024).toFixed(2)} KB)`, "FILE_ATTACHMENT");
+                    alert(`파일이 첨부되었습니다: ${file.name}`);
+                    // 파일 업로드 후 파일 입력 필드 초기화 (동일 파일 재선택 가능하게)
+                    fileInput.value = '';
                 }
             });
         }
 
-        // 신고/문의 버튼 (🚨)
-        if (reportButton) {
-            reportButton.addEventListener('click', () => {
-                window.location.href = '/chat/reportForm'; // 신고/문의 폼으로 리다이렉트
+        // 7. 금액 조절 모달 관련 이벤트 리스너 (확장 패널과 별개)
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', () => {
+                priceAdjustmentModal.classList.remove('active');
+            });
+        }
+        if (modalCancelBtn) {
+            modalCancelBtn.addEventListener('click', () => {
+                priceAdjustmentModal.classList.remove('active');
+            });
+        }
+        if (modalConfirmBtn) {
+            modalConfirmBtn.addEventListener('click', () => {
+                const newPrice = newPriceInput.value;
+                if (newPrice && newPrice >= 0) {
+                    sendMessage(`[금액 조절 요청] ${newPrice}원으로 변경`, "PRICE_ADJUSTMENT_REQUEST");
+                    alert(`금액 조절 요청: ${newPrice}원`);
+                    priceAdjustmentModal.classList.remove('active');
+                } else {
+                    alert('유효한 금액을 입력해주세요.');
+                }
             });
         }
 
-        // STOMP 연결 시작
+
+        // 초기 연결 시도
         connect();
-
-        // 초기 로드 시 기존 메시지 로드 (Thymeleaf 모델에서 받은 데이터 사용)
-        const initialChatHistory = /*[[${chatHistory}]]*/ [];
-        initialChatHistory.forEach(message => showMessage(message));
-        scrollToBottom(); // 모든 메시지 로드 후 스크롤
-        updateChatMessagesPadding(); // 초기 패딩 설정 (필요하다면)
     });
-
-    // 참고: modal 관련 JavaScript는 HTML의 modal-overlay와 modal-content에 연결되어 있지만
-    // 현재 코드에서는 이 부분이 DOMContentLoaded 밖에 정의되어 있고, 명시적으로 사용되지 않음.
-    // (이 모달은 확장 패널 내부의 '금액 조절' 기능과 별개로 작동합니다.)
-    const priceAdjustmentModal = document.getElementById('priceAdjustmentModal');
-    const newPriceInputModal = document.getElementById('newPriceInput');
-    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
-    const modalCancelBtn = document.getElementById('modalCancelBtn');
-    const modalCloseBtn = document.getElementById('modalCloseBtn');
-
-    if (modalCloseBtn) {
-        modalCloseBtn.addEventListener('click', () => priceAdjustmentModal.classList.remove('active'));
-    }
-    if (modalCancelBtn) {
-        modalCancelBtn.addEventListener('click', () => priceAdjustmentModal.classList.remove('active'));
-    }
-    if (modalConfirmBtn) {
-        modalConfirmBtn.addEventListener('click', () => {
-            const newPrice = newPriceInputModal.value;
-            if (newPrice && newPrice >= 0) {
-                // 모달을 통한 금액 조절 요청은 일반 메시지가 아니므로 messageType을 'PRICE_ADJUSTMENT_REQUEST' 등으로 지정
-                sendMessage(`[모달 금액 조절] ${newPrice}원으로 변경 요청`, "PRICE_ADJUSTMENT_REQUEST"); // 메세지 타입 추가
-                alert(`모달을 통한 금액이 ${newPrice}원으로 조절 요청되었습니다.`);
-                priceAdjustmentModal.classList.remove('active');
-            } else {
-                alert("유효한 금액을 입력해주세요.");
-            }
-        });
-    }
 
 </script>
 </body>
