@@ -824,7 +824,8 @@
         content.classList.add('message-content');
         content.textContent = message.message;
 
-        if (message.senderId === currentUserId) {
+        // ✅ 정확한 비교 (숫자 변환 보장)
+        if (Number(message.senderId) === Number(currentUserId)) {
             wrapper.classList.add('my-message');
         } else {
             wrapper.classList.add('received');
@@ -865,15 +866,10 @@
             messageType: 'TALK'
         };
 
-        stompClient.send(`/app/pub/chat.sendMessage/${chatRoomId}`, {}, JSON.stringify(chatMessage));
+        console.log('📤 보내는 메시지:', chatMessage);
 
-        // 즉시 클라이언트에 표시
-        showMessage({
-            senderId: currentUserId,
-            message: content,
-            messageType: 'TALK',
-            sendTime: new Date().toISOString()
-        });
+        // ✅ 정확한 경로로 전송 ("/pub/..."만!)
+        stompClient.send(`/app/pub/chat.sendMessage/${chatRoomId}`, {}, JSON.stringify(chatMessage));
 
         messageInput.value = '';
     }
@@ -885,6 +881,8 @@
 
         stompClient.connect({}, function (frame) {
             console.log('✅ WebSocket 연결 성공:', frame);
+
+            // 구독 설정
             stompClient.subscribe(`/sub/chat/room/${chatRoomId}`, function (message) {
                 const parsed = JSON.parse(message.body);
                 console.log('📩 수신 메시지:', parsed);
