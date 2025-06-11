@@ -124,6 +124,8 @@ public class PaymentController {
         boolean success = paymentService.processPayment(userId, rentalId);
         System.out.println("[DEBUG] payment result = " + success);
 
+
+
         if (success) {
             return "redirect:/payment/paysuccess";
         } else {
@@ -132,12 +134,41 @@ public class PaymentController {
         }
     }
     @PostMapping("/complete/{rentalId}")
-    public ResponseEntity<?> completeRental(@PathVariable Long rentalId) {
+    public ResponseEntity<?> completeRental(@PathVariable Long rentalId, Principal principal) {
         try {
+            // 로그인 확인
+            if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
+
+            // rental 조회
+            Rental rental = rentalRepository.findById(rentalId).orElse(null);
+            if (rental == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("거래 없음");
+
+            System.out.println("상태값: [" + rental.getStatus() + "]");
+            System.out.println("길이: " + rental.getStatus().length());
+            System.out.println("equals: " + "대여중".equals(rental.getStatus()));
+            System.out.println("trim equals: " + "대여중".equals(rental.getStatus().trim()));
+
+            // 결제 완료 여부(결제 컬럼이나 상태값으로 체크, 예: rental.getStatus().equals("대여중"))
+            if (!"대여중".equals(rental.getStatus().trim())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("결제 완료된 거래만 완료처리 가능");
+            }
+
+            // 현재 로그인한 유저가 판매자인지 체크
+            String loginUsername = principal.getName();
+            User loginUser = userRepository.findByUsername(loginUsername).orElse(null);
+            if (loginUser == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자 없음");
+
+            if (!rental.getProduct().getSeller().getId().equals(loginUser.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("거래완료는 판매자만 가능합니다. 문제가 있는 경우 고객센터나 신고하기를 이용해주세요.");
+            }
+
+            // 정상 처리 (서비스에 위임)
             paymentService.refundDepositAndCompleteRental(rentalId);
-            return ResponseEntity.ok("거래가 정상적으로 완료되었습니다. 보증금이 반환되었습니다.");
+            return ResponseEntity.ok("거래가 정상적으로 완료되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("거래 완료 처리 실패: " + e.getMessage());
         }
     }
+
 }
