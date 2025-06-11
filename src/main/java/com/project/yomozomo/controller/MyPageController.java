@@ -37,6 +37,8 @@ public class MyPageController {
     private final CategoryService categoryService;
     private final InquiryRepository inquiryRepository;
     private final ChatroomReportService chatroomReportService;
+    private final WithdrawalService withdrawalService;
+    private final UserRepository userRepository;
 
 
     @GetMapping({"/", ""})
@@ -117,6 +119,14 @@ public class MyPageController {
         model.addAttribute("reviews", reviews);
 
         return "mypage/fragments/profile";
+    }
+    @GetMapping("/history")
+    public String withdrawalHistory(Model model, Principal principal) {
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        List<WithdrawalRequest> list = withdrawalService.getUserRequests(user.getId());
+        model.addAttribute("requests", list);
+        return "mypage/fragments/history";
     }
 
 
