@@ -82,7 +82,7 @@
 
         .price-filter-button {
             margin-top: 10px;
-            padding: 5px 10px;
+            padding: 6px 12px;
             font-size: 14px;
             background-color: #7c4dff;
             color: white;
@@ -223,6 +223,10 @@
             border-radius: 5px;
         }
 
+        .write-button:hover {
+            background-color: #5e35b1;
+        }
+
         .product-box {
             border: 1px solid #ccc;
             padding: 10px;
@@ -358,7 +362,7 @@
 
             <!-- 상품 글쓰기 버튼 -->
             <a th:href="@{'/product/write?categoryId=' + ${category != null ? category.categoryId : ''}}"
-               style="padding: 8px 16px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
+               class="write-button">
                 상품 글쓰기
             </a>
         </div>
