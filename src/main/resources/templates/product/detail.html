@@ -197,6 +197,9 @@
     <!--사용자의 다른 판매글-->
     <div class="seller-other-products">
       <h3>판매자의 다른 상품</h3>
+
+
+
       <div class="product-scroll-container">
         <div class="product-item" th:each="p : ${otherProducts}">
           <a th:href="@{'/product/' + ${p.productId}}">
