@@ -31,6 +31,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Controller
 @RequestMapping("/websocket") // @RequestMapping은 웹 페이지 경로에만 적용됨
 @RequiredArgsConstructor
 @Slf4j
