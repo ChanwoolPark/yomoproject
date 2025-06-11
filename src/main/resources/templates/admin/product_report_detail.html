@@ -11,7 +11,7 @@
 <table>
     <tr>
         <th>신고번호</th>
-        <td th:text="${report.id}"></td>
+        <td th:text="${report.reportId}"></td>
     </tr>
     <tr>
         <th>신고자</th>
@@ -39,7 +39,16 @@
     </tr>
     <tr>
         <th>상태</th>
-        <td th:text="${report.status}"></td>
+        <td>
+            <form th:action="@{'/admin/product-report/' + ${report.reportId} + '/status'}" method="post" style="display:inline;">
+                <select name="status">
+                    <option th:value="접수" th:selected="${report.status == '접수'}">접수</option>
+                    <option th:value="처리중" th:selected="${report.status == '처리중'}">처리중</option>
+                    <option th:value="완료" th:selected="${report.status == '완료'}">완료</option>
+                </select>
+                <button type="submit">변경</button>
+            </form>
+        </td>
     </tr>
 </table>
 <div>

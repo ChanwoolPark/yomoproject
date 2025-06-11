@@ -6,6 +6,7 @@ import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.UserRepository;
 import com.project.yomozomo.repository.UserWalletRepository;
 import com.project.yomozomo.repository.WalletLogRepository;
+import com.project.yomozomo.service.WalletService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -32,11 +33,13 @@ public class WidgetController {
     private final UserRepository userRepository;
     private final UserWalletRepository userWalletRepository;
     private final WalletLogRepository walletLogRepository;
+    private final WalletService walletService;
 
-    public WidgetController(UserRepository userRepository, UserWalletRepository userWalletRepository, WalletLogRepository walletLogRepository) {
+    public WidgetController(UserRepository userRepository, UserWalletRepository userWalletRepository, WalletLogRepository walletLogRepository, WalletService walletService) {
         this.userRepository = userRepository;
         this.userWalletRepository = userWalletRepository;
         this.walletLogRepository = walletLogRepository;
+        this.walletService = walletService;
     }
 
     @PostMapping("/widget")
@@ -154,6 +157,9 @@ public class WidgetController {
         log.setType("충전");
         log.setCreatedAt(new Date());
         walletLogRepository.save(log);
+
+
+        walletService.updateGradeIfNeeded(user.getId(), wallet.getBalance());
 
         // 성공 메시지/금액 모델에 추가
         model.addAttribute("amount", amount);

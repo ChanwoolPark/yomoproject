@@ -36,12 +36,6 @@ public class AdminController {
     private final ChatroomReportService chatroomReportService;
     private final ChatService chatService;
 
-    /*
-    public AdminController(WithdrawalService withdrawalService, ChatroomReportService chatroomReportService, ChatService chatService) {
-        this.withdrawalService = withdrawalService;
-        this.chatroomReportService = chatroomReportService;
-        this.chatService = chatService;
-    }*/
 
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
@@ -63,6 +57,16 @@ public class AdminController {
         model.addAttribute("report", report);
         return "admin/product_report_detail"; // 상세페이지는 추가로 구성
     }
+    // 상품 신고 상태 변경 (상세 페이지 폼 제출 시)
+    @PostMapping("/product-report/{reportId}/status")
+    public String updateProductReportStatus(
+            @PathVariable Long reportId,
+            @RequestParam String status) {
+
+        reportService.updateStatus(reportId, status); // 이 서비스 메서드에서 실제 상태 변경
+        return "redirect:/admin/product-report/" + reportId; // 상세로 리다이렉트
+    }
+
 
     // 2. 문의 관리 (고객센터)
     @GetMapping("/inquiries")

@@ -7,6 +7,7 @@ import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ProductRepository;
 import com.project.yomozomo.repository.ReportRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,5 +53,12 @@ public class ReportService {
     // 3. 신고 상세 반환
     public Optional<Report> getReport(Long reportId) {
         return reportRepository.findById(reportId);
+    }
+    @Transactional
+    public void updateStatus(Long reportId, String status) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("신고 내역 없음"));
+        report.setStatus(status);
+        reportRepository.save(report);
     }
 }
