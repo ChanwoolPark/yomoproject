@@ -72,7 +72,7 @@ public class User {
     private String businessNumber;
 
     @Column(name = "user_grade", length = 20)
-    private String grade = "BRONZE";
+    private String grade;
 
     // NUMBER(2,1) 은 BigDecimal + precision/scale 로 매핑합니다
     @Column(name = "user_rating", precision = 3, scale = 1)
@@ -91,4 +91,7 @@ public class User {
     public String getRole() {
         return role; // 예시: "ADMIN" 또는 "USER"
     }
+
+    @Column(name = "highest_balance")
+    private int highestBalance;
 }
