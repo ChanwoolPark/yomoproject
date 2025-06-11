@@ -65,7 +65,7 @@ public class ChatController {
         try {
             // ⭐⭐⭐ 변경된 부분 시작 ⭐⭐⭐
             // 지정된 절대 경로를 사용하여 파일 저장 경로 설정
-            // C:/Users/soldesk/IdeaProjects/yomoproject/uploads/image-chatimage
+            // C:\Users\\soldesk\\IdeaProjects\\yomoproject\\uploads\\image-chatimage
             String baseUploadDir = "C:" + File.separator + "Users" + File.separator + "soldesk" +
                     File.separator + "IdeaProjects" + File.separator + "yomoproject" +
                     File.separator + "uploads"; // 'uploads'까지의 기본 경로
@@ -113,6 +113,7 @@ public class ChatController {
                     .body(Map.of("error", "파일 업로드 처리 중 오류가 발생했습니다."));
         }
     }
+
 
     // ====================================================================================
     // ⭐⭐ 웹소켓 메시지 처리 로직 ⭐⭐

@@ -927,6 +927,7 @@
         messageContent.classList.add('message-content');
 
         // 메시지 내용 또는 이미지 표시
+        console.log('Message type:', message.messageType, 'Image URL:', message.imgUrl, 'Message Text:', message.message);//error
         if (message.messageType === 'IMAGE' && message.imgUrl) {
             const imgElement = document.createElement('img');
             imgElement.src = message.imgUrl;
