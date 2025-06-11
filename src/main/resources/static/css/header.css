@@ -128,7 +128,7 @@ header > div:last-child {
 }
 /*서브 카테고리 호버 스타일 용*/
 .sub-group a:hover {
-    color: #5b9bd5 !important;
+    color: blueviolet !important;
     background-color: #f5f5f5;
     border-radius: 4px;
     padding: 2px 4px;

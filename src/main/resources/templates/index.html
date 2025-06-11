@@ -65,50 +65,47 @@
 
         .search-bar {
             display: flex;
-            gap: 10px;
-            margin: 20px 30px;
+            gap: 12px;
+            margin: 20px auto;
             position: relative;
-
-
-
-
-
-            max-width: 600px;
-            padding: 16px 20px;
+            max-width: 720px;  /* ✅ 전체 검색바 너비 증가 */
+            padding: 18px 24px;
             border: 1px solid #eee;
             border-radius: 16px;
             background: #fefefe;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         }
 
-
         #categorySelect {
-            padding: 10px 14px;
+            padding: 12px 16px;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 16px;
             border: 1px solid #ddd;
+            min-width: 110px;  /* ✅ 더 넓게 */
         }
 
         #keywordInput {
             flex: 1;
-            padding: 10px 16px;
+            padding: 12px 18px;
             font-size: 16px;
             border-radius: 8px;
             border: 1px solid #ddd;
+            min-width: 300px;  /* ✅ 입력창 더 넓게 */
         }
 
         .search-bar button[type="submit"] {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background: #7c4dff;
             color: white;
             border: none;
             border-radius: 8px;
             font-weight: bold;
+            font-size: 15px;
             cursor: pointer;
             transition: 0.2s;
         }
 
-        .search-bar button:hover {
+        .search-bar button[type="submit"]:hover {
             background: #5e35b1;
         }
 
@@ -142,8 +139,21 @@
         }
 
         .tab.active {
-            border-bottom: 2px solid #7c4dff;
+            border-bottom: 2px solid blueviolet;
+            font-weight: bold;
             background: #fff;
+            color: blueviolet;
+        }
+        .tab:hover {
+            background-color: blueviolet !important;  /* 보라색 배경 */
+            color: white;
+        }
+
+        #topBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px;
         }
 
         #searchSuggestions ul {
@@ -159,8 +169,9 @@
         }
 
         #searchSuggestions ul li:hover {
-            background-color: #f2f2f2;
+            color: blueviolet;
         }
+
 
     </style>
 </head>
@@ -172,6 +183,9 @@
 <form id="searchForm" action="/search" method="get" class="search-bar">
     <!-- 카테고리 선택 -->
     <select name="categoryId" id="categorySelect">
+
+
+
         <option value="">전체</option>
         <option th:each="cat : ${categories}"
                 th:value="${cat.categoryId}"
