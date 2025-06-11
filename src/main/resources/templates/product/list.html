@@ -17,10 +17,16 @@
         .product-right {
             width: 20%;
         }
+        /* ✅ 중앙 전체를 감싸는 래퍼 */
+        .product-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
         /* 중앙 영역 (정렬 + 리스트) */
         .product-center {
-            flex-grow: 1;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 20px;
@@ -129,7 +135,7 @@
 
         .search-bar button[type="submit"] {
             padding: 12px 24px;
-            background: #7c4dff;
+            background: #465BFF;
             color: white;
             border: none;
             border-radius: 8px;
@@ -201,6 +207,18 @@
         }
 
         /* 정렬 링크 */
+        .product-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .sort-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
         .sort-link {
             color: #333;
             text-decoration: none;
@@ -221,6 +239,7 @@
             color: white;
             text-decoration: none;
             border-radius: 5px;
+            font-weight: bold;
         }
 
         .write-button:hover {
@@ -327,45 +346,42 @@
 
     </div>
 
-    <!-- 중앙: 상품 리스트 -->
-    <div class="product-center">
+    <div class="product-main">
+    <!-- 중앙: 정렬 + 글쓰기 버튼 (맨 위 고정) -->
+    <div class="product-top-bar">
+        <div th:if="${not isSearch and not isPriceFiltered}" class="sort-area">
+            <span>정렬:</span>
 
-        <!-- 게시글 정렬 & 상품 올리기 -->
-        <div style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div th:if="${not isSearch and not isPriceFiltered}" style="display: flex; gap: 10px; align-items: center;">
-                <span>정렬:</span>
-
-                <!-- 서브카테고리 정렬 링크 -->
-                <div th:if="${subCategoryId != null}">
-                    <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=${'latest'}|}"
-                       th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
-
-                    <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=${'views'}|}"
-                       th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
-
-                    <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=${'price'}|}"
-                       th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
-                </div>
-
-                <!-- 대카테고리 정렬 링크 -->
-                <div th:if="${subCategoryId == null}">
-                    <a th:href="@{|/category/${category.categoryId}?sort=${'latest'}|}"
-                       th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
-
-                    <a th:href="@{|/category/${category.categoryId}?sort=${'views'}|}"
-                       th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
-
-                    <a th:href="@{|/category/${category.categoryId}?sort=${'price'}|}"
-                       th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
-                </div>
+            <!-- 서브카테고리 정렬 링크 -->
+            <div th:if="${subCategoryId != null}">
+                <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=latest|}"
+                   th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
+                <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=views|}"
+                   th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
+                <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=price|}"
+                   th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
             </div>
 
-            <!-- 상품 글쓰기 버튼 -->
-            <a th:href="@{'/product/write?categoryId=' + ${category != null ? category.categoryId : ''}}"
-               class="write-button">
-                상품 글쓰기
-            </a>
+            <!-- 대카테고리 정렬 링크 -->
+            <div th:if="${subCategoryId == null}">
+                <a th:href="@{|/category/${category.categoryId}?sort=latest|}"
+                   th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
+                <a th:href="@{|/category/${category.categoryId}?sort=views|}"
+                   th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
+                <a th:href="@{|/category/${category.categoryId}?sort=price|}"
+                   th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
+            </div>
         </div>
+
+        <!-- 글쓰기 버튼 -->
+        <a th:href="@{'/product/write?categoryId=' + ${category != null ? category.categoryId : ''}}"
+           class="write-button">
+            상품 글쓰기
+        </a>
+    </div>
+
+    <!-- 중앙: 상품 리스트 -->
+    <div class="product-center">
 
         <!-- 검색 결과가 없을 때 -->
         <div th:if="${#lists.isEmpty(products)}" style="grid-column: 1 / -1; text-align: center;">
@@ -385,7 +401,7 @@
             </a>
         </div>
     </div>
-
+    </div>
 
     <!-- 오른쪽: 최근 본 상품 & 찜 -->
     <div class="product-right">
