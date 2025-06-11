@@ -46,6 +46,8 @@ public class ChatMessage { // 엔티티 클래스 이름은 ChatMessage로 유�
     @Column(name = "CREATED_AT") // ⭐ DB 컬럼명 CREATED_AT와 매핑 ⭐
     private LocalDateTime sendTime; // 엔티티 필드명은 sendTime으로 유지 (의미상 생성 시간이므로)
 
+
+
     @PrePersist
     protected void onCreate() {
         if (sendTime == null) {
