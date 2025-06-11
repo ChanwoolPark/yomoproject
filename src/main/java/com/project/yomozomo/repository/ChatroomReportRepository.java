@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ChatroomReportRepository extends JpaRepository<ChatroomReport, Long> {
     List<ChatroomReport> findAllByOrderByCreatedAtDesc();
+
+    List<ChatroomReport> findByReporterIdOrderByCreatedAtDesc(Long reporterId);
 }

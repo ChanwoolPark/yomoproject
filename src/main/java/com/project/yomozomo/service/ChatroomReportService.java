@@ -77,4 +77,8 @@ public class ChatroomReportService {
         // 2. wallet_id로 로그 저장
         walletLogService.saveLog(userWallet.getWalletId(), "신고/환불", amount);
     }
+
+    public List<ChatroomReport> getReportsByReporter(Long reporterId) {
+        return chatroomReportRepository.findByReporterIdOrderByCreatedAtDesc((reporterId));
+    }
 }

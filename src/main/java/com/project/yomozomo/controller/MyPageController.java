@@ -2,10 +2,7 @@ package com.project.yomozomo.controller;
 
 import com.project.yomozomo.domain.*;
 import com.project.yomozomo.dto.ProductDto;
-import com.project.yomozomo.entity.CustomUserDetails;
-import com.project.yomozomo.entity.Inquiry;
-import com.project.yomozomo.entity.Review;
-import com.project.yomozomo.entity.User;
+import com.project.yomozomo.entity.*;
 import com.project.yomozomo.repository.*;
 import com.project.yomozomo.service.*;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +36,7 @@ public class MyPageController {
     private final WalletService walletService;
     private final CategoryService categoryService;
     private final InquiryRepository inquiryRepository;
-
+    private final ChatroomReportService chatroomReportService;
 
 
     @GetMapping({"/", ""})
@@ -123,12 +120,6 @@ public class MyPageController {
     }
 
 
-
-    /*@GetMapping("/yomopay")
-    public String yomopayFragment() {
-        return "mypage/fragments/yomopay";
-    }*/
-
     // ────── 대여 관리 ──────
     @GetMapping("/rent-list")
     public String rentListFragment(Model model, Principal principal) {
@@ -177,7 +168,10 @@ public class MyPageController {
 
 
     @GetMapping("/cancel-list")
-    public String cancelListFragment() {
+    public String cancelListFragment(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        List<ChatroomReport> myReports = chatroomReportService.getReportsByReporter(userId);
+        model.addAttribute("myReports", myReports);
         return "mypage/fragments/cancel-list";
     }
 
@@ -271,9 +265,5 @@ public class MyPageController {
 
         return "mypage/full-profile"; // 마이페이지 상세 html 위치!
     }
-
-
-
-
 
 }
