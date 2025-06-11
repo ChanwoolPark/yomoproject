@@ -1,11 +1,13 @@
 package com.project.yomozomo.service;
 
 import com.project.yomozomo.domain.Rental;
+import com.project.yomozomo.domain.UserWallet;
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.ChatroomReport;
 import com.project.yomozomo.repository.ChatRoomRepository;
 import com.project.yomozomo.repository.ChatroomReportRepository;
 import com.project.yomozomo.repository.RentalRepository;
+import com.project.yomozomo.repository.UserWalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,8 @@ public class ChatroomReportService {
     private final RentalRepository rentalRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final WalletService walletService;
+    private final WalletLogService walletLogService;
+    private final UserWalletRepository userWalletRepository;
 
     public void submitReport(Long chatRoomId, Long reporterId, Long reportedId, String title, String content) {
         ChatroomReport report = new ChatroomReport();
@@ -67,5 +71,10 @@ public class ChatroomReportService {
         rentalRepository.save(rental);
 
         // 정산 내역, 처리 로그 등 추가 저장 가능
+        // 1. receiverId로 wallet_id 찾기
+        UserWallet userWallet = userWalletRepository.findByUserId(receiverId);
+
+        // 2. wallet_id로 로그 저장
+        walletLogService.saveLog(userWallet.getWalletId(), "신고/환불", amount);
     }
 }

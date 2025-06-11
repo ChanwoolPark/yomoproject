@@ -32,12 +32,6 @@ public class AdminController {
     private final ChatroomReportService chatroomReportService;
     private final ChatService chatService;
 
-    /*
-    public AdminController(WithdrawalService withdrawalService, ChatroomReportService chatroomReportService, ChatService chatService) {
-        this.withdrawalService = withdrawalService;
-        this.chatroomReportService = chatroomReportService;
-        this.chatService = chatService;
-    }*/
 
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
@@ -59,6 +53,7 @@ public class AdminController {
         model.addAttribute("report", report);
         return "admin/product_report_detail"; // 상세페이지는 추가로 구성
     }
+
 
     // 2. 문의 관리 (고객센터)
     @GetMapping("/inquiries")
