@@ -62,6 +62,7 @@ public class ChatController {
 
         try {
             // ... (baseUploadDir 및 specificUploadPathStr 설정) ...
+
             String baseUploadDir = "C:" + File.separator + "Users" + File.separator + "soldesk" +
                     File.separator + "IdeaProjects" + File.separator + "yomoproject" + // ⭐⭐ 실제 프로젝트 폴더명 재확인!!
                     File.separator + "uploaded-files"; // 'uploaded-files'까지의 기본 경로
