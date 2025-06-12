@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.index;
 
 import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.entity.User;

@@ -1,9 +1,8 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.chat;
 
 import com.project.yomozomo.entity.User; // User 엔티티/DTO 임포트
 import com.project.yomozomo.service.UserService; // UserService 임포트
 
-import jakarta.servlet.http.HttpSession; // HttpSession 임포트 (현재 로그인 사용자 가져오기 위해)
 // 또는 java.security.Principal; (Spring Security 사용하는 경우)
 import java.security.Principal; // Principal 임포트
 

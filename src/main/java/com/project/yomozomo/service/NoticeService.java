@@ -33,4 +33,17 @@ public class NoticeService {
                 .build();
         noticeRepo.save(notice);
     }
+
+    public void updateNotice(Long id, String title, String content) {
+        Notice notice = noticeRepo.findById(id).orElseThrow();
+        notice.setTitle(title);
+        notice.setContent(content);
+        noticeRepo.save(notice);
+    }
+
+    public void deleteNotice(Long id) {
+        noticeRepo.deleteById(id);
+    }
+
+
 }

@@ -27,8 +27,11 @@
 <body>
 <div class="profile-section" th:fragment="profile">
     <div class="profile-header" style="display: flex; align-items: center; margin-bottom: 20px;">
-        <img th:src="${user.profileImageUrl}" alt="프로필 이미지"
-             style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-right: 16px;">
+        <img th:src="${user.profileImageUrl} != null ? ${user.profileImageUrl} : '/images/default-profile.png'"
+             alt="프로필 이미지"
+             style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-right: 16px;"
+             onerror="this.onerror=null;this.src='/images/default-profile.png';">
+
         <div>
             <h2 style="margin-bottom: 8px;" th:text="${user.nickname + ' (' + user.username + ')'}"></h2>
             <!-- 본인 프로필일 때만 수정 버튼 노출 -->
@@ -56,6 +59,10 @@
         <h3 class="list-title">판매중인 목록</h3>
         <div th:if="${#lists.isEmpty(myProductList)}" class="card-box">상품이 없습니다.</div>
         <div th:each="item : ${myProductList}" class="card-box">
+            <img th:src="${item.thumbnailUrl} != null ? ${item.thumbnailUrl} : '/images/no-image.png'"
+                 alt="상품 이미지"
+                 style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; margin-right: 18px;"
+                 onerror="this.onerror=null;this.src='/images/no-image.png';">
             <!-- 상품명 클릭 시 상세로 이동 -->
             <a th:href="@{'/product/' + ${item.productId}}" class="card-link" th:text="${item.title}"></a>
             <span style="margin-left: 10px; color: #888;" th:text="'(' + ${item.status} + ')'"></span>
@@ -67,6 +74,10 @@
         <h3 class="list-title">대여중/예약중인 목록</h3>
         <div th:if="${#lists.isEmpty(myRentalList)}" class="card-box">대여/예약중인 상품이 없습니다.</div>
         <div th:each="rental : ${myRentalList}" class="card-box">
+            <img th:src="${rental.product.thumbnailUrl} != null ? ${rental.product.thumbnailUrl} : '/images/no-image.png'"
+                 alt="상품 이미지"
+                 style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; margin-right: 18px;"
+                 onerror="this.onerror=null;this.src='/images/no-image.png';">
             <!-- 상품명 클릭 시 상세로 이동 -->
             <a th:href="@{'/product/' + ${rental.product.productId}}" class="card-link" th:text="${rental.product.title}"></a>
             <span style="margin-left: 10px; color: #888;" th:text="'상태: ' + ${rental.status}"></span>
@@ -81,6 +92,11 @@
         <h3 class="list-title">받은 리뷰</h3>
         <div th:if="${#lists.isEmpty(reviews)}" class="card-box">아직 받은 리뷰가 없습니다.</div>
         <div th:each="review : ${reviews}" class="card-box">
+            <!-- 리뷰어 프로필 -->
+            <img th:src="${review.reviewer.profileImageUrl} != null ? ${review.reviewer.profileImageUrl} : '/images/default-profile.png'"
+                 alt="리뷰어 프로필"
+                 style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; margin-right: 16px;"
+                 onerror="this.onerror=null;this.src='/images/default-profile.png';">
             <!-- 리뷰어 이름 클릭 시 해당 유저 프로필로 이동 -->
             <a th:href="@{'/mypage/profile/' + ${review.reviewer.username}}" class="card-link" th:text="${review.reviewer.name}"></a>
             <p th:text="${review.reviewText}" style="margin: 6px 0 2px;"></p>

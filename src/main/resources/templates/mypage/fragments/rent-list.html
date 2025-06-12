@@ -62,6 +62,10 @@
 <!-- 내역 있을 때 -->
 <div th:each="rental : ${myRentalList}">
     <div class="card-box">
+        <img th:src="${rental.product.thumbnailUrl} != null ? ${rental.product.thumbnailUrl} : '/images/no-image.png'"
+             alt="상품 이미지"
+             style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; margin-right: 18px;"
+             onerror="this.onerror=null;this.src='/images/no-image.png';">
         <!-- 상품명 링크 -->
         <a th:href="@{/product/{id}(id=${rental.product.productId})}" class="card-link"
            th:text="${rental.product.title}">상품명</a>

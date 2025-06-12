@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.chat;
 
 import com.project.yomozomo.service.ChatbotService;
 import org.springframework.beans.factory.annotation.Autowired;

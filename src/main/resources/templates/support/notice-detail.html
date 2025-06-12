@@ -40,14 +40,21 @@
       min-height: 140px;
       white-space: pre-line;
     }
-    .btn-back {
-      margin-top: 38px;
+    .btn-area {
+      display: flex;
+      gap: 12px;
+      margin-top: 35px;
+      align-items: center;
+    }
+    .btn-back,
+    .btn-edit,
+    .btn-delete {
       display: inline-block;
       background: #ede5fd;
       color: #7c4dff;
       border: none;
       border-radius: 10px;
-      padding: 10px 28px;
+      padding: 10px 26px;
       font-size: 16px;
       font-weight: 600;
       box-shadow: 0 1px 5px #e8dbff;
@@ -55,13 +62,24 @@
       transition: background 0.14s;
       text-decoration: none;
     }
-    .btn-back:hover {
+    .btn-back:hover,
+    .btn-edit:hover {
       background: #dfccff;
+    }
+    .btn-delete {
+      background: #f5e0e7;
+      color: #d32f2f;
+      margin-left: 0;
+    }
+    .btn-delete:hover {
+      background: #f8bcbc;
+      color: #b71c1c;
     }
     @media (max-width: 600px) {
       .notice-detail-container { padding: 18px 7px; }
       .notice-title { font-size: 19px; }
       .notice-content { font-size: 14px; }
+      .btn-area { flex-direction: column; gap: 8px; }
     }
   </style>
 </head>
@@ -70,7 +88,18 @@
   <div class="notice-title" th:text="${notice.title}"></div>
   <div class="notice-date" th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}"></div>
   <div class="notice-content" th:text="${notice.content}"></div>
-  <a th:href="${#authorization.expression('hasAuthority(''ADMIN'')') ? '/admin/notices' : '/support'}" class="btn-back">← 목록으로</a>
+
+  <div class="btn-area">
+    <!-- 관리자만 보이는 영역 -->
+    <div th:if="${#authorization.expression('hasAuthority(''ADMIN'')')}">
+      <a th:href="@{'/admin/notices/edit/' + ${notice.id}}" class="btn-edit">수정</a>
+      <form th:action="@{'/admin/notices/delete/' + ${notice.id}}" method="post" style="display:inline;">
+        <button type="submit" class="btn-delete" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+      </form>
+    </div>
+    <!-- 목록으로 버튼: 관리자면 공지관리, 일반이면 고객센터로 -->
+    <a th:href="${#authorization.expression('hasAuthority(''ADMIN'')') ? '/admin/notices' : '/support'}" class="btn-back">← 목록으로</a>
+  </div>
 </div>
 </body>
 </html>

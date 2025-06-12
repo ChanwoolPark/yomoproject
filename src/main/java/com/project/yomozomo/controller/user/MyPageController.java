@@ -1,24 +1,23 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.user;
 
 import com.project.yomozomo.domain.*;
 import com.project.yomozomo.dto.ProductDto;
 import com.project.yomozomo.entity.*;
 import com.project.yomozomo.repository.*;
 import com.project.yomozomo.service.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Controller
@@ -60,8 +59,12 @@ public class MyPageController {
         Long userId = user.getId();
         UserWallet wallet = userWalletRepository.findByUserId(user.getId());
         int userPoint = wallet.getBalance();
+        // 대여/예약/반납완료 전체 목록
+        List<String> statusList = Arrays.asList("예약", "대여중", "반납대기", "반납완료", "취소");
+        List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList);
         model.addAttribute("user", user);
         model.addAttribute("point", userPoint);
+        model.addAttribute("myRentalList", myRentalList);
 
         // 최근 본 상품 5개 추가
         List<ViewedProduct> recent5 = productListService.getRecentlyViewed(userId);
@@ -87,7 +90,7 @@ public class MyPageController {
 
 
         // 예시 코드
-        List<String> statusList = Arrays.asList("예약", "대여중");
+        List<String> statusList = Arrays.asList("예약", "대여중", "반납대기", "반납완료", "취소");
         List<Rental> myRentalList = rentalRepository.findByUserIdAndStatusIn(user.getId(), statusList);
 
         // myRentalList를 마이페이지에 넘겨줌
@@ -275,5 +278,29 @@ public class MyPageController {
 
         return "mypage/full-profile"; // 마이페이지 상세 html 위치!
     }
+    // 탈퇴 처리
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> withdraw(Principal principal) {
+        System.out.println("🌋🌋 withdraw 진입!");
+        Optional<User> userOpt = Optional.ofNullable(userService.getUserByUsername(principal.getName()));
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("{\"success\":false, \"message\":\"사용자를 찾을 수 없음\"}");
+        }
+        userService.withdraw(userOpt.get());
+        return ResponseEntity.ok("{\"success\":true}");
+    }
+
+    // 30일 이내 재로그인 시 복구
+    @PostMapping("/recover")
+    public ResponseEntity<?> recover(Principal principal) {
+        Optional<User> userOpt = Optional.ofNullable(userService.getUserByUsername(principal.getName()));
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("{\"success\":false, \"message\":\"사용자를 찾을 수 없음\"}");
+        }
+        userService.recoverWithdrawn(userOpt.get());
+        return ResponseEntity.ok("{\"success\":true}");
+    }
+
+
 
 }

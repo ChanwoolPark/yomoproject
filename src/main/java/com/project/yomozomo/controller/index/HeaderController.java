@@ -1,8 +1,7 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.index;
 
 import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.service.CategoryService;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
