@@ -78,6 +78,7 @@ public class ChatController {
         System.out.println("채팅방 ID: " + roomId + ", rental: " + chatRoom.getRental());
         System.out.println("rentalId: " + (chatRoom.getRental() != null ? chatRoom.getRental().getRentalId() : "null"));
 
+
         if (chatRoom.getRental() != null) {
             model.addAttribute("currentRentalId", chatRoom.getRental().getRentalId());
         } else {
@@ -110,6 +111,8 @@ public class ChatController {
 
         model.addAttribute("isSeller", isSeller);
         model.addAttribute("rental", rental);
+        System.out.println("렌탈 status: [" + rental.getStatus() + "]");
+        System.out.println("렌탈 status length: " + rental.getStatus().length());
 
         return "chat";
     }
