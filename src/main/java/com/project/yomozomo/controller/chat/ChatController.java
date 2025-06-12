@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller; // 패키지명을 최상위로 조정하거나 필요에 따라 변경
+package com.project.yomozomo.controller.chat; // 패키지명을 최상위로 조정하거나 필요에 따라 변경
 
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.User;
@@ -383,8 +383,8 @@ public class ChatController {
                 model.addAttribute("productTitle", "상품 정보 없음");
             }
             // 렌탈 상태 및 기타 렌탈 정보도 필요하다면 추가
-            // model.addAttribute("rental", chatRoom.getRental());
-            // System.out.println("렌탈 status: [" + chatRoom.getRental().getStatus() + "]");
+             model.addAttribute("rental", chatRoom.getRental());
+             System.out.println("렌탈 status: [" + chatRoom.getRental().getStatus() + "]");
         } else {
             model.addAttribute("currentRentalId", null);
             model.addAttribute("productTitle", "일반 채팅"); // 렌탈과 무관한 일반 채팅방
