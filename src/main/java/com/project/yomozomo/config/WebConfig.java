@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         // 클라이언트가 요청할 웹 경로: /uploaded-chat-images/**
         // ChatController에서 파일을 저장하는 실제 절대 경로: C:\Users\soldesk\IdeaProjects\yomoproject\\uploaded-files\image-chatimage\
         registry.addResourceHandler("/uploaded-chat-images/**")
-                .addResourceLocations("file:///C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files/image-chatimage/") // <--- 이 경로가 정확해야 합니다!
+                .addResourceLocations("file:/C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files/image-chatimage/") // <--- 이 경로가 정확해야 합니다!
                 .setCachePeriod(3600)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver());
