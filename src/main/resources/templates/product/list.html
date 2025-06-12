@@ -15,7 +15,12 @@
         }
 
         h2 {
-            color: #323232;
+            color: #465BFF;
+            font-weight: 600;
+        }
+
+        h4 {
+            color: #465BFF;
             font-weight: 600;
         }
 
@@ -51,92 +56,37 @@
         }
 
         /* 왼쪽/오른쪽 사이드바 */
-        .product-left, .product-right {
+        .product-left {
             width: 15%;
             box-sizing: border-box;
+
         }
 
-
-        /* 서브카테고리 텍스트 */
-        .product-left h2 {
-            font-size: clamp(14px, 2vw, 21px);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-left: 5px;
+        .product-right {
+            width: 15%;
+            position: sticky;
+            top: 100px; /* 원하는 만큼 위 여백 */
+            align-self: flex-start;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #d6d6d6;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            height: fit-content;
         }
 
-        .product-left ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .product-left ul li {
-            margin: 10px 0;
-        }
-
-        .subcategory-link {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: clamp(14px, 2vw, 17px);
-            color: #3c3c3c;
-            font-weight: 550;
-            text-decoration: none;
-            transition: color 0.2s ease;
-            padding-left: 20px;
-        }
-
-        .subcategory-link:hover {
-            color: blueviolet;
-        }
-
-        .subcategory-link.active {
-            font-weight: bold;
-            color: blueviolet;
-        }
-
-        /* 가격 필터 */
-        .price-filter-wrapper {
-            margin-top: 50px;
-        }
-
-        .price-input {
-            width: 80px;
-            height: 30px;
-            padding: 2px 4px;
-            font-size: 13px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
+       /* 사이드바 고정
+       .product-left,
+        .product-right {
+            width: 15%;
             box-sizing: border-box;
-        }
+            position: sticky;
+            top: 100px; !* ✅ 헤더 아래로 살짝 간격 주기 *!
+            align-self: flex-start; !* ✅ flex 컨테이너에서 의도한 위치 유지 *!
+        }*/
 
-        .price-input-group {
-            display: flex;
-            align-items: center;
-            gap: 4px;                 /* ✅ 간격 줄이기 (기존 8px → 4px) */
-            margin-bottom: 0px;
-            margin-left: -6px;
-        }
 
-        .price-filter-button {
-            margin-top: 0;
-            margin-left: 30px;
-            padding: 6px 12px;
-            font-size: 14px;
-            background-color: #7c4dff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .price-filter-button:hover {
-            background-color: #5e35b1;
-        }
-
-        /* 검색 바 */
+        /* ✌️ 검색 바 */
         .search-bar {
             display: flex;
             gap: 12px;
@@ -180,7 +130,7 @@
         }
 
         .search-bar button:hover {
-            background: #465BFF;
+            background: #3C3C8C;
         }
 
         /* 검색어 추천 */
@@ -240,12 +190,96 @@
             color: #465BFF;
         }
 
-        /* ✅ 중앙 전체를 감싸는 래퍼 */
+
+        /* ✌️ 왼쪽 구역 스타일*/
+        /* 서브카테고리 텍스트 */
+        .product-left h2 {
+            font-size: clamp(14px, 2vw, 21px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-left: 5px;
+        }
+
+        .product-left ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .product-left ul li {
+            margin: 10px 0;
+        }
+
+        .subcategory-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: clamp(14px, 2vw, 17px);
+            color: #3c3c3c;
+            font-weight: 550;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            padding-left: 20px;
+        }
+
+        .subcategory-link:hover {
+            color: #A3C9FF ;
+        }
+
+        .subcategory-link.active {
+            font-weight: bold;
+            color: #3C3C8C ;
+        }
+
+        /* 가격 필터 */
+        .price-filter-wrapper {
+            margin-top: 50px;
+        }
+
+        .price-input {
+            width: 80px;
+            height: 30px;
+            padding: 2px 4px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .price-input-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;                 /* ✅ 간격 줄이기 (기존 8px → 4px) */
+            margin-bottom: 0px;
+            margin-left: -6px;
+        }
+
+        .price-filter-button {
+            margin-top: 0;
+            margin-left: 30px;
+            padding: 6px 12px;
+            font-size: 14px;
+            background-color: #465BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .price-filter-button:hover {
+            background-color: #3C3C8C;
+        }
+
+
+
+        /* ✌️ 중앙 전체를 감싸는 래퍼 */
         .product-main {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             gap: 20px;
+            padding-top: 0;
         }
 
         /* 중앙 영역 (정렬 + 리스트) */
@@ -259,32 +293,38 @@
         .product-top-bar {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+
+            align-items: flex-end;
+            margin-top: 18px;        /* ✅ 위쪽 여백 제거 */
+            margin-bottom: -2px;
+        }
+
+        /* 구분선 역할 */
+        .sort-divider {
+            height: 2px;
+            background-color: #465BFF;
+            margin: 0 0 10px 0; /* ✅ 위쪽 여백 0 */
         }
 
         /* 왼쪽 정렬 라벨 + 링크 묶음 */
 
-
-
-
-
-
-
-
-
-
         .sort-area {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            gap: 6px;                /* ✅ 기존보다 간격 줄임 */
+            align-items: flex-end;   /* ✅ 버튼과 아래 정렬 맞춤 */
+            font-size: 17px;
+            font-weight: 600;
+            padding-left: 5px;       /* ✅ 정렬: 을 오른쪽으로 밀기 */
+        }
+
+        .sort-area > span {
+            margin-right: 1px;       /* ✅ 정렬: 뒤 간격 아주 살짝 */
         }
 
         /* "정렬 순서 :" 라벨 */
         .sort-label {
-            font-size: 17px;
             font-weight: 600;
-            color: #333;
+            color: #b4b4b4;
             margin-right: 10px;
         }
 
@@ -296,18 +336,18 @@
 
         /* 일반 정렬 링크 */
         .sort-link {
-            font-size: 16px;
-            color: #333;
+            color: #b4b4b4;
+            font-weight: 600;
             text-decoration: none;
-            font-weight: normal;
+            margin: 0 5px;
+            font-size: inherit;      /* ✅ 부모 크기 상속 */
         }
 
         /* 현재 선택된 정렬 링크 */
         .sort-active {
-            font-size: 16px;
-            font-weight: bold;
             color: #465BFF;
-            text-decoration: underline;
+            font-weight: bold;
+            font-size: inherit;      /* ✅ 부모 크기 상속 */
         }
 
         /* 글쓰기 버튼 */
@@ -321,7 +361,7 @@
         }
 
         .write-button:hover {
-            background-color: #465BFF;
+            background-color: #3C3C8C;
         }
 
         .product-box {
@@ -336,6 +376,98 @@
             height: 150px;
             object-fit: cover;
         }
+
+        /* ✌️ 오른쪽 구역 스타일*/
+        .product-right h4 {
+            text-align: center;
+            margin-top: 7px;
+            margin-bottom: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #3C3C8C;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .product-right h4::before {
+            content: "⏰";  /* 최근 본 상품 아이콘 */
+            font-size: 19px;
+        }
+        .product-right h4::after {
+            content: "⏰";  /* 최근 본 상품 아이콘 */
+            font-size: 19px;
+        }
+
+        .wishlist-box h4 {
+            margin-top: 40px; /* ✅ 위 여백 늘리기 */
+
+        }
+
+        .wishlist-box h4::before {
+            content: "💙";  /* 관심목록 아이콘 */
+            font-size: 18px;
+        }
+        .wishlist-box h4::after {
+            content: "💙";
+            margin-right: 6px;
+        }
+
+        /* 공통 이미지 스타일 (최근 본, 찜한 상품) */
+        .recent-item img,
+        .wishlist-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            margin-right: 10px;
+            border-radius: 12px;  /* ✅ 테두리 둥글게 */
+        }
+
+        /* 텍스트를 이미지 세로 중앙에 정렬 */
+        .recent-item,
+        .wishlist-item {
+            display: flex;
+            align-items: center; /* ✅ 세로 가운데 정렬 */
+            margin-bottom: 10px;
+        }
+
+        .recent-item a,
+        .wishlist-item a {
+            font-size: 13px;
+        }
+
+        .recent-item a:hover,
+        .wishlist-item a:hover {
+            color: #A3C9FF;
+            font-weight: 600;
+
+        }
+
+        #topBtn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: #cecafe;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+            /* ✅ 내부 정렬용 */
+            display: block;
+            margin: 30px auto 0 auto;  /* 위 여백 + 가운데 정렬 */
+        }
+
+        #topBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+            background: linear-gradient(145deg, #5a73f5, #3b49d4);
+        }
+
     </style>
 </head>
 <body>
@@ -472,6 +604,8 @@
             </a>
         </div>
 
+        <div class="sort-divider"></div>
+
     <!-- 중앙: 상품 리스트 -->
     <div class="product-center">
 
@@ -501,7 +635,7 @@
         <div class="recently-viewed-items">
             <div th:each="item : ${recentlyViewed}" class="recent-item" style="display: flex; margin-bottom: 10px;">
                 <img th:src="${item.product.thumbnailUrl}" alt="최근 본 이미지" style="width: 60px; height: 60px; object-fit: cover; margin-right: 10px;">
-                <a th:href="@{'/product/' + ${item.product.productId}}" th:text="${item.product.title}" style="font-size: 14px;"></a>
+                <a th:href="@{'/product/' + ${item.product.productId}}" th:text="${item.product.title}"></a>
             </div>
         </div>
         <div class="wishlist-box">
@@ -509,13 +643,13 @@
             <div class="wishlist-items">
                 <div th:each="item : ${wishlist}" class="wishlist-item" style="display: flex; margin-bottom: 10px;">
                     <img th:src="${item.imageUrl}" alt="찜한 상품" style="width: 60px; height: 60px; object-fit: cover; margin-right: 10px;">
-                    <a th:href="@{'/product/' + ${item.productId}}" th:text="${item.title}" style="font-size: 14px;"></a>
+                    <a th:href="@{'/product/' + ${item.productId}}" th:text="${item.title}"></a>
                 </div>
             </div>
         </div>
 
         <!-- Top 버튼 -->
-        <button id="topBtn" onclick="scrollToTop()">Top<br>버튼</button>
+        <button id="topBtn" onclick="scrollToTop()">🔝</button>
 
     </div>
 </div>
