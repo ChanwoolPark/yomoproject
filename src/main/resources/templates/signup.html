@@ -1,100 +1,240 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>회원가입</title>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link rel="stylesheet" href="/css/header.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f5f6f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .signup-container {
+            background-color: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            margin-top: 60px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        form div {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        button, .btn {
+            padding: 10px 16px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        #btnUsernameCheck,
+        #btnPostcode {
+            background-color: #777;
+            margin-top: 8px;
+        }
+
+        .inline-button {
+            display: flex;
+            gap: 8px;
+        }
+
+        #preview {
+            margin-top: 10px;
+            display: block;
+            max-width: 150px;
+            border-radius: 8px;
+        }
+
+        .error-msg {
+            color: red;
+            font-size: 13px;
+        }
+
+        .required {
+            color: red;
+            font-weight: bold;
+            margin-left: 2px;
+        }
+
+        button[type="submit"] {
+            background-color: #28a745;
+            width: 100%;
+            margin-top: 24px;
+        }
+    </style>
 </head>
+
 <body>
-<h1>회원가입</h1>
-<form th:action="@{/signup}" th:object="${signupForm}" method="post" enctype="multipart/form-data">
-    <div>
-        <label>아이디<sup style="color:red">*</sup>:</label>
-        <input type="text" th:field="*{username}" id="username" required/>
-        <button type="button" id="btnUsernameCheck">중복확인</button>
-        <span id="usernameMsg" style="color:red"></span>
-    </div>
-    <div>
-        <label>닉네임<sup style="color:red">*</sup>:</label>
-        <input type="text" th:field="*{nickname}" id="nickname" required/>
-        <span id="nicknameMsg" style="color:red"></span>
-    </div>
-    <div>
-        <label>이메일<sup style="color:red">*</sup>:</label>
-        <input type="text" th:field="*{email}" id="email" required th:attr="readonly=${oauthSignup} ? 'readonly' : null"/>
-        <span id="emailMsg" style="color:red"></span>
-    </div>
-    <div>
-        <label>이름<sup style="color:red">*</sup>:</label>
-        <input type="text" th:field="*{name}" id="name" required th:attr="readonly=${oauthSignup} ? 'readonly'"/>
-    </div>
-    <div>
-        <label>비밀번호<sup style="color:red">*</sup>:</label>
-        <input type="password" th:field="*{password}" id="password" required/>
-        <span id="passwordMsg" style="color:red"></span>
-    </div>
-    <div>
-        <label>비밀번호 확인<sup style="color:red">*</sup>:</label>
-        <input type="password" id="passwordCheck" required/>
-        <span id="passwordCheckMsg" style="color:red"></span>
-    </div>
-    <div>
-        <label>성별<sup style="color:red">*</sup>:</label>
-        <select th:field="*{gender}" required>
-            <option value="M">남</option>
-            <option value="F">여</option>
-        </select>
-    </div>
-    <div>
-        <label>생년월일<sup style="color:red">*</sup>:</label>
-        <input type="date" th:field="*{birthdate}" required/>
-    </div>
-    <div>
-        <label>휴대폰</label>
-        <input type="tel" id="phone" name="phone" required>
-        <span id="phoneMsg"></span>
-    </div>
-    <div>
-        <label>우편번호<sup>*</sup>:</label>
-        <input type="text" id="zipNo" th:field="*{zipNo}" readonly />
-        <button type="button" id="btnPostcode">주소찾기</button>
-    </div>
+<div th:replace="fragments/header :: header"></div>
 
-    <!-- 도로명 주소 -->
-    <div>
-        <label>주소<sup>*</sup>:</label>
-        <input type="text" id="address" th:field="*{address}" readonly />
-    </div>
+<div class="signup-container">
+    <h1>회원가입</h1>
 
-    <!-- 상세주소 -->
-    <div>
-        <label>상세주소<sup>*</sup>:</label>
-        <input type="text" id="addressDetail" th:field="*{addressDetail}" />
-    </div>
-    <div>
-        <label>추천인:</label>
-        <input type="text" th:field="*{referral}"/>
-    </div>
+    <form th:action="@{/signup}" th:object="${signupForm}" method="post" enctype="multipart/form-data">
 
-    <input type="file" id="profileImage" name="profileImage" accept="image/*" />
-    <img id="preview" src="#" alt="미리보기" style="display:none; max-width:200px;"/>
+        <div>
+            <label>아이디<span class="required">*</span></label>
+            <div class="inline-button">
+                <input type="text" th:field="*{username}" id="username" required />
+                <button type="button" id="btnUsernameCheck">중복확인</button>
+            </div>
+            <span id="usernameMsg" class="error-msg"></span>
+        </div>
 
-    <button type="submit">가입하기</button>
-</form>
+        <div>
+            <label>닉네임<span class="required">*</span></label>
+            <input type="text" th:field="*{nickname}" id="nickname" required />
+            <span id="nicknameMsg" class="error-msg"></span>
+        </div>
+
+        <div>
+            <label>이메일<span class="required">*</span></label>
+            <input type="text" th:field="*{email}" id="email" required th:attr="readonly=${oauthSignup} ? 'readonly' : null"/>
+            <span id="emailMsg" class="error-msg"></span>
+        </div>
+
+        <div>
+            <label>이름<span class="required">*</span></label>
+            <input type="text" th:field="*{name}" id="name" required th:attr="readonly=${oauthSignup} ? 'readonly'"/>
+        </div>
+
+        <div>
+            <label>비밀번호<span class="required">*</span></label>
+            <input type="password" th:field="*{password}" id="password" required />
+            <span id="passwordMsg" class="error-msg"></span>
+        </div>
+
+        <div>
+            <label>비밀번호 확인<span class="required">*</span></label>
+            <input type="password" id="passwordCheck" required />
+            <span id="passwordCheckMsg" class="error-msg"></span>
+        </div>
+
+        <div>
+            <label>성별<span class="required">*</span></label>
+            <select th:field="*{gender}" required>
+                <option value="M">남</option>
+                <option value="F">여</option>
+            </select>
+        </div>
+
+        <div>
+            <label>생년월일<span class="required">*</span></label>
+            <input type="date" th:field="*{birthdate}" required />
+        </div>
+
+        <div>
+            <label>휴대폰</label>
+            <input type="tel" id="phone" name="phone" required>
+            <span id="phoneMsg" class="error-msg"></span>
+        </div>
+
+        <div class="inline-button">
+            <div style="flex:1">
+                <label>우편번호<span class="required">*</span></label>
+                <input type="text" id="zipNo" th:field="*{zipNo}" readonly />
+            </div>
+            <div>
+                <label>&nbsp;</label>
+                <button type="button" id="btnPostcode">주소찾기</button>
+            </div>
+        </div>
+
+        <div>
+            <label>주소<span class="required">*</span></label>
+            <input type="text" id="address" th:field="*{address}" readonly />
+        </div>
+
+        <div>
+            <label>상세주소<span class="required">*</span></label>
+            <input type="text" id="addressDetail" th:field="*{addressDetail}" />
+        </div>
+
+        <div>
+            <label>추천인</label>
+            <input type="text" th:field="*{referral}" />
+        </div>
+
+        <div>
+            <label>프로필 이미지</label>
+            <input type="file" id="profileImage" name="profileImage" accept="image/*" />
+            <img id="preview" src="#" alt="미리보기" style="display:none;" />
+        </div>
+
+        <button type="submit">가입하기</button>
+    </form>
+</div>
+
 <script>
     document.getElementById('btnPostcode')
         .addEventListener('click', function() {
             new daum.Postcode({
                 oncomplete: function(data) {
-                    // 선택 시 호출되는 콜백
-                    document.getElementById('zipNo').value      = data.zonecode;
-                    document.getElementById('address').value    = data.roadAddress;
+                    document.getElementById('zipNo').value = data.zonecode;
+                    document.getElementById('address').value = data.roadAddress;
                     document.getElementById('addressDetail').focus();
                 }
             }).open();
         });
-</script>
-<script src="/js/signup.js"></script>
 
+    // 미리보기
+    const fileInput = document.getElementById('profileImage');
+    const preview = document.getElementById('preview');
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+</script>
+
+<script src="/js/signup.js"></script>
 </body>
 </html>

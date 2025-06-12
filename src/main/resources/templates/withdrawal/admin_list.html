@@ -26,7 +26,7 @@
         <td th:text="${req.bankAccount}"></td>
         <td th:text="${req.status}"></td>
         <td>
-            <form th:action="@{/withdrawal/admin/updateStatus}" method="post" style="display:inline;">
+            <form th:action="@{/admin/updateStatus}" method="post" style="display:inline;">
                 <input type="hidden" name="requestId" th:value="${req.id}"/>
                 <select name="status">
                     <option th:selected="${req.status=='대기'}" value="대기">대기</option>

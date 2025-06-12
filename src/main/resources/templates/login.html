@@ -1,57 +1,109 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>로그인</title>
   <style>
-    .btn { padding: 10px 20px; margin: 10px; border: none; cursor: pointer; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .login-container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      min-width: 300px;
+    }
+
+    h1 {
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      width: 100%;
+      display: block; /* 추가! */
+      box-sizing: border-box; /* ✅ 추가 */
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      text-align: center; /* a 태그용 */
+      text-decoration: none; /* 링크 밑줄 제거 */
+    }
+    a.btn {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      line-height: normal;
+    }
+    .login-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh; /* 헤더/푸터 공간 빼고 적절히 조정 */
+      background-color: #f9f9f9;
+    }
+
+
     .google { background: #db4437; color: white; }
     .kakao  { background: #fee500; color: #3c1e1e; }
     .naver  { background: #03c75a; color: white; }
     .login  { background: #555; color: white; }
-    .link-group {
-      margin-top: 20px;
-      font-size: 14px;
-      display: flex;
-      gap: 15px;
-    }
-    .link-group a {
-      color: blue;
-      text-decoration: underline;
-      cursor: pointer;
-    }
+
     .signup-section {
       margin-top: 20px;
       font-size: 14px;
     }
+
     .signup-section a {
       color: blue;
       text-decoration: underline;
       cursor: pointer;
     }
   </style>
+  <link rel="stylesheet" href="/css/header.css">
 </head>
 <body>
-<h1>로그인</h1>
+<div th:replace="fragments/header :: header"></div>
+<div class="login-wrapper">
+  <div class="login-container">
+    <h1>로그인</h1>
 
-<!-- 일반 로그인 버튼 -->
-<a href="/login/form" class="btn login">일반 로그인</a>
+    <a href="/login/form" class="btn login">일반 로그인</a>
+    <button class="btn google" onclick="location.href='/oauth2/authorization/google'">Google 로그인</button>
+    <button class="btn kakao" onclick="location.href='/oauth2/authorization/kakao'">Kakao 로그인</button>
+    <button class="btn naver" onclick="location.href='/oauth2/authorization/naver'">Naver 로그인</button>
 
-<!-- 소셜 로그인 버튼들 -->
-<button class="btn google" onclick="location.href='/oauth2/authorization/google'">
-  Google 로그인
-</button>
-<button class="btn kakao" onclick="location.href='/oauth2/authorization/kakao'">
-  Kakao 로그인
-</button>
-<button class="btn naver" onclick="location.href='/oauth2/authorization/naver'">
-  Naver 로그인
-</button>
-
-<!-- 회원가입 링크 -->
-<div class="signup-section">
-  아이디나 비밀번호가 없으신가요? <a href="/signup">회원가입</a>
+    <div class="signup-section">
+      아이디나 비밀번호가 없으신가요? <a href="/signup">회원가입</a>
+    </div>
+  </div>
 </div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const needAuth = urlParams.get('needAuth');
+
+  if (needAuth === 'true' && !sessionStorage.getItem('authAlertShown')) {
+    alert("로그인이 필요한 서비스입니다.");
+    sessionStorage.setItem('authAlertShown', 'true');
+
+    // URL 깔끔하게 정리
+    urlParams.delete("needAuth");
+    const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+    window.history.replaceState({}, document.title, newUrl);
+  }
+</script>
+
+
+
+<div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>
