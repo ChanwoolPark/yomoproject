@@ -417,22 +417,24 @@
                     <span>정렬 순서 : </span>
 
                     <!-- 서브카테고리 정렬 링크 -->
+                    <!-- 서브카테고리 정렬 링크 -->
+                    <!-- 서브카테고리 정렬 링크 -->
                     <div th:if="${subCategoryId != null}">
-                        <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=latest|}"
+                        <a th:href="@{/category/{categoryId}/subcategory/{subCategoryId}(categoryId=${category.categoryId}, subCategoryId=${subCategoryId}, sort='latest')}"
                            th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
-                        <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=views|}"
+                        <a th:href="@{/category/{categoryId}/subcategory/{subCategoryId}(categoryId=${category.categoryId}, subCategoryId=${subCategoryId}, sort='views')}"
                            th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
-                        <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=price|}"
+                        <a th:href="@{/category/{categoryId}/subcategory/{subCategoryId}(categoryId=${category.categoryId}, subCategoryId=${subCategoryId}, sort='price')}"
                            th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
                     </div>
 
                     <!-- 대카테고리 정렬 링크 -->
                     <div th:if="${subCategoryId == null}">
-                        <a th:href="@{|/category/${category.categoryId}?sort=latest|}"
+                        <a th:href="@{/category/{categoryId}(categoryId=${category.categoryId}, sort='latest')}"
                            th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
-                        <a th:href="@{|/category/${category.categoryId}?sort=views|}"
+                        <a th:href="@{/category/{categoryId}(categoryId=${category.categoryId}, sort='views')}"
                            th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
-                        <a th:href="@{|/category/${category.categoryId}?sort=price|}"
+                        <a th:href="@{/category/{categoryId}(categoryId=${category.categoryId}, sort='price')}"
                            th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
                     </div>
                 </div>
