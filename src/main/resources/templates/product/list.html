@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/suit-webfont@latest/css/suit.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css" rel="stylesheet" />
 
     <link rel="stylesheet" href="/css/header.css">
     <style>
 
         body {
-            font-family: 'SUIT', 'Apple SD Gothic Neo', 'sans-serif';
+            font-family: 'GmarketSans', 'sans-serif';
             color: #464646;
             background-color: #f9f9f9;
             font-size: 15px;
@@ -255,7 +255,7 @@
             gap: 20px;
         }
 
-        /* 정렬 링크 */
+        /* 정렬 영역 전체 (최상단) */
         .product-top-bar {
             display: flex;
             justify-content: space-between;
@@ -263,26 +263,50 @@
             margin-bottom: 10px;
         }
 
+        /* 왼쪽 정렬 라벨 + 링크 묶음 */
+
+
+
+
+
+
+
+
+
+
         .sort-area {
             display: flex;
-            gap: 10px;
             align-items: center;
+            gap: 10px;
         }
 
-        .sort-area > div > div {
+        /* "정렬 순서 :" 라벨 */
+        .sort-label {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            margin-right: 10px;
+        }
+
+        /* 정렬 링크 묶음 */
+        .sort-links {
             display: inline-flex;
             gap: 8px;
         }
+
+        /* 일반 정렬 링크 */
         .sort-link {
+            font-size: 16px;
             color: #333;
             text-decoration: none;
             font-weight: normal;
-            margin: 0 5px;
         }
 
+        /* 현재 선택된 정렬 링크 */
         .sort-active {
-            color: #465BFF;
+            font-size: 16px;
             font-weight: bold;
+            color: #465BFF;
             text-decoration: underline;
         }
 
@@ -413,13 +437,10 @@
             <!-- 정렬 또는 검색 안내 -->
             <div class="sort-area">
                 <!-- ✅ 정렬 링크 표시 조건 -->
-                <div th:if="${not isSearch and not isPriceFiltered}">
-                    <span>정렬 순서 : </span>
+                <div th:if="${not isSearch and not isPriceFiltered}" class="sort-area">
+                    <span class="sort-label">정렬 순서 :</span>
 
-                    <!-- 서브카테고리 정렬 링크 -->
-                    <!-- 서브카테고리 정렬 링크 -->
-                    <!-- 서브카테고리 정렬 링크 -->
-                    <div th:if="${subCategoryId != null}">
+                    <div th:if="${subCategoryId != null}" class="sort-links">
                         <a th:href="@{/category/{categoryId}/subcategory/{subCategoryId}(categoryId=${category.categoryId}, subCategoryId=${subCategoryId}, sort='latest')}"
                            th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
                         <a th:href="@{/category/{categoryId}/subcategory/{subCategoryId}(categoryId=${category.categoryId}, subCategoryId=${subCategoryId}, sort='views')}"
@@ -428,8 +449,7 @@
                            th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
                     </div>
 
-                    <!-- 대카테고리 정렬 링크 -->
-                    <div th:if="${subCategoryId == null}">
+                    <div th:if="${subCategoryId == null}" class="sort-links">
                         <a th:href="@{/category/{categoryId}(categoryId=${category.categoryId}, sort='latest')}"
                            th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
                         <a th:href="@{/category/{categoryId}(categoryId=${category.categoryId}, sort='views')}"
