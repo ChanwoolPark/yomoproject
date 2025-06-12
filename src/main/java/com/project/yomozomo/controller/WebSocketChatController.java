@@ -1,326 +1,213 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller; // 적절한 패키지 경로로 변경해주세요. (예: com.project.yomozomo.controller.chat)
 
-import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.User;
-import com.project.yomozomo.domain.Rental;
-import com.project.yomozomo.service.ChatService;
-import com.project.yomozomo.service.RentalService;
 import com.project.yomozomo.service.UserService;
 
-import org.springframework.messaging.handler.annotation.DestinationVariable;
+import java.security.Principal; // Spring Security 사용하는 경우
+
+import org.springframework.beans.factory.annotation.Value; // @Value 임포트
+import org.springframework.messaging.handler.annotation.DestinationVariable; // DestinationVariable 임포트
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor; // SimpMessageHeaderAccessor 임포트
+import org.springframework.messaging.simp.SimpMessageSendingOperations; // SimpMessageSendingOperations 임포트
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestParam; // @RequestParam 임포트
 
-import com.project.yomozomo.entity.ChatMessage;
-import com.project.yomozomo.dto.ChatMessageDTO; // ChatMessageDTO 임포트 확인
-
-import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+// Lombok 어노테이션 (필요시 추가)
+// import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j; // Slf4j 임포트
 
-@RequestMapping("/websocket") // @RequestMapping은 웹 페이지 경로에만 적용됨
-@RequiredArgsConstructor
-@Slf4j
+// ChatMessage DTO/Entity는 프로젝트의 실제 클래스(ChatMessageDTO 또는 ChatMessage)를 사용해야 합니다.
+// 여기서는 예시로 제공된 ChatMessage 클래스를 사용합니다.
+// 실제 프로젝트에서는 com.project.yomozomo.dto.ChatMessageDTO 또는 entity 패키지의 ChatMessage를 사용하세요.
+// ChatMessageDTO가 있다면, 해당 클래스를 여기에 맞게 조정하거나 사용해주세요.
+// 예를 들어, 아래 class ChatMessage 대신 import com.project.yomozomo.dto.ChatMessageDTO;를 사용하고
+// 코드 내 모든 ChatMessage를 ChatMessageDTO로 변경해야 합니다.
+class ChatMessage {
+    private String sender;
+    private String receiver;
+    private String content;
+    private String type; // "TALK", "JOIN", "LEAVE", "IMAGE" 등
+    private String time;
+    private String roomId;
+    private String imgUrl; // 이미지 메시지용 필드 추가 (필요시)
+
+    // Lombok @Data 또는 @Getter, @Setter 사용 시 아래 getter/setter 필요 없음
+    public String getSender() { return sender; }
+    public void setSender(String sender) { this.sender = sender; }
+    public String getReceiver() { return receiver; }
+    public void setReceiver(String receiver) { this.receiver = receiver; }
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+    public String getTime() { return time; }
+    public void setTime(String time) { this.time = time; }
+    public String getRoomId() { return roomId; }
+    public void setRoomId(String roomId) { this.roomId = roomId; }
+    public String getImgUrl() { return imgUrl; }
+    public void setImgUrl(String imgUrl) { this.imgUrl = imgUrl; }
+
+    // DTO의 MessageType enum이 있는 경우를 대비한 변환 로직 (필요시 추가)
+    // 예를 들어, ChatMessageDTO.MessageType.TALK.name()으로 변환하여 사용
+}
+
+@Controller
+@Slf4j // Lombok의 Slf4j 로거 사용
 public class WebSocketChatController {
 
-    private final ChatService chatService;
-    private final UserService userService;
-    private final RentalService rentalService;
-    private final SimpMessagingTemplate messagingTemplate; // 웹소켓 메시지 전송용
+    // application.properties 또는 application.yml에서 주입받을 네이버 지도 클라이언트 ID
+    @Value("${naver.map.client-id}")
+    private String naverMapClientId;
 
-    // ====================================================================================
-    // ⭐⭐ 웹소켓 메시지 처리 로직 ⭐⭐
-    // ====================================================================================
+    private final SimpMessageSendingOperations messagingTemplate;
+    private final UserService userService; // UserService 주입
 
-    // 클라이언트가 /app/pub/chat.sendMessage/{chatRoomId} 로 메시지를 보낼 때 처리
-    @MessageMapping("/pub/chat.sendMessage/{chatRoomId}")
-    public void sendMessage(@Payload ChatMessageDTO chatMessageDto,
-                            @DestinationVariable Long chatRoomId) {
-
-        log.info("클라이언트로부터 메시지 수신 - 룸ID(URL): {}, DTO RoomID: {}, 발신자(DTO ID): {}, 메시지(DTO): {}, 타입(DTO): {}, 전송 시간(DTO): {}",
-                chatRoomId, chatMessageDto.getRoomId(), chatMessageDto.getSenderId(),
-                chatMessageDto.getMessage(), chatMessageDto.getMessageType(), chatMessageDto.getSendTime());
-
-        // DTO의 chatRoomId가 null이거나 URL의 roomId와 다를 경우, URL의 ID를 사용
-        if (chatMessageDto.getRoomId() == null || !chatMessageDto.getRoomId().equals(chatRoomId)) {
-            log.warn("경고: DTO의 chatRoomId({})와 URL의 chatRoomId({})가 일치하지 않습니다. URL의 ID를 사용합니다.",
-                    chatMessageDto.getRoomId(), chatRoomId);
-            chatMessageDto.setRoomId(chatRoomId);
-        }
-
-        try {
-            // 발신자 정보 가져오기 (메시지 브로드캐스트 시 닉네임 필요)
-            User senderUser = userService.getUserById(chatMessageDto.getSenderId());
-            if (senderUser != null) {
-                chatMessageDto.setSenderName(senderUser.getNickname()); // DTO에 닉네임 설정
-            } else {
-                chatMessageDto.setSenderName("알 수 없는 사용자");
-                log.error("오류: 메시지를 보낸 사용자 ID {}를 찾을 수 없습니다. 메시지 저장 및 브로드캐스트를 건너뜜.", chatMessageDto.getSenderId());
-                return; // 사용자 정보 없으면 처리 중단
-            }
-
-            // DB에 저장할 messageType 결정 (DB의 CHECK 제약조건 고려)
-            String dbMessageType;
-            if (chatMessageDto.getMessageType() == ChatMessageDTO.MessageType.TALK ||
-                    chatMessageDto.getMessageType() == ChatMessageDTO.MessageType.PAYMENT_REQUEST) { // PAYMENT_REQUEST도 TALK으로 간주
-                dbMessageType = "TEXT";
-            } else if (chatMessageDto.getMessageType() == ChatMessageDTO.MessageType.JOIN ||
-                    chatMessageDto.getMessageType() == ChatMessageDTO.MessageType.LEAVE) {
-                dbMessageType = "SYSTEM"; // 입장/퇴장 메시지는 SYSTEM 타입으로 저장
-            }
-            else if (chatMessageDto.getMessageType() != null) {
-                dbMessageType = chatMessageDto.getMessageType().name(); // 다른 타입은 그대로 사용 (TEXT, IMAGE, SYSTEM)
-            } else {
-                dbMessageType = "TEXT"; // DTO 타입이 null이면 기본값 "TEXT"
-            }
-
-            // DB에 메시지 저장
-            chatService.saveChatMessage(
-                    chatMessageDto.getRoomId(),
-                    chatMessageDto.getSenderId(),
-                    chatMessageDto.getMessage(),
-                    chatMessageDto.getImgUrl(), // imgUrl이 null이면 ChatService에서 null로 처리됨
-                    dbMessageType // DB에 저장할 타입
-            );
-            log.info("메시지 DB 저장 성공 (ChatService 호출) - RoomID: {}", chatMessageDto.getRoomId());
-
-        } catch (Exception e) {
-            log.error("메시지 처리 중 오류 발생: {}", e.getMessage(), e);
-            // 클라이언트에게 오류를 알리는 별도 로직을 추가할 수 있습니다.
-            return;
-        }
-
-        // DB 저장 후, 메시지를 해당 채팅방을 구독하는 모든 클라이언트에게 브로드캐스트
-        // 클라이언트가 /sub/chat/room/{chatRoomId}를 구독하고 있어야 합니다.
-        String destination = "/sub/chat/room/" + chatRoomId;
-        messagingTemplate.convertAndSend(destination, chatMessageDto); // 저장된 DTO 객체 그대로 전송
-        log.info("메시지 [{}]를 [{}] 경로로 브로드캐스트 완료. 발신자: {}, RoomID: {}",
-                chatMessageDto.getMessage(), destination, chatMessageDto.getSenderName(), chatRoomId);
-    }
-
-    // 클라이언트가 /app/pub/chat.addUser/{chatRoomId} 로 입장 메시지를 보낼 때 처리
-    @MessageMapping("/pub/chat.addUser/{chatRoomId}")
-    public void addUser(@Payload ChatMessageDTO chatMessageDto,
-                        @DestinationVariable Long chatRoomId) {
-
-        log.info("사용자 입장 요청 수신 - 룸ID(URL): {}, DTO RoomID: {}, 발신자 ID: {}",
-                chatRoomId, chatMessageDto.getRoomId(), chatMessageDto.getSenderId());
-
-        if (chatMessageDto.getRoomId() == null || !chatMessageDto.getRoomId().equals(chatRoomId)) {
-            log.warn("경고: DTO의 chatRoomId({})와 URL의 chatRoomId({})가 일치하지 않습니다. URL의 ID를 사용합니다.",
-                    chatMessageDto.getRoomId(), chatRoomId);
-            chatMessageDto.setRoomId(chatRoomId);
-        }
-
-        User senderUser = userService.getUserById(chatMessageDto.getSenderId());
-        String senderNickname;
-
-        if (senderUser != null) {
-            senderNickname = senderUser.getNickname();
-        } else {
-            senderNickname = "알 수 없는 사용자";
-            log.error("오류: 입장 메시지를 보낸 사용자 ID {}를 찾을 수 없습니다.", chatMessageDto.getSenderId());
-        }
-        chatMessageDto.setSenderName(senderNickname); // DTO에 닉네임 설정
-
-        String joinMessage = chatMessageDto.getMessage();
-        if (joinMessage == null || joinMessage.trim().isEmpty()) {
-            joinMessage = senderNickname + "님이 입장하셨습니다.";
-        } else {
-            // 클라이언트가 미리 메시지를 구성해서 보내는 경우
-            // joinMessage = senderNickname + joinMessage; // 클라이언트가 보낸 메시지를 그대로 쓰거나, 추가 로직
-        }
-        chatMessageDto.setMessage(joinMessage); // 최종 입장 메시지 설정
-
-        // 입장 메시지는 SYSTEM 타입으로 DB에 저장
-        chatMessageDto.setMessageType(ChatMessageDTO.MessageType.SYSTEM); // 브로드캐스트용 DTO 타입 설정
-        chatMessageDto.setSendTime(LocalDateTime.now()); // 서버 시간으로 설정
-
-        try {
-            chatService.saveChatMessage(
-                    chatMessageDto.getRoomId(),
-                    chatMessageDto.getSenderId(),
-                    chatMessageDto.getMessage(),
-                    null, // 입장 메시지는 이미지 없음
-                    "SYSTEM" // DB에 저장될 타입은 'SYSTEM'으로 명시
-            );
-            log.info("입장 메시지 DB 저장 성공 - RoomID: {}, Sender: {}", chatRoomId, senderNickname);
-        } catch (Exception e) {
-            log.error("입장 메시지 DB 저장 중 오류 발생: {}", e.getMessage(), e);
-        }
-
-        String destination = "/sub/chat/room/" + chatRoomId;
-        messagingTemplate.convertAndSend(destination, chatMessageDto); // DTO 객체 그대로 전송
-        log.info("사용자 입장 메시지 브로드캐스트 완료 - User: {}, Room: {}", senderNickname, chatRoomId);
+    // 생성자 주입
+    public WebSocketChatController(SimpMessageSendingOperations messagingTemplate, UserService userService) {
+        this.messagingTemplate = messagingTemplate;
+        this.userService = userService;
     }
 
     // ====================================================================================
     // ⭐⭐ 웹 페이지 (GetMapping) 로직 ⭐⭐
     // ====================================================================================
 
-    @GetMapping("/chat/start/{rentalId}")
-    public String startChatWithRental(@PathVariable Long rentalId, Principal principal, RedirectAttributes redirectAttributes) {
-        if (principal == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "채팅을 시작하려면 로그인이 필요합니다.");
-            return "redirect:/login";
-        }
+    /**
+     * 채팅 페이지를 로드하고, 현재 사용자 및 대상 사용자 정보를 모델에 추가합니다.
+     * 두 사용자 이름을 기반으로 고유한 채팅방 ID를 생성합니다.
+     *
+     * @param model 뷰에 데이터를 전달하기 위한 Model 객체
+     * @param principal 현재 로그인된 사용자 정보 (Spring Security 사용 시)
+     * @param targetUsernameParam URL 쿼리 파라미터로 전달된 대상 사용자 이름 (선택적)
+     * @return 채팅 페이지 템플릿의 이름 또는 에러 페이지 URL
+     */
+    @GetMapping("/chat")
+    public String chatPage(Model model, Principal principal,
+                           @RequestParam(value = "targetUsername", required = false) String targetUsernameParam) {
 
-        Rental rental = rentalService.getRentalById(rentalId);
-        if (rental == null || rental.getProduct() == null || rental.getProduct().getSeller() == null) {
-            log.warn("렌탈 상품 또는 판매자 정보를 찾을 수 없음 - rentalId: {}", rentalId);
-            redirectAttributes.addFlashAttribute("errorMessage", "렌탈 상품 또는 판매자 정보를 찾을 수 없습니다.");
-            return "redirect:/errorPage";
-        }
+        // 1. 현재 로그인한 사용자 정보 가져오기
+        String currentUsername = "anonymous"; // 기본값 설정 (로그인되지 않은 경우)
 
-        User buyer = userService.getUserByUsername(principal.getName());
-        User sellerUser = rental.getProduct().getSeller();
-
-        Long chatRoomId = chatService.findOrCreateChatRoomForRental(buyer, sellerUser, rental.getRentalId());
-        log.info("렌탈 상품 채팅방 시작 - rentalId: {}, chatRoomId: {}", rentalId, chatRoomId);
-        // 리다이렉트 경로 수정: /websocket/chat/{roomId}
-        return "redirect:/websocket/chat/" + chatRoomId;
-    }
-
-    @GetMapping("/chat/{roomId}")
-    public String chatRoom(@PathVariable Long roomId,
-                           Principal principal,
-                           Model model,
-                           RedirectAttributes redirectAttributes) {
-
-        if (principal == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "채팅방에 접근하려면 로그인이 필요합니다.");
-            return "redirect:/login";
-        }
-
-        String currentUsername = principal.getName();
-        User currentUser = userService.getUserByUsername(currentUsername);
-
-        if (currentUser == null) {
-            log.error("현재 로그인된 사용자({})를 DB에서 찾을 수 없음.", currentUsername);
-            redirectAttributes.addFlashAttribute("errorMessage", "사용자 정보를 찾을 수 없습니다.");
-            return "redirect:/errorPage";
-        }
-
-        ChatRoom chatRoom = chatService.getChatRoomById(roomId)
-                .orElseThrow(() -> {
-                    log.warn("채팅방을 찾을 수 없습니다. ID: {}", roomId);
-                    return new IllegalArgumentException("채팅방을 찾을 수 없습니다. ID: " + roomId);
-                });
-
-        boolean isParticipant = (currentUser.getId().equals(chatRoom.getBuyer().getId()) ||
-                currentUser.getId().equals(chatRoom.getSeller().getId()));
-
-        if (!isParticipant) {
-            log.warn("사용자({})가 채팅방({})에 접근할 권한이 없음.", currentUsername, roomId);
-            redirectAttributes.addFlashAttribute("errorMessage", "이 채팅방에 접근할 권한이 없습니다.");
-            return "redirect:/access-denied";
-        }
-
-        User chatPartnerUser;
-        if (currentUser.getId().equals(chatRoom.getBuyer().getId())) {
-            chatPartnerUser = chatRoom.getSeller();
-        } else {
-            chatPartnerUser = chatRoom.getBuyer();
-        }
-        String chatPartnerNickname = chatPartnerUser.getNickname();
-        Long chatPartnerId = chatPartnerUser.getId();
-
-        model.addAttribute("currentUserId", currentUser.getId());
-        model.addAttribute("currentUserName", currentUser.getNickname());
-        model.addAttribute("chatPartnerId", chatPartnerId);
-        model.addAttribute("chatPartnerNickname", chatPartnerNickname);
-        model.addAttribute("chatRoomId", roomId);
-
-        if (chatRoom.getRental() != null) {
-            model.addAttribute("currentRentalId", chatRoom.getRental().getRentalId());
-            if (chatRoom.getRental().getProduct() != null) {
-                model.addAttribute("productTitle", chatRoom.getRental().getProduct().getTitle());
-            } else {
-                model.addAttribute("productTitle", "상품 정보 없음");
-            }
-        } else {
-            model.addAttribute("currentRentalId", null);
-            model.addAttribute("productTitle", "일반 채팅");
-        }
-
-        String currentUserProfileImageUrl = currentUser.getProfileImageUrl();
-        if (currentUserProfileImageUrl == null || currentUserProfileImageUrl.isEmpty()) {
-            currentUserProfileImageUrl = "/images/default-profile.png";
-        }
-        model.addAttribute("currentUserProfileImage", currentUserProfileImageUrl);
-
-        String chatPartnerProfileImageUrl = chatPartnerUser.getProfileImageUrl();
-        if (chatPartnerProfileImageUrl == null || chatPartnerProfileImageUrl.isEmpty()) {
-            chatPartnerProfileImageUrl = "/images/default-profile.png";
-        }
-        model.addAttribute("chatPartnerProfileImage", chatPartnerProfileImageUrl);
-
-        try {
-            List<ChatMessage> chatHistoryEntities = chatService.getChatMessagesByRoomId(roomId);
-            List<ChatMessageDTO> chatHistoryDtos = chatHistoryEntities.stream().map(entity -> {
-                ChatMessageDTO dto = new ChatMessageDTO();
-                dto.setRoomId(entity.getRoomId());
-                dto.setSenderId(entity.getSenderId());
-
-                // 과거 메시지의 발신자 닉네임 설정
-                User senderOfPastMessage = userService.getUserById(entity.getSenderId());
-                if (senderOfPastMessage != null) {
-                    dto.setSenderName(senderOfPastMessage.getNickname());
-                } else {
-                    dto.setSenderName("알 수 없는 사용자");
-                    log.warn("경고: 과거 메시지의 발신자 ID {}를 찾을 수 없음.", entity.getSenderId());
-                }
-
-                dto.setMessage(entity.getMessage());
-                dto.setImgUrl(entity.getImgUrl());
-
-                // DB에서 읽은 messageType을 DTO의 MessageType enum으로 변환
-                try {
-                    dto.setMessageType(ChatMessageDTO.MessageType.valueOf(entity.getMessageType()));
-                } catch (IllegalArgumentException e) {
-                    log.warn("경고: 알 수 없는 messageType '{}'가 DB에서 감지되었습니다. TEXT로 기본 설정합니다. 메시지 ID: {}", entity.getMessageType(), entity.getMessageId());
-                    dto.setMessageType(ChatMessageDTO.MessageType.TEXT); // DB 타입에 없는 경우 TEXT로
-                }
-
-                dto.setSendTime(entity.getSendTime());
-                return dto;
-            }).toList();
-
-            model.addAttribute("chatHistory", chatHistoryDtos);
-            log.info("채팅방 {}의 기존 메시지 {}개 로드 완료.", roomId, chatHistoryDtos.size());
-        } catch (Exception e) {
-            log.error("기존 채팅 메시지 로드 중 오류 발생: {}", e.getMessage(), e);
-            model.addAttribute("chatHistory", new ArrayList<>());
-        }
-
-        return "chat"; // chat.html (또는 .jsp, .pug 등) 템플릿 반환
-    }
-
-    @GetMapping("/chat/reportForm")
-    public String showReportForm(Model model, Principal principal) {
         if (principal != null) {
-            String currentUsername = principal.getName();
-            User currentUser = userService.getUserByUsername(currentUsername);
-            if (currentUser != null) {
-                model.addAttribute("reporterId", currentUser.getId());
-                model.addAttribute("reporterNickname", currentUser.getNickname());
+            currentUsername = principal.getName(); // Spring Security Principal에서 사용자 이름 가져오기
+        }
+
+        // 2. 상대방 사용자 정보 결정
+        String finalTargetUsername;
+        if (targetUsernameParam != null && !targetUsernameParam.isEmpty()) {
+            finalTargetUsername = targetUsernameParam; // URL 파라미터가 있으면 사용
+        } else {
+            // URL 파라미터가 없는 경우 (예: /chat으로 직접 접근)
+            // 실제 애플리케이션에서는 사용자 목록 페이지로 리다이렉트하거나
+            // 기본 대화 상대를 설정하는 로직이 필요합니다.
+            log.info("targetUsername 파라미터 없음. 기본 상대방 설정 시도. 현재 사용자: {}", currentUsername);
+
+            // 예시: 로그인된 사용자가 'userA'면 'userB'와 대화하도록 설정
+            // 이 부분은 실제 서비스 로직에 따라 구현해야 합니다. (예: 최근 대화 상대, 친구 목록 등)
+            if ("userA".equals(currentUsername)) {
+                finalTargetUsername = "userB";
+            } else if ("userB".equals(currentUsername)) {
+                finalTargetUsername = "userA";
             } else {
-                log.warn("신고 폼 접근 시 현재 사용자({})를 DB에서 찾을 수 없음.", currentUsername);
+                // 로그인된 사용자도 아니고, targetUsername도 없으면 기본 대상 설정 (에러 처리 또는 목록으로 리다이렉션 고려)
+                finalTargetUsername = "default_chat_partner";
+                log.warn("기본 대화 상대를 'default_chat_partner'로 설정했습니다. 실제 서비스에서는 유효한 상대가 필요합니다.");
             }
         }
-        return "report";
+
+        // 3. (선택 사항) finalTargetUsername이 실제 DB에 존재하는 유효한 사용자인지 확인
+        // 이 부분은 UserService에 findByUsername(String username) 메서드가 있다고 가정합니다.
+        User targetUserEntity = userService.findByUsername(finalTargetUsername);
+        if (targetUserEntity == null) {
+            log.error("대상 사용자 '{}'를 DB에서 찾을 수 없습니다. 채팅 페이지 로드 실패.", finalTargetUsername);
+            model.addAttribute("errorMessage", "채팅할 상대를 찾을 수 없습니다.");
+            return "error_page"; // 또는 "redirect:/users" (사용자 목록으로 리다이렉트)
+        }
+
+        // 4. Model에 데이터 추가
+        model.addAttribute("username", currentUsername);
+        model.addAttribute("targetUsername", finalTargetUsername);
+        model.addAttribute("naverMapsClientId", naverMapClientId);
+
+        // 5. 두 사용자 이름으로 고유한 Room ID 생성 (정렬하여 항상 동일한 ID가 나오도록)
+        Set<String> users = new TreeSet<>(Comparator.naturalOrder());
+        users.add(currentUsername);
+        users.add(finalTargetUsername);
+        String roomId = String.join("_", users); // 예: "userA_userB" 또는 "userB_userA" -> "userA_userB"
+
+        model.addAttribute("roomId", roomId);
+
+        log.info("채팅 페이지 로드: 현재 사용자 = {}, 상대방 = {}, Room ID = {}", currentUsername, finalTargetUsername, roomId);
+        return "chat"; // 'chat.html' 템플릿 반환
+    }
+
+    // ====================================================================================
+    // ⭐⭐ 웹소켓 메시지 처리 로직 (@MessageMapping) ⭐⭐
+    // ====================================================================================
+
+    /**
+     * 클라이언트가 `/app/chat.sendMessage` 경로로 메시지를 보낼 때 처리합니다.
+     * 메시지에 현재 시간 정보를 추가하고 해당 채팅방을 구독하는 모든 클라이언트에게 브로드캐스트합니다.
+     *
+     * @param chatMessage 클라이언트로부터 받은 ChatMessage 객체 (DTO)
+     */
+    @MessageMapping("/chat.sendMessage")
+    public void sendMessage(@Payload ChatMessage chatMessage) {
+        // 메시지 전송 시간 설정 (서버 시간 기준)
+        chatMessage.setTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+
+        if (chatMessage.getRoomId() == null || chatMessage.getRoomId().isEmpty()) {
+            log.error("메시지 전송 실패: Room ID가 누락되었습니다. 발신자: {}, 내용: {}", chatMessage.getSender(), chatMessage.getContent());
+            return; // Room ID가 없으면 메시지 처리 중단
+        }
+
+        // 특정 토픽 경로로 메시지를 전송 (브로드캐스트)
+        // 클라이언트는 /topic/chat/room/{roomId}를 구독해야 합니다.
+        String destination = "/topic/chat/room/" + chatMessage.getRoomId();
+        messagingTemplate.convertAndSend(destination, chatMessage);
+
+        log.info("메시지 브로드캐스트 완료: [룸ID: {}], 발신자: {}, 내용: {}",
+                chatMessage.getRoomId(), chatMessage.getSender(), chatMessage.getContent());
+    }
+
+    /**
+     * 클라이언트가 `/app/chat.addUser` 경로로 입장 메시지를 보낼 때 처리합니다.
+     * 사용자 입장 메시지를 해당 채팅방을 구독하는 모든 클라이언트에게 브로드캐스트합니다.
+     *
+     * @param chatMessage 입장 메시지 (ChatMessage 객체)
+     * @param headerAccessor STOMP 헤더 정보에 접근하기 위한 객체 (세션 ID 등을 얻을 수 있음)
+     */
+    @MessageMapping("/chat.addUser")
+    public void addUser(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
+        // 메시지 타입을 'JOIN'으로 설정
+        chatMessage.setType("JOIN");
+        // 메시지 전송 시간 설정
+        chatMessage.setTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+
+        String roomId = chatMessage.getRoomId();
+        if (roomId == null || roomId.isEmpty()) {
+            log.error("사용자 입장 처리 실패: Room ID가 누락되었습니다. 발신자: {}", chatMessage.getSender());
+            return; // Room ID가 없으면 처리 중단
+        }
+
+        // STOMP 세션 속성에 사용자 이름과 Room ID 저장 (선택 사항, 필요에 따라)
+        // headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
+        // headerAccessor.getSessionAttributes().put("roomId", roomId);
+
+        // 특정 토픽 경로로 메시지를 전송 (브로드캐스트)
+        String destination = "/topic/chat/room/" + roomId;
+        messagingTemplate.convertAndSend(destination, chatMessage);
+
+        log.info("사용자 입장 메시지 브로드캐스트 완료: [룸ID: {}], 사용자: {}", roomId, chatMessage.getSender());
     }
 }
