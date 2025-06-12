@@ -9,8 +9,20 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <link rel="stylesheet" href="/css/header.css">
   <style>
-    .container { display: flex; padding: 20px; gap: 40px; }
-    .left, .right { flex: 1; }
+    .container {
+      display: flex;
+      flex-wrap: wrap;            /* ✅ 너비 줄면 줄바꿈 허용 */
+      gap: 40px;
+      padding: 20px;
+      max-width: 1400px;          /* ✅ 최대 너비 제한 */
+      margin: 0 auto;             /* ✅ 가운데 정렬 */
+      box-sizing: border-box;
+    }
+    .left, .right {
+      flex: 1 1 0;                /* ✅ 비율 기반 너비 (고정 아님) */
+      min-width: 300px;           /* ✅ 최소 너비 설정 */
+      box-sizing: border-box;
+    }
     /*.product-image { width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 10px; }*/
     .seller-box {
       border: 1px solid #ddd; padding: 15px; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
@@ -126,6 +138,7 @@
             <span th:text="${seller.nickname}">닉네임</span>
           </a><br/>
           <span th:text="${seller.grade}">등급</span>
+          <span th:text="${seller.address}">주소</span>
         </div>
       </div>
     </div>
