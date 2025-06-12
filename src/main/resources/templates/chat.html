@@ -509,7 +509,7 @@
             background-color: #007bff; /* 기본 파란색으로 통일 */
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             font-size: 1.1rem;
             cursor: pointer;
             transition: background-color 0.2s;
@@ -595,7 +595,6 @@
 
 
         /* 💰 금액 조절 모달 스타일 (기존 유지) - 이 부분은 확장 패널 내부가 아닌 별도의 모달이므로 독립적임 */
-        /* 이 모달은 현재 확장 패널 내의 금액 조절 기능과 별개로 작동합니다. */
         .modal-overlay {
             display: none; /* 기본적으로 숨김 */
             position: fixed;
@@ -816,12 +815,12 @@
             </div>
             <div class="grid-item-half">
                 <button id="innerButton2" title="금액 조절">
-                    <span class="icon material-icons">currency_exchange</span>금액 조절
+                    <span class="icon">💰</span>금액 조절
                 </button>
             </div>
             <div class="grid-item-half">
-                <button id="tradeCompleteBtn" title="거래완료">
-                    <span class="icon material-icons">check_circle</span>거래완료
+                <button id="tradeCompleteBtn">
+                    <span class="icon">✅</span>거래완료
                 </button>
             </div>
         </div>
@@ -928,7 +927,8 @@
             sectionToShow.classList.add('active-panel-section');
         }
 
-        if (innerButtonsGrid) {
+        // 버튼 그리드 표시 여부 제어
+        if (innerButtonsGrid) { // ⭐ innerButtonsGrid 변수가 DOMContentLoaded 안에서 초기화되므로, 이 함수가 호출될 때 이미 값이 할당되어 있어야 합니다.
             if (hideButtons) {
                 innerButtonsGrid.style.display = 'none';
             } else {
@@ -1344,12 +1344,17 @@
         modalCancelBtn = document.getElementById('modalCancelBtn');
 
 
-        // ⭐⭐ 각 변수가 제대로 할당되었는지 확인 (매우 중요!) ⭐⭐
-        console.log("DEBUG: togglePanelBtn:", togglePanelBtn);
-        console.log("DEBUG: expandedPanel:", expandedPanel);
-        console.log("DEBUG: defaultPanelContent:", defaultPanelContent);
-        console.log("DEBUG: innerButtonsGrid:", innerButtonsGrid);
-        console.log("DEBUG: paymentGoBtn:", paymentGoBtn);
+        const attachmentButton = document.getElementById('button2'); // <input type="file">이 아닌 📎 버튼입니다.
+        const reportButton = document.getElementById('button4');
+        if (reportButton) {
+            reportButton.addEventListener('click', function () {
+                // 채팅방 ID와 유저 ID를 URL 파라미터로 넘김 (Thymeleaf 변수 사용!)
+                const url = `/report/new/${chatRoomId}?reporterId=${currentUserId}&reportedId=${chatPartnerId}`;
+                // 새 창 또는 같은 창에서 이동, 둘 중 원하는 방식으로!
+                window.open(url, '_blank');  // 새 탭
+                // 또는 window.location.href = url;  // 같은 탭
+            });
+        }
 
 
         // 1. 메시지 전송 관련
@@ -1405,24 +1410,32 @@
             });
         }
 
-        // '거래 완료' 버튼 클릭 시 (tradeCompleteBtn)
-        if (tradeCompleteBtn) {
-            tradeCompleteBtn.addEventListener('click', () => {
-                console.log("--- DEBUG: '거래완료' 버튼 클릭됨! ---");
-                if (confirm('거래를 완료하시겠습니까? 완료 후에는 채팅을 할 수 없습니다.')) {
-                    sendMessage("거래를 완료했습니다.", "TRADE_COMPLETE"); // 메시지 전송
-                    alert("거래가 완료되었습니다.");
-                    toggleExpandedPanel(false); // 패널 닫기
-                    // 거래 완료 후 추가 로직 (예: 채팅방 비활성화 등)
-                    messageInput.disabled = true;
-                    sendMessageBtn.disabled = true;
-                    togglePanelBtn.disabled = true;
-                    attachmentButton.disabled = true;
-                    document.getElementById('button3').disabled = true; // 달력 버튼도 비활성화
-                    reportButton.disabled = true; // 신고 버튼도 비활성화
-                }
-            });
-        }
+        const isSeller = /*[[${isSeller}]]*/ false;    // Controller에서 Thymeleaf로 전달
+        const rentalStatus = '[[${rental.status}]]';   // 결제 상태, 예: '대여중'
+        console.log('rentalStatus:', rentalStatus, rentalStatus.length);
+
+// 거래완료 버튼 이벤트
+        document.getElementById('tradeCompleteBtn').addEventListener('click', function() {
+            if (!isSeller) {
+                alert('거래완료는 판매자만 가능합니다.\n문제가 있는 경우 고객센터나 신고하기를 이용해주세요.');
+                return;
+            }
+
+            // 실제 거래완료 처리(ajax/fetch 등으로 post)
+            fetch('/payment/complete/' + currentRentalId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(res => {
+                    if(res.ok) {
+                        alert('거래가 정상적으로 완료되었습니다.');
+                        location.reload();
+                    } else {
+                        res.text().then(msg => alert(msg));
+                    }
+                });
+        });
+
 
         // 5. 패널 내부 콘텐츠 버튼들
         // '결제 진행' 버튼 클릭 시 (paymentPanelContent 내)
@@ -1440,18 +1453,32 @@
             });
         }
 
-        // '금액 조절' 확인 버튼 클릭 시 (priceAdjustmentPanelContent 내)
+        // 금액 조절 확인/취소 버튼
         if (confirmPricePanelBtn) {
-            confirmPricePanelBtn.addEventListener('click', () => {
-                const newPrice = newPriceInputPanel.value;
-                if (newPrice && newPrice >= 0) {
-                    sendMessage(`[금액 조절 요청] ${newPrice}원으로 변경`, "PRICE_ADJUSTMENT_REQUEST"); // 메세지 타입 추가
-                    alert(`금액 조절 요청: ${newPrice}원`);
-                    toggleExpandedPanel(false); // 패널 닫기
-                    showPanelSection(defaultPanelContent, false); // 기본 패널로 돌아오기
-                } else {
-                    alert('유효한 금액을 입력해주세요.');
+            confirmPricePanelBtn.addEventListener('click', function() {
+                const newPrice = parseInt(newPriceInputPanel.value, 10);
+                if (!newPrice || newPrice <= 0) {
+                    alert('유효한 금액을 입력하세요.');
+                    return;
                 }
+
+                fetch(`/api/rental/${currentRentalId}/price`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPrice: newPrice })
+                })
+                    .then(res => {
+                        if (!res.ok) return res.text().then(msg => { throw new Error(msg); });
+                        return res.json();
+                    })
+                    .then(data => {
+                        paymentAmountInput.value = newPrice;
+                        alert('금액이 변경되었습니다!');
+                        showPanelSection(defaultPanelContent, false);
+                    })
+                    .catch(e => {
+                        alert(e.message || '금액 변경 실패(권한/서버오류)');
+                    });
             });
         }
 

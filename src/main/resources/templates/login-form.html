@@ -1,37 +1,157 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>일반 로그인</title>
     <style>
-        .login-box { max-width:400px; margin:80px auto; border:1px solid #ddd; padding:40px; border-radius:10px; }
-        .login-box input { width:100%; margin-bottom:15px; padding:8px; }
-        .login-box button { width:100%; padding:10px; }
-        .link-row { text-align:right; margin-bottom:10px; }
-        .link-row a { color:#007bff; text-decoration: underline; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', sans-serif;
+            background: #f5f5f5;
+        }
+
+        .login-box {
+            max-width: 420px;
+            margin: 100px auto;
+            background: #fff;
+            padding: 48px 36px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .login-box h2 {
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+        }
+
+        .login-box input:not([type="checkbox"]) {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .checkbox-wrapper label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: #7c6ae6;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-box button:hover {
+            background: #6b5ed6;
+        }
+
+        .link-row {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+        }
+
+        .link-row a {
+            color: #7c6ae6;
+            text-decoration: none;
+            margin: 0 6px;
+        }
+
+        .signup-section {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .signup-section a {
+            color: #7c6ae6;
+            font-weight: 500;
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: crimson;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
-<div style="color:red;">이 페이지는 일반 로그인 폼입니다</div>
+
 <div class="login-box">
     <h2>일반 로그인</h2>
-    <form method="post" action="/login/form">
-        <input type="text" name="username" placeholder="아이디" required />
+    <form method="post" action="/login/form" id="loginForm">
+        <input type="text" name="username" id="username" placeholder="아이디" required />
         <input type="password" name="password" placeholder="비밀번호" required />
+
+        <div class="checkbox-wrapper">
+            <label><input type="checkbox" id="saveId"> 아이디 저장</label>
+            <label><input type="checkbox" name="remember-me"> 자동 로그인</label>
+        </div>
+
+        <button type="submit">로그인</button>
+
+        <div class="error-message" th:if="${param.error}">
+            아이디 또는 비밀번호가 잘못되었습니다.
+        </div>
+
         <div class="link-row">
             <a href="/find-id">아이디 찾기</a> | <a href="/find-password">비밀번호 찾기</a>
         </div>
-        <button type="submit">로그인</button>
-        <!-- 에러 메시지 표시 -->
-        <div th:if="${param.error}" style="color:red; text-align:center;">
-            아이디 또는 비밀번호가 잘못되었습니다.
-        </div>
-        <!-- 회원가입 링크 -->
+
         <div class="signup-section">
             아이디나 비밀번호가 없으신가요? <a href="/signup">회원가입</a>
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const savedId = localStorage.getItem("savedId");
+        if (savedId) {
+            document.getElementById("username").value = savedId;
+            document.getElementById("saveId").checked = true;
+        }
+
+        document.getElementById("loginForm").addEventListener("submit", function () {
+            const saveIdChecked = document.getElementById("saveId").checked;
+            const username = document.getElementById("username").value;
+
+            if (saveIdChecked) {
+                localStorage.setItem("savedId", username);
+            } else {
+                localStorage.removeItem("savedId");
+            }
+        });
+    });
+</script>
+
 </body>
 </html>

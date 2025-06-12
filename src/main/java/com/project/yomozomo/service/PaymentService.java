@@ -30,20 +30,32 @@ public class PaymentService {
     @Transactional
     public boolean processPayment(Long userId, Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId).orElse(null);
-        if (rental == null) return false;
+        if (rental == null) {
+            System.out.println("[결제실패] rental 없음");
+            return false;
+        }
 
         Product product = rental.getProduct();
-        if (product == null) return false;
+        if (product == null) {
+            System.out.println("[결제실패] product 없음");
+            return false;
+        }
 
         User buyer = userRepository.findById(userId).orElse(null);
-        if (buyer == null) return false;
+        if (buyer == null) {
+            System.out.println("[결제실패] buyer 없음");
+            return false;
+        }
 
         UserWallet buyerWallet = userWalletRepository.findByUserId(userId);
         int price = rental.getTotalPrice();
         int deposit = product.getDeposit();
         int totalPrice = price + deposit;
 
-        if (buyerWallet.getBalance() < totalPrice) return false;
+        if (buyerWallet.getBalance() < totalPrice) {
+            System.out.printf("[결제실패] 잔액 부족! 보유 잔액: %d, 필요 금액: %d%n", buyerWallet.getBalance(), totalPrice);
+            return false;
+        }
 
         // (1) 구매자 잔고 차감
         buyerWallet.setBalance(buyerWallet.getBalance() - totalPrice);
@@ -74,7 +86,7 @@ public class PaymentService {
                 .sender(buyer)
                 .receiver(product.getSeller())
                 .product(product)
-                .amount(price)  // 혹은 totalPrice, 입맛에 맞게
+                .amount(price)
                 .status("결제완료")
                 .build();
         transactionHistoryRepository.save(history);

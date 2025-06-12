@@ -1,10 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>내 문의내역</title>
+    <style>
+        .inquiry-list {
+            width: 100%;
+            max-width: 900px;
+            margin: 30px auto;
+            font-family: "Pretendard", sans-serif;
+        }
+
+        h2 {
+            margin-bottom: 24px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .inquiry-header,
+        .inquiry-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 10px;
+        }
+
+        .inquiry-header {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            border-top: 2px solid #ccc;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .inquiry-item {
+            border-bottom: 1px solid #eee;
+        }
+
+        .inquiry-title {
+            flex: 3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .inquiry-action {
+            flex: 1.2;
+            text-align: right;
+        }
+
+        .status-btn {
+            color: #4a90e2;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 14px;
+        }
+
+        .status-text {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .answer-box {
+            background: #f9f9f9;
+            margin: -10px 10px 10px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .answer-box p {
+            margin: 4px 0 0;
+        }
+    </style>
 </head>
 <body>
-<h1>문의 내역 창입니다.</h1>
+
+<div class="inquiry-list">
+    <h2>내 문의내역</h2>
+
+    <!-- 헤더 -->
+    <div class="inquiry-header">
+        <div class="inquiry-title">제목</div>
+        <div class="inquiry-action">답변상태</div>
+    </div>
+
+    <!-- 목록 -->
+    <div th:each="inquiry, iterStat : ${inquiries}">
+        <div class="inquiry-item">
+            <div class="inquiry-title" th:text="${inquiry.title}">문의제목</div>
+            <div class="inquiry-action">
+                <span th:if="${inquiry.isAnswered != null and inquiry.isAnswered}"
+                      class="status-btn"
+                      th:onclick="'toggleAnswer(' + ${iterStat.index} + ')'">답변완료</span>
+                <span th:if="${inquiry.isAnswered == null or !inquiry.isAnswered}"
+                      class="status-text">답변대기</span>
+            </div>
+        </div>
+
+        <!-- 답변 내용 -->
+        <div class="answer-box"
+             th:id="'answerBox' + ${iterStat.index}"
+             th:if="${inquiry.isAnswered != null and inquiry.isAnswered}">
+            <strong>답변:</strong>
+            <p th:text="${inquiry.answer}">답변 내용</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAnswer(idx) {
+        const box = document.getElementById("answerBox" + idx);
+        if (box) {
+            box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+        }
+    }
+</script>
+
 </body>
 </html>

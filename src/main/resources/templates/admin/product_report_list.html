@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 신고 리스트</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 30px;}
+        th, td { border: 1px solid #d1d1d1; padding: 8px 12px; text-align: center;}
+        th { background: #f2f2f2;}
+        tr:hover { background: #f9f9f9;}
+        .btn-detail { display: inline-block; padding: 4px 10px; background: #5b9bd5; color: #fff;
+            border-radius: 4px; text-decoration: none; font-size: 13px;}
+    </style>
+</head>
+<body>
+<h1>상품 신고 내역</h1>
+<table>
+    <thead>
+    <tr>
+        <th>신고번호</th>
+        <th>신고자ID</th>
+        <th>상품ID</th>
+        <th>제목</th>
+        <th>신고일시</th>
+        <th>상태</th>
+        <th>상세</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="report : ${reportList}">
+        <td th:text="${report.reportId}">1</td>
+        <td th:text="${report.reporter.username}">101</td>
+        <td th:text="${report.product.productId}">500</td>
+        <td th:text="${report.title}">신고제목</td>
+        <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+        <td th:text="${report.status}">접수</td>
+        <td>
+            <a th:href="@{'/admin/product-report/' + ${report.reportId}}" class="btn-detail">상세</a>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(reportList)}">
+        <td colspan="7">신고 내역이 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

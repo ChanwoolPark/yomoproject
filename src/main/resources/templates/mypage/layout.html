@@ -110,6 +110,7 @@
             <li class="sub" onclick="loadContent('profile')">프로필 상세보기</li>
             <li class="sub" onclick="loadContent('edit-info')">개인정보 확인/수정</li>
             <li class="sub" onclick="loadContent('yomopay')">요모페이 관리/충전</li>
+            <li class="sub" onclick="loadContent('history')">출금내역</li>
 
             <li class="main">대여 관리</li>
             <li class="sub" onclick="loadContent('rent-list')">대여 목록</li>
@@ -436,8 +437,31 @@
     };
 
 
+        function toggleAnswer(idx) {
+        const box = document.getElementById("answerBox" + idx);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
 
 </script>
+
+<script>
+    function withdrawUser() {
+        if (confirm('정말 탈퇴하시겠어요? 30일 이내 재로그인하면 복구 가능하고, 30일 이후 완전 삭제됩니다!')) {
+            fetch('/mypage/withdraw', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('탈퇴 처리되었습니다. 30일 이내 재로그인하면 복구됩니다!');
+                        window.location.href = '/logout'; // 자동 로그아웃
+                    } else {
+                        alert(data.message || '오류가 발생했습니다.');
+                    }
+                });
+        }
+    }
+</script>
+
 
 </body>
 </html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>공지사항 수정</title>
+  <style>
+    body {
+      background: #f6f5ff;
+      font-family: 'Pretendard', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .edit-container {
+      max-width: 600px;
+      margin: 70px auto 0 auto;
+      background: #fff;
+      border-radius: 23px;
+      box-shadow: 0 6px 30px #e3dbff33;
+      padding: 38px 35px 30px 35px;
+    }
+    .edit-title {
+      font-size: 25px;
+      font-weight: bold;
+      color: #7c4dff;
+      margin-bottom: 23px;
+      text-align: left;
+    }
+    .form-group {
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      font-size: 15px;
+      color: #444;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #cfc4eb;
+      border-radius: 9px;
+      font-size: 16px;
+      background: #f8f7ff;
+      margin-bottom: 7px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 12px 14px;
+      border: 1px solid #cfc4eb;
+      border-radius: 9px;
+      font-size: 16px;
+      background: #f8f7ff;
+      resize: vertical;
+    }
+    .btn-area {
+      display: flex;
+      gap: 12px;
+      margin-top: 32px;
+      align-items: center;
+    }
+    .btn-save, .btn-cancel {
+      background: #ede5fd;
+      color: #7c4dff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 26px;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 1px 5px #e8dbff;
+      cursor: pointer;
+      transition: background 0.14s;
+      text-decoration: none;
+    }
+    .btn-save:hover {
+      background: #c9b6f5;
+    }
+    .btn-cancel {
+      background: #f6f0ff;
+      color: #444;
+    }
+    .btn-cancel:hover {
+      background: #e0e0ef;
+      color: #222;
+    }
+    @media (max-width: 600px) {
+      .edit-container { padding: 13px 4px; }
+      .edit-title { font-size: 18px; }
+      input[type="text"], textarea { font-size: 14px; }
+      .btn-area { flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+<div class="edit-container">
+  <div class="edit-title">공지사항 수정</div>
+  <form th:action="@{'/admin/notices/edit/' + ${notice.id}}" method="post">
+    <div class="form-group">
+      <label for="title">제목</label>
+      <input type="text" id="title" name="title" th:value="${notice.title}" required />
+    </div>
+    <div class="form-group">
+      <label for="content">내용</label>
+      <textarea id="content" name="content" required
+                th:text="${notice.content}"></textarea>
+    </div>
+    <div class="btn-area">
+      <button type="submit" class="btn-save">저장</button>
+      <a th:href="@{/admin/notices}" class="btn-cancel">취소</a>
+    </div>
+  </form>
+</div>
+</body>
+</html>

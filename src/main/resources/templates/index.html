@@ -19,17 +19,6 @@
             font-size: 30px;
         }
 
-        #topBtn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 15px;
-            border-radius: 50%;
-            background-color: #5b9bd5;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
 
         /* ✅ Swiper 커스터마이징 */
         .swiper-button-next,
@@ -48,20 +37,123 @@
 
 
 
-        .tab.active {
-            border-bottom: 2px solid red;
-            font-weight: bold;
-            color: red;
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin: 20px auto;
+            position: relative;
+            max-width: 720px;  /* ✅ 전체 검색바 너비 증가 */
+            padding: 18px 24px;
+            border: 1px solid #eee;
+            border-radius: 16px;
+            background: #fefefe;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         }
-        .tab {
-            background: none;
+
+        #categorySelect {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            min-width: 110px;  /* ✅ 더 넓게 */
+        }
+
+        #keywordInput {
+            flex: 1;
+            padding: 12px 18px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            min-width: 300px;  /* ✅ 입력창 더 넓게 */
+        }
+
+        .search-bar button[type="submit"] {
+            padding: 12px 24px;
+            background: #465BFF;
+            color: white;
             border: none;
-            outline: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 15px;
             cursor: pointer;
+            transition: 0.2s;
         }
-        #searchSuggestions li:hover {
+
+        .search-bar button[type="submit"]:hover {
+            background: #465BFF;
+        }
+
+        #searchSuggestions {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 20%;
+            width: 70%;
+            background: white;
+            border: 1px solid #ccc;
+            z-index: 999;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        #searchSuggestions ul {
+            list-style: none;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #searchSuggestions ul li {
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #searchSuggestions ul li:hover {
+            color: #465BFF;
             background-color: #f5f5f5;
         }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #f9f9f9;
+            border: none;
+            border-bottom: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid #465BFF;
+            font-weight: bold;
+            background: #fff;
+            color: #465BFF;
+        }
+        .tab:hover {
+            background-color: #465BFF !important;  /* 보라색 배경 */
+            color: white;
+        }
+
+        #topBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 50%;
+            background-color: #5b9bd5;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+
+
     </style>
 </head>
 <body>
@@ -69,9 +161,12 @@
 <!-- 헤더 삽입 -->
 <div th:replace="fragments/header :: header"></div>
 
-<form action="/search" method="get" style="display: flex; gap: 10px; margin: 20px; position: relative; max-width: 600px;">
+<form id="searchForm" action="/search" method="get" class="search-bar">
     <!-- 카테고리 선택 -->
-    <select name="categoryId" style="padding: 8px;">
+    <select name="categoryId" id="categorySelect">
+
+
+
         <option value="">전체</option>
         <option th:each="cat : ${categories}"
                 th:value="${cat.categoryId}"
@@ -83,31 +178,19 @@
     <input type="text" name="keyword" id="keywordInput"
            placeholder="검색어 입력"
            th:value="${keyword}"
-           onfocus="showSearchSuggestions()"
-           style="padding: 8px; width: 300px;" />
+           onfocus="showSearchSuggestions()" />
 
     <!-- 검색 버튼 -->
-    <button type="submit" style="padding: 8px 16px;">검색</button>
+    <button type="submit">검색</button>
 
     <!-- ▼ 추천 검색어 드롭다운 -->
-    <div id="searchSuggestions"
-         style="display: none; position: absolute; top: 48px; left: 0; width: 100%; background: white; border: 1px solid #ccc; z-index: 999;">
-
-        <!-- 탭 버튼 그룹 -->
-        <div style="display: flex; border-bottom: 1px solid #ddd;">
-            <button type="button" class="tab active" id="tab-recent" onclick="switchTab('recent')"
-                    style="flex: 1; padding: 10px; font-weight: bold; cursor: pointer;">
-                최근검색어
-            </button>
-            <button type="button" class="tab" id="tab-popular" onclick="switchTab('popular')"
-                    style="flex: 1; padding: 10px; font-weight: bold; cursor: pointer;">
-                인기검색어
-            </button>
+    <div id="searchSuggestions">
+        <div class="tab-buttons">
+            <button type="button" class="tab active" id="tab-recent" onclick="switchTab('recent')">최근검색어</button>
+            <button type="button" class="tab" id="tab-popular" onclick="switchTab('popular')">인기검색어</button>
         </div>
-
-        <!-- 리스트 -->
-        <ul id="recentList" style="list-style: none; margin: 0; padding: 10px;"></ul>
-        <ul id="popularList" style="list-style: none; margin: 0; padding: 10px; display: none;"></ul>
+        <ul id="recentList"></ul>
+        <ul id="popularList" style="display: none;"></ul>
     </div>
 </form>
 
