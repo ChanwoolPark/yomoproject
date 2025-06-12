@@ -74,11 +74,6 @@ public class RentalApiController {
         User user = userService.findByUsername(username); // DB 조회
         Long userId = user.getId(); // 실제 user_id 추출
 
-        /* 로그인 실험용
-        if (userId == null) {
-            userId = 1L;
-            session.setAttribute("userId", userId);
-        } */
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
@@ -114,6 +109,37 @@ public class RentalApiController {
         }
     }
 
+    @PostMapping("/{rentalId}/price")
+    public ResponseEntity<?> updateRentalPrice(
+            @PathVariable Long rentalId,
+            @RequestBody Map<String, Integer> req,
+            Principal principal) {
+        // 로그인 확인
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
+
+        Rental rental = rentalRepository.findById(rentalId).orElse(null);
+        if (rental == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("렌탈 정보 없음");
+        }
+
+        // **판매자만 금액 변경 가능!**
+        if (!rental.getProduct().getSeller().getId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("판매자만 금액을 변경할 수 있습니다.");
+        }
+
+        int newPrice = req.get("newPrice");
+        if (newPrice <= 0) {
+            return ResponseEntity.badRequest().body("유효하지 않은 금액입니다.");
+        }
+        rental.setTotalPrice(newPrice);
+        rentalRepository.save(rental);
+
+        return ResponseEntity.ok(Map.of("success", true, "newPrice", newPrice));
+    }
 
 
 }
