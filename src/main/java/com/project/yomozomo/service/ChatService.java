@@ -129,7 +129,7 @@ public class ChatService {
     @Transactional
     public ChatMessage saveChatMessage(Long chatRoomId, Long senderUserId, String messageContent,
                                        String imgUrl, String messageType) {
-        log.info("ChatService.saveChatMessage 호출됨. chatRoomId: {}, senderUserId: {}", chatRoomId, senderUserId);
+        log.info("ChatService.saveChatMessage 호출됨. chatRoomId: {}, senderUserId: {}, messageType: {}", chatRoomId, senderUserId, messageType); // messageType 로그 추가
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> {
@@ -145,16 +145,26 @@ public class ChatService {
                 });
         log.debug("발신자 찾음: {} (ID: {})", sender.getNickname(), sender.getId());
 
-        // ⭐⭐⭐ 이 부분이 수정된 로직입니다 ⭐⭐⭐
-        // DB의 message_type 체크 제약조건 ('TEXT', 'IMAGE', 'SYSTEM')에 맞추기 위해 타입 변환
-        String finalMessageType = "TALK"; //
-        List<String> allowedMessageTypes = Arrays.asList("TALK", "TEXT", "IMAGE", "JOIN", "LEAVE", "SYSTEM","PAYMENT_REQUEST", "TRADE_COMPLETE_REQUEST"); //
-
+        // ⭐⭐⭐ ChatService의 allowedMessageTypes 수정된 부분 ⭐⭐⭐
+        String finalMessageType = "TALK"; // 기본값을 "TALK"으로 설정 (가장 흔한 텍스트 메시지 타입)
+        // ChatMessageDTO.MessageType enum에 정의된 모든 타입을 여기에 추가해야 합니다.
+        // 대소문자 문제 방지를 위해 모두 대문자로 통일
+        List<String> allowedMessageTypes = Arrays.asList(
+                "TALK",
+                "TEXT", // DTO에 TEXT가 있다면 추가 (DTO enum의 name() 값이 중요)
+                "IMAGE",
+                "JOIN",
+                "LEAVE",
+                "SYSTEM",
+                "PRICE_ADJUSTMENT_REQUEST",
+                "TRADE_COMPLETE_REQUEST"
+                // ChatMessageDTO.MessageType enum의 모든 요소가 여기에 문자열로 포함되어야 합니다.
+        );
 
         if (messageType != null) {
             String upperCaseMessageType = messageType.toUpperCase();
             if (allowedMessageTypes.contains(upperCaseMessageType)) {
-                finalMessageType = upperCaseMessageType;
+                finalMessageType = upperCaseMessageType; // 허용된 타입이면 그대로 사용
             } else {
                 log.warn("알 수 없는 messageType '{}'가 감지되었습니다. 'TALK'로 기본 설정합니다.", upperCaseMessageType);
                 finalMessageType = "TALK"; // 알 수 없는 타입은 기본값으로
@@ -170,14 +180,13 @@ public class ChatService {
         chatMessage.setRoomId(chatRoomId);
         chatMessage.setSenderId(senderUserId);
         chatMessage.setMessage(messageContent);
-        // DB의 img_url이 VARCHAR2(500)으로 정의되어 있고, CLOB이 아니라면 빈 문자열도 괜찮습니다.
-        // null을 허용한다면 null을 보내는 것이 더 좋습니다. 여기서는 테이블 정의에 맞게 처리.
-        chatMessage.setImgUrl(imgUrl); // 이미지 URL을 그대로 저장
+        chatMessage.setImgUrl(imgUrl); // imgUrl을 그대로 저장
+
         chatMessage.setHasImage(imgUrl != null && !imgUrl.trim().isEmpty() ? 'Y' : 'N');
         chatMessage.setMessageType(finalMessageType); // 최종 결정된 messageType 사용
         chatMessage.setSendTime(LocalDateTime.now());
 
-        log.debug("ChatMessage 엔티티 생성 완료. chatRoomId: {}, senderId: {}, message: {}, imgUrl: {}, messageType: {}, sendTime: {}",
+        log.debug("ChatMessage 엔티티 DB 저장 직전: chatRoomId: {}, senderId: {}, message: {}, imgUrl: {}, messageType: {}, sendTime: {}",
                 chatMessage.getRoomId(), chatMessage.getSenderId(), chatMessage.getMessage(), chatMessage.getImgUrl(), chatMessage.getMessageType(), chatMessage.getSendTime());
 
         ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
