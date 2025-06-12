@@ -4,126 +4,70 @@
     <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
     <title>마이페이지</title>
     <meta charset="UTF-8">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            font-family: 'Noto Sans KR', sans-serif;
-            min-height: 100vh;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-
-        header {
-            background-color: #fff;
-            padding: 16px 32px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        #main {
-            display: flex;
-            flex: 1;
-            padding: 24px;
-            gap: 24px;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        #sidebar {
-            width: 240px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        }
-
-        #sidebar ul {
-            list-style: none;
-        }
-
-        #sidebar li.main {
-            font-weight: bold;
-            margin: 16px 0 8px;
-            color: #444;
-            font-size: 15px;
-        }
-
-        #sidebar li.sub {
-            padding: 6px 0 6px 12px;
-            cursor: pointer;
-            color: #666;
-            transition: all 0.2s ease;
-            border-radius: 6px;
-        }
-
-        #sidebar li.sub:hover {
-            background-color: #f0f0f0;
-            color: #000;
-        }
-
-        #content {
-            flex: 1;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-            border: 1px solid #ddd;
-        }
-
-        footer {
-            background-color: #f1f1f1;
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #777;
-        }
-
-        .star {
-            font-size: 22px;
-            color: #bbb;
-            cursor: pointer;
-        }
-        .star.selected {
-            color: #ffbf00;
-        }
-
-
-    </style>
     <link rel="stylesheet" href="/css/header.css">
-
+    <link rel="stylesheet" href="/css/mypage.css">
+    <!-- Lucide 아이콘 CDN (outline 스타일) -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
 
 <div id="main">
-    <div id="sidebar">
+    <nav id="sidebar">
         <ul>
             <li class="main">내 정보</li>
-            <li class="sub" onclick="loadContent('profile')">프로필 상세보기</li>
-            <li class="sub" onclick="loadContent('edit-info')">개인정보 확인/수정</li>
-            <li class="sub" onclick="loadContent('yomopay')">요모페이 관리/충전</li>
-            <li class="sub" onclick="loadContent('history')">출금내역</li>
+            <li class="sub" onclick="setActive(this); loadContent('profile')" id="profile-menu">
+                <span class="sidebar-icon" data-lucide="user"></span> 프로필 상세보기
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('edit-info')">
+                <span class="sidebar-icon" data-lucide="pencil"></span> 개인정보 확인/수정
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('yomopay')">
+                <span class="sidebar-icon" data-lucide="credit-card"></span> 요모페이 관리/충전
+                <span class="sidebar-check" data-lucide="check" ></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('history')">
+                <span class="sidebar-icon" data-lucide="trending-up"></span> 출금내역
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
 
+            <hr>
             <li class="main">대여 관리</li>
-            <li class="sub" onclick="loadContent('rent-list')">대여 목록</li>
-            <li class="sub" onclick="loadContent('sale-list')">판매 목록</li>
-            <li class="sub" onclick="loadContent('cancel-list')">취소/환불/반품 내역</li>
+            <li class="sub" onclick="setActive(this); loadContent('rent-list')">
+                <span class="sidebar-icon" data-lucide="archive"></span> 대여 목록
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('sale-list')">
+                <span class="sidebar-icon" data-lucide="shopping-bag"></span> 판매 목록
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('cancel-list')">
+                <span class="sidebar-icon" data-lucide="refresh-cw"></span> 취소/환불/반품 내역
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
 
+            <hr>
             <li class="main">내 활동</li>
-            <li class="sub" onclick="loadContent('wishlist')">위시리스트</li>
-            <li class="sub" onclick="loadContent('recent')">최근 본 게시글</li>
-            <li class="sub" onclick="loadContent('reviews')">내가 쓴 리뷰</li>
-            <li class="sub" onclick="loadContent('inquiries')">문의내역 확인</li>
+            <li class="sub" onclick="setActive(this); loadContent('wishlist')">
+                <span class="sidebar-icon" data-lucide="heart"></span> 위시리스트
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('recent')">
+                <span class="sidebar-icon" data-lucide="clock"></span> 최근 본 게시글
+                <span class="sidebar-check" data-lucide="check" ></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('reviews')">
+                <span class="sidebar-icon" data-lucide="star"></span> 내가 쓴 리뷰
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('inquiries')">
+                <span class="sidebar-icon" data-lucide="help-circle"></span> 문의내역 확인
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
         </ul>
-    </div>
+    </nav>
     <div id="content"></div>
 </div>
 
@@ -160,6 +104,82 @@
 <div th:replace="fragments/footer :: footer"></div>
 
 <script>
+
+    // Lucide 아이콘 적용
+    window.addEventListener("DOMContentLoaded", () => {
+        lucide.createIcons();
+        setActiveByMenu();
+    });
+
+    function setActive(element) {
+        document.querySelectorAll('#sidebar li.sub').forEach(li => li.classList.remove('active'));
+        element.classList.add('active');
+        lucide.createIcons();
+    }
+
+    function setActiveByMenu() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const menu = urlParams.get("menu") || "profile";
+        let matched = false;
+        document.querySelectorAll('#sidebar li.sub').forEach(li => {
+            if (li.onclick && li.onclick.toString().includes(menu)) {
+                li.classList.add('active');
+                matched = true;
+            } else {
+                li.classList.remove('active');
+            }
+        });
+        if (!matched) document.querySelectorAll('#sidebar li.sub')[0].classList.add('active');
+
+        if (menu && menu !== "home-summary") {
+            document.querySelectorAll('#sidebar li.sub').forEach(li => {
+                if (li.onclick && li.onclick.toString().includes(menu)) {
+                    li.classList.add('active');
+                    matched = true;
+                } else {
+                    li.classList.remove('active');
+                }
+            });
+        } else {
+            document.querySelectorAll('#sidebar li.sub').forEach(li => li.classList.remove('active'));
+        }
+    }
+
+    // ⭐⭐ loadContent 함수가 사라지면 동적 로딩이 아예 안 됨!
+    function loadContent(menuName) {
+        history.pushState({ menu: menuName }, '', `/mypage?menu=${menuName}`);
+        fetch(`/mypage/${menuName}`)
+            .then(response => response.text())
+            .then(html => {
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = html;
+
+                // 새로 삽입된 script 실행!
+                contentDiv.querySelectorAll("script").forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    if (oldScript.src) {
+                        newScript.src = oldScript.src;
+                    } else {
+                        newScript.textContent = oldScript.textContent;
+                    }
+                    document.body.appendChild(newScript);
+                    document.body.removeChild(newScript);
+                });
+            });
+    }
+
+    // 뒤로가기 동작도 복구!
+    window.onpopstate = function (event) {
+        const menu = event.state?.menu || 'profile';
+        fetch(`/mypage/${menu}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('content').innerHTML = html;
+            });
+    };
+</script>
+
+<script>
     document.addEventListener('DOMContentLoaded', function () {
         // ✨ URL 파라미터에서 menu 추출
         const urlParams = new URLSearchParams(window.location.search);
@@ -172,7 +192,7 @@
         history.pushState({ menu: menuName }, '', `/mypage?menu=${menuName}`);
 
         fetch(`/mypage/${menuName}`)
-            .then(response => response.text())
+    .then(response => response.text())
             .then(html => {
                 const contentDiv = document.getElementById('content');
                 contentDiv.innerHTML = html;
@@ -200,7 +220,7 @@
     window.onpopstate = function(event) {
         const menu = event.state?.menu || 'home-summary';
         fetch(`/mypage/${menu}`)
-            .then(response => response.text())
+    .then(response => response.text())
             .then(html => {
                 document.getElementById('content').innerHTML = html;
             });
@@ -423,7 +443,7 @@
                 rating: rating
             })
         })
-                .then(res => res.json())
+            .then(res => res.json())
             .then(result => {
                 if(result.success) {
                     alert('리뷰가 등록되었습니다!');
@@ -437,7 +457,7 @@
     };
 
 
-        function toggleAnswer(idx) {
+    function toggleAnswer(idx) {
         const box = document.getElementById("answerBox" + idx);
         box.style.display = box.style.display === 'block' ? 'none' : 'block';
     }
@@ -461,7 +481,5 @@
         }
     }
 </script>
-
-
 </body>
 </html>
