@@ -19,17 +19,6 @@
             font-size: 30px;
         }
 
-        #topBtn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 15px;
-            border-radius: 50%;
-            background-color: #5b9bd5;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
 
         /* ✅ Swiper 커스터마이징 */
         .swiper-button-next,
@@ -47,21 +36,6 @@
         }
 
 
-
-        .tab.active {
-            border-bottom: 2px solid red;
-            font-weight: bold;
-            color: red;
-        }
-        .tab {
-            background: none;
-            border: none;
-            outline: none;
-            cursor: pointer;
-        }
-        #searchSuggestions li:hover {
-            background-color: #f5f5f5;
-        }
 
         .search-bar {
             display: flex;
@@ -95,7 +69,7 @@
 
         .search-bar button[type="submit"] {
             padding: 12px 24px;
-            background: #7c4dff;
+            background: #465BFF;
             color: white;
             border: none;
             border-radius: 8px;
@@ -106,20 +80,37 @@
         }
 
         .search-bar button[type="submit"]:hover {
-            background: #5e35b1;
+            background: #465BFF;
         }
 
         #searchSuggestions {
             display: none;
             position: absolute;
             top: 100%;
-            left: 0;
-            width: 100%;
+            left: 20%;
+            width: 70%;
             background: white;
             border: 1px solid #ccc;
             z-index: 999;
             border-radius: 0 0 12px 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        #searchSuggestions ul {
+            list-style: none;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #searchSuggestions ul li {
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #searchSuggestions ul li:hover {
+            color: #465BFF;
+            background-color: #f5f5f5;
         }
 
         .tab-buttons {
@@ -139,13 +130,13 @@
         }
 
         .tab.active {
-            border-bottom: 2px solid blueviolet;
+            border-bottom: 2px solid #465BFF;
             font-weight: bold;
             background: #fff;
-            color: blueviolet;
+            color: #465BFF;
         }
         .tab:hover {
-            background-color: blueviolet !important;  /* 보라색 배경 */
+            background-color: #465BFF !important;  /* 보라색 배경 */
             color: white;
         }
 
@@ -153,24 +144,14 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 10px;
-        }
-
-        #searchSuggestions ul {
-            list-style: none;
-            margin: 0;
-            padding: 10px;
-        }
-
-        #searchSuggestions ul li {
-            padding: 6px 0;
+            padding: 15px;
+            border-radius: 50%;
+            background-color: #5b9bd5;
+            color: white;
+            border: none;
             cursor: pointer;
-            font-size: 14px;
         }
 
-        #searchSuggestions ul li:hover {
-            color: blueviolet;
-        }
 
 
     </style>

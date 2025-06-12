@@ -1,35 +1,59 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/suit-webfont@latest/css/suit.min.css" rel="stylesheet" />
 
     <link rel="stylesheet" href="/css/header.css">
     <style>
+
+        body {
+            font-family: 'SUIT', 'Apple SD Gothic Neo', 'sans-serif';
+            color: #464646;
+            background-color: #f9f9f9;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        h2 {
+            color: #323232;
+            font-weight: 600;
+        }
+
+        h3, p, span {
+            color: #3c3c3c;
+        }
+
+        a {
+            color: #646464;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
         /* 전체 컨테이너 */
         .product-container {
             display: flex;
             gap: 20px;
             padding: 20px;
+
+            max-width: 1400px;   /* ✅ 본문 최대 너비 제한 */
+            margin: 0 auto;
+
         }
 
+        .product-left,
+        .product-main,
+        .product-right {
+            border: 2px solid #d6d6d6;                    /* 연한 테두리 */
+            border-radius: 12px;                       /* 둥글게 */
+            background-color: #fff;                    /* 배경 흰색 */
+            padding: 20px;                             /* 안쪽 여백 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); /* 부드러운 그림자 */
+        }
 
         /* 왼쪽/오른쪽 사이드바 */
-        .product-left,
-        .product-right {
-            width: 20%;
-        }
-        /* ✅ 중앙 전체를 감싸는 래퍼 */
-        .product-main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* 중앙 영역 (정렬 + 리스트) */
-        .product-center {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+        .product-left, .product-right {
+            width: 15%;
+            box-sizing: border-box;
         }
 
 
@@ -39,6 +63,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding-left: 5px;
         }
 
         .product-left ul {
@@ -55,8 +80,9 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: clamp(12px, 2vw, 17px);
-            color: black;
+            font-size: clamp(14px, 2vw, 17px);
+            color: #3c3c3c;
+            font-weight: 550;
             text-decoration: none;
             transition: color 0.2s ease;
             padding-left: 20px;
@@ -77,17 +103,26 @@
         }
 
         .price-input {
-            width: 90px;
+            width: 80px;
             height: 30px;
-            padding: 6px 8px;
-            font-size: 14px;
+            padding: 2px 4px;
+            font-size: 13px;
             border: 1px solid #ccc;
             border-radius: 8px;
             box-sizing: border-box;
         }
 
+        .price-input-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;                 /* ✅ 간격 줄이기 (기존 8px → 4px) */
+            margin-bottom: 0px;
+            margin-left: -6px;
+        }
+
         .price-filter-button {
-            margin-top: 10px;
+            margin-top: 0;
+            margin-left: 30px;
             padding: 6px 12px;
             font-size: 14px;
             background-color: #7c4dff;
@@ -95,7 +130,6 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: 0.2s;
         }
 
         .price-filter-button:hover {
@@ -146,7 +180,7 @@
         }
 
         .search-bar button:hover {
-            background: #5e35b1;
+            background: #465BFF;
         }
 
         /* 검색어 추천 */
@@ -154,8 +188,8 @@
             display: none;
             position: absolute;
             top: 100%;
-            left: 0;
-            width: 100%;
+            left: 20%;
+            width: 70%;
             background: white;
             border: 1px solid #ccc;
             z-index: 999;
@@ -180,13 +214,13 @@
         }
 
         .tab.active {
-            border-bottom: 2px solid blueviolet;
+            border-bottom: 2px solid #465BFF;
             background: #fff;
-            color: blueviolet;
+            color: #465BFF;
         }
 
         .tab:hover {
-            background-color: blueviolet !important;
+            background-color: #465BFF !important;
             color: white;
         }
 
@@ -203,7 +237,22 @@
         }
 
         #searchSuggestions ul li:hover {
-            color: blueviolet;
+            color: #465BFF;
+        }
+
+        /* ✅ 중앙 전체를 감싸는 래퍼 */
+        .product-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 중앙 영역 (정렬 + 리스트) */
+        .product-center {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
         }
 
         /* 정렬 링크 */
@@ -219,6 +268,11 @@
             gap: 10px;
             align-items: center;
         }
+
+        .sort-area > div > div {
+            display: inline-flex;
+            gap: 8px;
+        }
         .sort-link {
             color: #333;
             text-decoration: none;
@@ -227,7 +281,7 @@
         }
 
         .sort-active {
-            color: blueviolet;
+            color: #465BFF;
             font-weight: bold;
             text-decoration: underline;
         }
@@ -235,7 +289,7 @@
         /* 글쓰기 버튼 */
         .write-button {
             padding: 8px 16px;
-            background-color: blueviolet;
+            background-color: #465BFF;
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -243,7 +297,7 @@
         }
 
         .write-button:hover {
-            background-color: #5e35b1;
+            background-color: #465BFF;
         }
 
         .product-box {
@@ -300,7 +354,10 @@
 
     <!-- 왼쪽: 서브카테고리 -->
     <div class="product-left">
-        <h2 th:if="${isSearch and selectedCategoryId == null}">🔍 전체 검색 중입니다</h2>
+        <div th:if="${isSearch and selectedCategoryId == null}">
+            <h2 >🔍전체 검색 중</h2>
+            <h4 style="padding-left: 13px">카테고리가 없습니다.</h4>
+        </div>
         <h2 th:unless="${isSearch and selectedCategoryId == null}">서브 카테고리</h2>
 
         <ul th:if="${not (isSearch and selectedCategoryId == null)}">
@@ -320,11 +377,13 @@
             <form th:action="@{/category/{categoryId}/subcategory/{subCategoryId}(categoryId=${category.categoryId}, subCategoryId=${subCategoryId})}"
                   method="get"
                   onsubmit="return validatePriceRange()">
+                <div class="price-input-group">
                 <input type="number" name="minPrice" id="minPrice1"
                        class="price-input" placeholder="최소 가격" th:value="${param.minPrice}" />
                 ~
                 <input type="number" name="maxPrice" id="maxPrice1"
                        class="price-input" placeholder="최대 가격" th:value="${param.maxPrice}" />
+                </div>
                 <br/>
                 <button type="submit" class="price-filter-button">가격 필터</button>
             </form>
@@ -334,11 +393,13 @@
             <form th:action="@{/category/{categoryId}(categoryId=${category.categoryId})}"
                   method="get"
                   onsubmit="return validatePriceRange()">
+                <div class="price-input-group">
                 <input type="number" name="minPrice" id="minPrice"
                        class="price-input" placeholder="최소 가격" th:value="${param.minPrice}" />
                 ~
                 <input type="number" name="maxPrice" id="maxPrice"
                        class="price-input" placeholder="최대 가격" th:value="${param.maxPrice}" />
+                </div>
                 <br/>
                 <button type="submit" class="price-filter-button">가격 필터</button>
             </form>
@@ -348,37 +409,46 @@
 
     <div class="product-main">
     <!-- 중앙: 정렬 + 글쓰기 버튼 (맨 위 고정) -->
-    <div class="product-top-bar">
-        <div th:if="${not isSearch and not isPriceFiltered}" class="sort-area">
-            <span>정렬:</span>
+        <div class="product-top-bar">
+            <!-- 정렬 또는 검색 안내 -->
+            <div class="sort-area">
+                <!-- ✅ 정렬 링크 표시 조건 -->
+                <div th:if="${not isSearch and not isPriceFiltered}">
+                    <span>정렬 순서 : </span>
 
-            <!-- 서브카테고리 정렬 링크 -->
-            <div th:if="${subCategoryId != null}">
-                <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=latest|}"
-                   th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
-                <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=views|}"
-                   th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
-                <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=price|}"
-                   th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
+                    <!-- 서브카테고리 정렬 링크 -->
+                    <div th:if="${subCategoryId != null}">
+                        <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=latest|}"
+                           th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
+                        <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=views|}"
+                           th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
+                        <a th:href="@{|/category/${category.categoryId}/subcategory/${subCategoryId}?sort=price|}"
+                           th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
+                    </div>
+
+                    <!-- 대카테고리 정렬 링크 -->
+                    <div th:if="${subCategoryId == null}">
+                        <a th:href="@{|/category/${category.categoryId}?sort=latest|}"
+                           th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
+                        <a th:href="@{|/category/${category.categoryId}?sort=views|}"
+                           th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
+                        <a th:href="@{|/category/${category.categoryId}?sort=price|}"
+                           th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
+                    </div>
+                </div>
+
+                <!-- ✅ 검색 중일 때 대체 문구 -->
+                <div th:if="${isSearch}" style="min-height: 28px;">
+                    <span style="font-size: 16px; font-weight: 500; color: #666;">검색하신 상품입니다.</span>
+                </div>
             </div>
 
-            <!-- 대카테고리 정렬 링크 -->
-            <div th:if="${subCategoryId == null}">
-                <a th:href="@{|/category/${category.categoryId}?sort=latest|}"
-                   th:class="${currentSort == 'latest'} ? 'sort-active' : 'sort-link'">최신순</a>
-                <a th:href="@{|/category/${category.categoryId}?sort=views|}"
-                   th:class="${currentSort == 'views'} ? 'sort-active' : 'sort-link'">조회순</a>
-                <a th:href="@{|/category/${category.categoryId}?sort=price|}"
-                   th:class="${currentSort == 'price'} ? 'sort-active' : 'sort-link'">가격 낮은순</a>
-            </div>
+            <!-- 글쓰기 버튼 (항상 오른쪽 고정) -->
+            <a th:href="@{'/product/write?categoryId=' + ${category != null ? category.categoryId : ''}}"
+               class="write-button">
+                상품 글쓰기
+            </a>
         </div>
-
-        <!-- 글쓰기 버튼 -->
-        <a th:href="@{'/product/write?categoryId=' + ${category != null ? category.categoryId : ''}}"
-           class="write-button">
-            상품 글쓰기
-        </a>
-    </div>
 
     <!-- 중앙: 상품 리스트 -->
     <div class="product-center">
@@ -393,7 +463,7 @@
             <a th:href="@{'/product/' + ${product.productId}}" class="product-box-link">
                 <div class="product-box">
                     <img th:src="${product.imageUrl + '?v=' + #dates.createNow().time}" alt="상품 이미지" class="product-img">
-                    <h4 th:text="${product.title}"></h4>
+                    <h3 th:text="${product.title}"></h3>
                     <p>가격: <span th:text="${product.price}"></span>원</p>
                     <p>보증금: <span th:text="${product.deposit}"></span>원</p>
                     <p th:if="${product.createdAt != null}" th:text="${product.createdAt}"></p>
