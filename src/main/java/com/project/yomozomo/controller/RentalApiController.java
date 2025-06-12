@@ -1,124 +1,80 @@
-// src/main/java/com/project/yomozomo/controller/RentalApiController.java
+package com.project.yomozomo.controller.chat; // 적절한 패키지 경로로 변경해주세요.
 
-package com.project.yomozomo.controller;
-
-import com.project.yomozomo.domain.Product;
-import com.project.yomozomo.domain.Rental;
-import com.project.yomozomo.dto.RentalRequestDto;
-import com.project.yomozomo.entity.User;
-import com.project.yomozomo.repository.ProductRepository;
 import com.project.yomozomo.repository.RentalRepository;
 import com.project.yomozomo.repository.UserRepository;
-import com.project.yomozomo.service.ChatService;
-import com.project.yomozomo.service.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
-import java.text.SimpleDateFormat;
-import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Date;
+import lombok.RequiredArgsConstructor;
 import java.util.List;
-import java.util.Map;
+import java.security.Principal;
 
-@RestController
-@RequestMapping("/api/rental")
-public class RentalApiController {
+import com.project.yomozomo.entity.ChatRoom;
+import com.project.yomozomo.entity.User;
+import com.project.yomozomo.domain.Rental; // domain 패키지의 Rental 임포트
+import com.project.yomozomo.service.ChatService;
 
-    private final RentalRepository rentalRepository;
-    private final ProductRepository productRepository;
-    private final UserRepository userRepository;
-    private final UserService userService;
+@RestController // RESTful API 컨트롤러임을 명시
+@RequestMapping("/api/chatrooms") // API 기본 경로 설정
+@RequiredArgsConstructor // final 필드들을 위한 생성자 자동 생성 (Lombok)
+public class ChatRoomApiController { // API 컨트롤러임을 명확히 하는 이름 (선택 사항)
+
     private final ChatService chatService;
+    private final UserRepository userRepository;
+    private final RentalRepository rentalRepository;
 
-    public RentalApiController(RentalRepository rentalRepository,
-                               ProductRepository productRepository,
-                               UserRepository userRepository, UserService userService, ChatService chatService) {
-        this.rentalRepository = rentalRepository;
-        this.productRepository = productRepository;
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.chatService = chatService;
+    /**
+     * 특정 렌탈 상품에 대한 채팅방을 시작하거나 기존 채팅방을 반환합니다.
+     * 구매자, 판매자, 렌탈 상품 정보를 기반으로 채팅방을 찾거나 새로 생성합니다.
+     *
+     * @param rentalId 채팅을 시작할 렌탈 상품의 ID
+     * @param sellerId 해당 렌탈 상품 판매자의 ID
+     * @param principal 현재 로그인된 사용자(구매자) 정보
+     * @return 생성되거나 찾아진 채팅방의 ID (Long)
+     * @throws IllegalArgumentException 구매자, 판매자, 또는 렌탈 상품 정보를 찾을 수 없을 경우 발생
+     */
+    @PostMapping("/start")
+    @ResponseBody // @RestController에 포함되어 있지만 명시적으로 추가해도 무방
+    public Long startChat(@RequestParam Long rentalId,
+                          @RequestParam Long sellerId,
+                          Principal principal) {
+        // 현재 로그인된 구매자 정보 조회
+        User buyer = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("구매자 정보를 찾을 수 없습니다."));
+        // 판매자 정보 조회
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new IllegalArgumentException("판매자 정보를 찾을 수 없습니다."));
+        // 렌탈 상품 정보 조회
+        Rental rental = rentalRepository.findById(rentalId)
+                .orElseThrow(() -> new IllegalArgumentException("렌탈 상품 정보를 찾을 수 없습니다."));
+
+        // 채팅방을 찾거나 새로 생성하고 해당 채팅방의 ID를 반환
+        return chatService.findOrCreateChatRoom(buyer, seller, rental);
     }
 
-    private String formatDate(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return sdf.format(date);
+    /**
+     * 특정 채팅방의 상세 정보를 조회합니다.
+     *
+     * @param roomId 조회할 채팅방의 ID
+     * @return 해당 채팅방 정보 (ChatRoom 객체)를 포함하는 ResponseEntity
+     * @throws IllegalArgumentException 채팅방을 찾을 수 없을 경우 발생 (ChatService에서 처리)
+     */
+    @GetMapping("/{roomId}")
+    public ResponseEntity<ChatRoom> getRoomDetails(@PathVariable Long roomId) {
+        // ChatService를 통해 채팅방 정보를 조회 (서비스 계층에서 Optional 처리 또는 예외 던지기)
+        ChatRoom chatRoom = chatService.getChatRoomById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다. ID: " + roomId));
+        return ResponseEntity.ok(chatRoom);
     }
 
-    @GetMapping("/reserved/{productId}")
-    public List<Map<String, String>> getReservedDates(@PathVariable int productId) {
-        List<Rental> rentals = rentalRepository.findByProduct_ProductIdAndStatusIn(productId, List.of("예약", "대여중"));
-        return rentals.stream()
-                .map(r -> Map.of(
-                        "start", formatDate(r.getStartDate()),
-                        "end", formatDate(plusOneDay(r.getEndDate()))
-                ))
-                .toList();
-    }
-
-    private Date plusOneDay(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.DATE, 1);
-        return cal.getTime();
-    }
-
-
-    // RentalApiController.java 내부에 추가
-    @PostMapping
-    public ResponseEntity<?> createRental(@RequestBody RentalRequestDto requestDto,
-                                          Principal principal) {
-        // 로그인 ID 가져오기
-        String username = principal.getName(); // 로그인된 사용자의 username(email, 아이디 등)
-
-        // userService.findByUsername()의 반환 타입에 따라 .orElseThrow() 사용 여부 결정
-        User user = userService.findByUsername(username);
-
-
-        Long userId = user.getId(); // 실제 user_id 추출
-
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-        }
-
-        try {
-            // 이 user는 위에서 이미 검증되었으므로, 다시 userRepository.findById로 찾을 필요는 없습니다.
-            // 하지만 일관성 유지 차원에서 남겨둘 수도 있습니다.
-            // user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다: " + userId));
-            Product product = productRepository.findById(requestDto.getProductId()).orElseThrow(() -> new IllegalArgumentException("상품 정보를 찾을 수 없습니다: " + requestDto.getProductId()));
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date start = sdf.parse(requestDto.getStartDate());
-            Date end = sdf.parse(requestDto.getEndDate());
-
-            long days = ChronoUnit.DAYS.between(start.toInstant(), end.toInstant()) + 1;
-            int totalPrice = (int) days * product.getPrice();
-
-            Rental rental = new Rental();
-            rental.setUser(user);
-            rental.setProduct(product);
-            rental.setStartDate(start);
-            rental.setEndDate(end);
-            rental.setTotalPrice(totalPrice);
-            rental.setStatus("예약");
-            rental.setCreatedAt(new Date());
-
-            Rental savedRental = rentalRepository.save(rental);
-
-            // ⭐ 이 부분이 핵심입니다: chatService의 메서드를 호출합니다. ⭐
-            // product.getUser()가 판매자 User 객체를 반환하는지 다시 한번 확인해주세요.
-            Long chatRoomId = chatService.findOrCreateChatRoomForRental(user, product.getSeller(), savedRental.getRentalId());
-
-            // ⭐ (선택 사항) 응답을 JSON 형태로 변경하여 chatRoomId를 클라이언트에 전달 ⭐
-            // 이 부분을 사용하려면 product-detail.html의 submitReservation 함수도 수정해야 합니다.
-            return ResponseEntity.ok(Map.of("message", "예약 완료", "chatRoomId", chatRoomId));
-
-        } catch (Exception e) {
-            // 에러 메시지도 JSON 형태로 반환하는 것이 좋습니다.
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "예약 실패: " + e.getMessage()));
-        }
+    /**
+     * 모든 채팅방의 목록을 조회합니다.
+     * (이 API는 관리자용 또는 특정 목적에 따라 제한될 수 있음)
+     *
+     * @return 모든 채팅방 목록 (List<ChatRoom>)을 포함하는 ResponseEntity
+     */
+    @GetMapping
+    public ResponseEntity<List<ChatRoom>> getAllRooms() {
+        List<ChatRoom> rooms = chatService.getAllChatRooms();
+        return ResponseEntity.ok(rooms);
     }
 }
