@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.chat;
 
 import com.project.yomozomo.dto.ChatStartRequest;
 import com.project.yomozomo.repository.RentalRepository;
@@ -45,14 +45,14 @@ public class ChatRoomApiController {
         if (seller == null) {
             return ResponseEntity.badRequest().body(-1L);
         }
-        Long chatRoomId = chatService.findOrCreateChatRoom(buyer, seller, rental);
+        Long chatRoomId = chatService.findOrCreateChatRoom(buyer, seller, rental.getRentalId());
         return ResponseEntity.ok(chatRoomId);
     }
 
     // [채팅방 상세 조회]
     @GetMapping("/{roomId}")
     public ResponseEntity<ChatRoom> getRoomDetails(@PathVariable Long roomId) {
-        Optional<ChatRoom> chatRoomOpt = Optional.ofNullable(chatService.getChatRoomById(roomId));
+        Optional<ChatRoom> chatRoomOpt = chatService.getChatRoomById(roomId);
         if (chatRoomOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

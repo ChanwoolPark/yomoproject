@@ -1,3 +1,4 @@
+/*
 package com.project.yomozomo.controller;
 
 import com.project.yomozomo.dto.ChatMessageDTO;
@@ -34,42 +35,6 @@ public class WebSocketChatController {
     private final RentalService rentalService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    // 📢 1. 메시지 전송 처리 (STOMP)
-    @MessageMapping("/pub/chat.sendMessage/{chatRoomId}")
-    public void sendMessage(@Payload ChatMessageDTO chatMessageDto,
-                            @DestinationVariable Long chatRoomId) {
-        log.info("메시지 수신 - 룸ID: {}, 발신자: {}", chatRoomId, chatMessageDto.getSenderId());
-        if (chatMessageDto.getRoomId() == null || !chatMessageDto.getRoomId().equals(chatRoomId)) {
-            chatMessageDto.setRoomId(chatRoomId); // URL의 chatRoomId 우선
-        }
-        try {
-            User senderUser = userService.getUserById(chatMessageDto.getSenderId());
-            if (senderUser == null) {
-                chatMessageDto.setSenderName("알 수 없는 사용자");
-                log.error("보낸 사용자 ID {} 찾을 수 없음", chatMessageDto.getSenderId());
-                return;
-            }
-            chatMessageDto.setSenderName(senderUser.getNickname());
-
-            // messageType 변환
-            String dbMessageType = chatMessageDto.getMessageType() != null ? chatMessageDto.getMessageType().name() : "TEXT";
-
-            chatService.saveChatMessage(
-                    chatMessageDto.getRoomId(),
-                    chatMessageDto.getSenderId(),
-                    chatMessageDto.getMessage(),
-                    chatMessageDto.getImgUrl(),
-                    dbMessageType
-            );
-            log.info("메시지 저장 성공(RoomID: {})", chatMessageDto.getRoomId());
-        } catch (Exception e) {
-            log.error("메시지 저장 오류: {}", e.getMessage(), e);
-            return;
-        }
-        String destination = "/sub/chat/room/" + chatRoomId;
-        messagingTemplate.convertAndSend(destination, chatMessageDto);
-        log.info("메시지 [{}]를 [{}]로 브로드캐스트 완료", chatMessageDto.getMessage(), destination);
-    }
 
     // 📢 2. 채팅방 입장 (JOIN 메시지)
     @MessageMapping("/pub/chat.addUser/{chatRoomId}")
@@ -212,3 +177,4 @@ public class WebSocketChatController {
         return "report";
     }
 }
+*/

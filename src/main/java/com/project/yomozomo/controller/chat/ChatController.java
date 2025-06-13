@@ -1,4 +1,4 @@
-package com.project.yomozomo.controller;
+package com.project.yomozomo.controller.chat;
 
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.ChatMessage;
@@ -160,7 +160,7 @@ public class ChatController {
             redirectAttributes.addFlashAttribute("errorMessage", "사용자 정보를 찾을 수 없습니다.");
             return "redirect:/errorPage";
         }
-        Optional<ChatRoom> optionalChatRoom = Optional.ofNullable(chatService.getChatRoomById(roomId));
+        Optional<ChatRoom> optionalChatRoom = chatService.getChatRoomById(roomId);
         if (optionalChatRoom.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "채팅방을 찾을 수 없습니다. ID: " + roomId);
             return "redirect:/errorPage";
