@@ -88,7 +88,8 @@ public class ChatService {
      * @param rentalId 이 메서드에서 사용되지 않거나 (null 허용), 필요시 특정 용도로 사용될 수 있습니다.
      * @return 생성되거나 찾아진 ChatRoom의 ID
      */
-    @Transactional
+
+/*    @Transactional
     public Long findOrCreateChatRoom(User user1, User user2, Long rentalId) {
         User participant1 = user1.getId() < user2.getId() ? user1 : user2;
         User participant2 = user1.getId() < user2.getId() ? user2 : user1;
@@ -112,7 +113,7 @@ public class ChatService {
             log.info("새 일반 채팅방 생성: Room ID {}, Room Name: {}", savedRoom.getRoomId(), savedRoom.getRoomName());
             return savedRoom.getRoomId();
         }
-    }
+    }*/
 
 
     // --- 메시지 관리 ---

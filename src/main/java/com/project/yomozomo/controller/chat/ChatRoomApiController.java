@@ -45,7 +45,7 @@ public class ChatRoomApiController {
         if (seller == null) {
             return ResponseEntity.badRequest().body(-1L);
         }
-        Long chatRoomId = chatService.findOrCreateChatRoom(buyer, seller, rental.getRentalId());
+        Long chatRoomId = chatService.findOrCreateChatRoomForRental(buyer, seller, rental.getRentalId());
         return ResponseEntity.ok(chatRoomId);
     }
 

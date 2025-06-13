@@ -106,7 +106,7 @@ public class RentalApiController {
             Rental savedRental = rentalRepository.save(rental);
 
             // 5. 채팅방 자동 생성
-            Long chatRoomId = chatService.findOrCreateChatRoom(user, product.getSeller(), savedRental.getRentalId());
+            Long chatRoomId = chatService.findOrCreateChatRoomForRental(user, product.getSeller(), savedRental.getRentalId());
 
             resp.put("message", "예약 완료");
             resp.put("chatRoomId", chatRoomId);
