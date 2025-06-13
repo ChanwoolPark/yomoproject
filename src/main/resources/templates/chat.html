@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>채팅방</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- 폰트/아이콘 등 필요한 리소스 추가 (필요시) -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         /* =================================================== */
         /* 기본 레이아웃 및 컨테이너 스타일 */
@@ -307,7 +304,7 @@
             justify-content: flex-start;
             gap: 8px; /* 버튼 간격 조절 */
             width: 100%;
-            padding: 0 0px; /* 툴바 자체의 좌우 패딩 제거 (컨테이너가 처리) */
+            padding: 0 0; /* 툴바 자체의 좌우 패딩 제거 (컨테이너가 처리) */
         }
 
         .input-toolbar button {
@@ -451,7 +448,6 @@
             left: 0;
             width: 100%;
             height: 100%;
-            padding: 0 15px;
             box-sizing: border-box;
             background-color: #f8f9fa;
             display: none;
@@ -460,11 +456,11 @@
             opacity: 0;
             pointer-events: none;
             /* 내부 콘텐츠를 위한 flex 속성 추가 */
-            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start; /* 상단부터 채우기 */
-            padding-top: 15px; /* 콘텐츠 상단 여백 */
+            /* 콘텐츠 상단 여백 */
+            padding: 15px 15px 0;
         }
         .panel-content-section.active-panel-section {
             display: flex; /* 활성화 시 flex로 변경 */
@@ -498,7 +494,7 @@
             border-radius: 8px; /* 더 둥근 모서리 */
             font-size: 1.1rem;
             text-align: center;
-            -moz-appearance: textfield; /* Firefox에서 화살표 숨김 */
+            -moz-appearance: textfield; /* Firefox 화살표 숨김 */
         }
         /* 크롬, 사파리 등에서 숫자 입력 필드 화살표 숨김 */
         #paymentPanelContent input[type="number"]::-webkit-outer-spin-button,
@@ -699,23 +695,22 @@
         /* 이미지 팝업 모달 스타일 (새로 추가) */
         /* =================================================== */
         .image-modal-overlay {
-            display: none; /* 기본적으로 숨김 */
+            display: none; /* ⭐ 이 부분을 추가하거나 수정합니다. ⭐ */
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); /* 어두운 배경 */
-            display: flex;
+            background-color: rgba(0, 0, 0, 0.9);
             justify-content: center;
             align-items: center;
-            z-index: 2000; /* 모든 콘텐츠 위에 표시되도록 높은 z-index 설정 */
+            z-index: 2000;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
 
         .image-modal-overlay.active {
-            display: flex;
+            display: flex; /* ⭐ 활성화 시 flex로 변경 ⭐ */
             opacity: 1;
         }
 
@@ -752,29 +747,25 @@
             color: #bbb;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<button class="button p-grid-col5" onclick="location.href='http://localhost:8080';">메인 화면</button>
 <div class="chat-container">
     <div class="chat-header">
         <img id="chatPartnerProfileImage" class="profile-image-header left" th:src="${chatPartnerProfileImage}" alt="상대방 프로필">
         <h3 id="chatHeader">
-            <p>
-                <span th:if="${chatPartnerNickname != null}" th:text="${chatPartnerNickname + '님과의 채팅'}">[상대방 닉네임]</span>
-                <span th:unless="${chatPartnerNickname != null}">채팅방 <span th:text="${currentRentalId}">[렌탈 ID]</span></span>
-            </p>
-        </h3>
+            <p th:text="${chatPartnerNickname + '님과의 채팅'}">[상대방 닉네임]</p> </h3>
         <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserProfileImage}" alt="내 프로필">
     </div>
 
     <div class="chat-messages" id="chatMessages">
-        <!-- 서버 사이드 렌더링 메시지 기록 (선택적) -->
         <div th:each="message : ${chatHistory}"
              th:classappend="${message.messageType == 'JOIN' or message.messageType == 'LEAVE' ? 'event-message' : (message.senderId == currentUserId ? 'sent' : 'received')}"
              class="message-wrapper">
             <span class="sender-name"
                   th:if="${(message.senderId != currentUserId) and (message.messageType != 'JOIN') and (message.messageType != 'LEAVE')}"
                   th:text="${message.senderName}"></span>
+
             <div class="message-content">
                 <th:block th:if="${message.messageType == 'IMAGE'}">
                     <img th:src="${message.imgUrl}"
@@ -788,31 +779,32 @@
                     <th:block th:text="${message.message}"></th:block>
                 </th:block>
             </div>
-            <div class="message-time"
-                 th:text="${message.sendTime != null ? #temporals.format(message.sendTime, 'HH:mm') : '시간 없음'}"></div>
+            <div class="message-time" th:text="${message.sendTime != null ? #temporals.format(message.sendTime, 'HH:mm') : '시간 없음'}">
+            </div>
         </div>
     </div>
 
     <div class="chat-input-area">
         <div class="input-and-send">
-            <label for="messageInput"></label>
-            <input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
+            <label for="messageInput" class="sr-only">메시지 입력</label> <input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
             <button id="sendMessageBtn" class="send-button">
-                <span class="material-icons">send</span>
-            </button>
+                <span class="material-icons">send</span> </button>
         </div>
         <input type="file" id="fileInput" style="display: none;">
         <div class="input-toolbar">
-            <button id="togglePanelBtn" title="거래 메뉴"><span class="material-icons">add_circle</span></button>
-            <button id="attachmentButton" title="파일 첨부"><span class="material-icons">attach_file</span></button>
-            <button id="calendarButton" title="달력 / 일정"><span class="material-icons">event</span></button>
-            <button id="reportButton" title="신고 / 문의"><span class="material-icons">report_problem</span></button>
+            <button id="togglePanelBtn" title="거래 메뉴">
+                <span class="material-icons">add_circle</span> </button>
+            <button id="attachmentButton" title="파일 첨부"> <span class="material-icons">attach_file</span> </button>
+            <button id="button3" title="달력 / 일정">
+                <span class="material-icons">event</span> </button>
+            <button id="reportButton" title="신고 / 문의"> <span class="material-icons">report_problem</span> </button>
         </div>
     </div>
 
     <div class="expanded-panel">
         <div class="panel-header">
-            <button id="closePanelBtn"><span class="material-icons">close</span></button>
+            <button id="closePanelBtn">
+                <span class="material-icons">close</span> </button>
         </div>
         <div class="inner-buttons-grid">
             <div class="grid-item-full">
@@ -831,6 +823,7 @@
                 </button>
             </div>
         </div>
+
         <div class="panel-content-wrapper">
             <div id="defaultPanelContent" class="panel-content-section active-panel-section">
                 <h4>추가 기능</h4>
@@ -854,26 +847,62 @@
         </div>
     </div>
 </div>
-
-<!-- 이미지 모달 (필요시)
 <div id="imageModal" class="image-modal-overlay">
     <div class="image-modal-content">
-        <span class="image-modal-close material-icons" onclick="closeImageModal()">&times;</span>
+        <span class="image-modal-close material-icons">&times;</span>
         <img id="modalImage" src="" alt="확대된 이미지">
     </div>
-</div>-->
+</div>
+<div id="priceAdjustmentModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+        <h3>금액 조절 요청</h3>
+        <label for="newPriceInput">새로운 금액을 입력하세요:</label>
+        <input type="number" id="newPriceInput" placeholder="예: 25000" min="0">
+        <div class="modal-buttons">
+            <button id="modalConfirmBtn">확인</button>
+            <button id="modalCancelBtn">취소</button>
+        </div>
+    </div>
+</div>
 
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+
 <script th:inline="javascript">
-    // =================== 전역 변수 ===================
+    // =========================================================
+    // 1. 전역 변수 선언 (Thymeleaf 주입 값 포함)
+    // =========================================================
     let stompClient = null;
-    let chatMessagesDiv, messageInput, sendMessageBtn, togglePanelBtn, closePanelBtn;
-    let expandedPanel, defaultPanelContent, paymentPanelContent, processPaymentBtn, paymentAmountInput;
-    let priceAdjustmentPanelContent, newPriceInputPanel, confirmPricePanelBtn, cancelPricePanelBtn;
-    let paymentGoBtn, innerButton2, tradeCompleteBtn, innerButtonsGrid;
-    let reportButton, attachmentButton, fileInput;
+    let chatMessagesDiv = null;
+    let messageInput = null;
+    let sendMessageBtn = null;
+    let togglePanelBtn = null;
+    let closePanelBtn = null;
+
+    let expandedPanel = null;
+
+    let defaultPanelContent = null;
+    let paymentPanelContent = null;
+    let processPaymentBtn = null;
+    let paymentAmountInput = null;
+
+    let priceAdjustmentPanelContent = null;
+    let newPriceInputPanel = null;
+    let confirmPricePanelBtn = null;
+    let cancelPricePanelBtn = null;
+
+    let paymentGoBtn = null;
+    let innerButton2 = null;
+    let tradeCompleteBtn = null;
+    let innerButtonsGrid = null;
+    let reportButton = null;
+    let attachmentButton = null;
+    let fileInput = null;
+
     let hasSentJoinMessage = false;
+
+    // Thymeleaf에서 주입될 값 (전역 변수)
     const chatRoomId = /*[[${chatRoomId}]]*/ 0;
     const currentUserId = /*[[${currentUserId}]]*/ 0;
     const currentRentalId = /*[[${currentRentalId}]]*/ '';
@@ -883,40 +912,76 @@
     const currentUserProfileImage = /*[[${currentUserProfileImage}]]*/ '/images/default_profile.png';
     const chatPartnerProfileImage = /*[[${chatPartnerProfileImage}]]*/ '/images/default_profile.png';
 
-    // =================== 하단 패널 함수 ===================
+    // 모달 관련 요소 초기화 (확장 패널과 별개로 작동)
+    let priceAdjustmentModal = null; // DOMContentLoaded에서 초기화
+    let modalCloseBtn = null;
+    let newPriceInput = null;
+    let modalConfirmBtn = null;
+    let modalCancelBtn = null;
+    let imageModal = null; // DOMContentLoaded에서 초기화
+    let modalImage = null;
+
+
+    // =========================================================
+    // 2. 하단 패널 함수 정의
+    // =========================================================
+
     function showPanelSection(sectionToShow, hideButtons = false) {
-        document.querySelectorAll('.panel-content-section').forEach(section => section.classList.remove('active-panel-section'));
-        if (sectionToShow) sectionToShow.classList.add('active-panel-section');
-        if (innerButtonsGrid) innerButtonsGrid.style.display = hideButtons ? 'none' : 'grid';
+        const sections = document.querySelectorAll('.panel-content-section');
+        sections.forEach(section => {
+            section.classList.remove('active-panel-section');
+        });
+
+        if (sectionToShow) {
+            sectionToShow.classList.add('active-panel-section');
+        }
+
+        if (innerButtonsGrid) {
+            if (hideButtons) {
+                innerButtonsGrid.style.display = 'none';
+            } else {
+                innerButtonsGrid.style.display = 'grid'; // 다시 그리드 표시
+            }
+        }
     }
 
     function toggleExpandedPanel(show) {
-        const isPanelActive = expandedPanel.classList.contains('active');
-        const shouldShow = show === undefined ? !isPanelActive : show;
+        const isPanelCurrentlyActive = expandedPanel.classList.contains('active');
+        const shouldShow = show === undefined ? !isPanelCurrentlyActive : show;
+
         if (shouldShow) {
             expandedPanel.classList.add('active');
             showPanelSection(defaultPanelContent, false);
         } else {
             expandedPanel.classList.remove('active');
             showPanelSection(null);
-            if (innerButtonsGrid) innerButtonsGrid.style.display = 'grid';
+            if (innerButtonsGrid) {
+                innerButtonsGrid.style.display = 'grid';
+            }
         }
         updateChatMessagesPadding();
     }
+
     function updateChatMessagesPadding() {
-        if (chatMessagesDiv && messageInput && expandedPanel) {
+        if (chatMessagesDiv && document.querySelector('.chat-input-area') && expandedPanel) {
             const inputAreaHeight = document.querySelector('.chat-input-area').offsetHeight;
             const panelActiveHeight = expandedPanel.classList.contains('active') ? expandedPanel.clientHeight : 0;
-            chatMessagesDiv.style.paddingBottom = (inputAreaHeight + panelActiveHeight + 15) + 'px';
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+            const totalBottomPadding = inputAreaHeight + panelActiveHeight + 15;
+
+            chatMessagesDiv.style.paddingBottom = `${totalBottomPadding}px`;
+            scrollToBottom();
         }
     }
 
-    // =================== 채팅 메시지 표시 ===================
+    // 채팅 메시지를 화면에 표시하는 함수
     function showMessage(message) {
         if (!chatMessagesDiv) return;
+
+        console.log('showMessage 함수 호출됨:', message);
+
         const messageWrapper = document.createElement('div');
         messageWrapper.classList.add('message-wrapper');
+
         if (message.messageType === 'JOIN' || message.messageType === 'LEAVE' || message.messageType === 'SYSTEM') {
             messageWrapper.classList.add('event-message');
         } else if (message.senderId === currentUserId) {
@@ -925,7 +990,8 @@
             messageWrapper.classList.add('received');
         }
 
-        if (message.senderId !== currentUserId && !['JOIN', 'LEAVE', 'SYSTEM'].includes(message.messageType) && message.senderName) {
+        const noSenderNameTypes = ['JOIN', 'LEAVE', 'SYSTEM'];
+        if (message.senderId !== currentUserId && !noSenderNameTypes.includes(message.messageType) && message.senderName) {
             const senderNameElement = document.createElement('span');
             senderNameElement.classList.add('sender-name');
             senderNameElement.textContent = message.senderName;
@@ -934,57 +1000,119 @@
 
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
-        if (message.messageType === 'IMAGE' && message.imgUrl) {
-            const imgElement = document.createElement('img');
-            imgElement.src = message.imgUrl;
-            imgElement.alt = message.message || "전송된 이미지";
-            imgElement.style.maxWidth = '250px';
-            imgElement.style.height = 'auto';
-            imgElement.style.borderRadius = '8px';
-            messageContent.appendChild(imgElement);
-            if (message.message && message.message.trim() !== '') {
-                const textSpan = document.createElement('span');
-                textSpan.textContent = message.message;
-                textSpan.style.display = 'block';
-                textSpan.style.marginTop = '5px';
-                messageContent.appendChild(textSpan);
+
+        if (message.messageType === 'IMAGE') {
+            if (message.imgUrl) {
+                const imgElement = document.createElement('img');
+                imgElement.src = message.imgUrl;
+                imgElement.alt = message.message || "전송된 이미지";
+                imgElement.style.maxWidth = '250px';
+                imgElement.style.height = 'auto';
+                imgElement.style.borderRadius = '8px';
+                messageContent.appendChild(imgElement);
+
+                if (message.message && message.message.trim() !== '') {
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = message.message;
+                    textSpan.style.display = 'block';
+                    textSpan.style.marginTop = '5px';
+                    messageContent.appendChild(textSpan);
+                }
+            } else {
+                messageContent.textContent = message.message || "이미지 로드 실패: URL 없음";
+                console.warn("WARNING: IMAGE 타입 메시지에 imgUrl이 없습니다.", message);
             }
+        } else if (message.messageType === 'JOIN' || message.messageType === 'LEAVE' || message.messageType === 'SYSTEM') {
+            messageContent.textContent = message.message;
         } else {
             messageContent.textContent = message.message;
         }
+
         messageWrapper.appendChild(messageContent);
 
         const messageTimeDiv = document.createElement('div');
         messageTimeDiv.classList.add('message-time');
         if (message.sendTime) {
             const sentDate = new Date(message.sendTime);
-            messageTimeDiv.textContent = !isNaN(sentDate) ? sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '시간 오류';
+            if (!isNaN(sentDate)) {
+                messageTimeDiv.textContent = sentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                messageTimeDiv.textContent = '시간 오류';
+                console.warn("Invalid sendTime format:", message.sendTime);
+            }
         } else {
             messageTimeDiv.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
         messageWrapper.appendChild(messageTimeDiv);
+
         chatMessagesDiv.appendChild(messageWrapper);
+        scrollToBottom();
+        addClickListenersToImages(); // ⭐ 새 메시지 추가 시 이미지 클릭 리스너 다시 추가 ⭐
+    }
+
+    function scrollToBottom() {
         chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
     }
 
-    // =================== 웹소켓 연결 및 구독 ===================
+    function openImageModal(imageUrl) {
+        modalImage.src = imageUrl;
+        imageModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+        imageModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function addClickListenersToImages() {
+        const images = chatMessagesDiv.querySelectorAll('.message-content img');
+        images.forEach(img => {
+            if (!img.dataset.hasClickListener) {
+                img.onclick = () => openImageModal(img.src);
+                img.style.cursor = 'pointer';
+                img.dataset.hasClickListener = 'true';
+            }
+        });
+    }
+
+    // =========================================================
+    // 3. 웹소켓 연결 및 구독
+    // =========================================================
     function connect() {
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
+
         stompClient.connect({}, frame => {
+            console.log('Connected: ' + frame);
+
             stompClient.subscribe('/sub/chat/room/' + chatRoomId, message => {
-                showMessage(JSON.parse(message.body));
+                const receivedMessage = JSON.parse(message.body);
+                console.log("메시지 수신: ", receivedMessage);
+                showMessage(receivedMessage);
             });
-            if (!hasSentJoinMessage) sendJoinMessage();
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+            if (!hasSentJoinMessage) {
+                sendJoinMessage();
+            }
+
+            scrollToBottom();
         }, error => {
+            console.error('STOMP Error:', error);
             setTimeout(connect, 5000);
         });
     }
 
+    // =========================================================
+    // 4. 메시지 전송 (핵심!)
+    // =========================================================
     function sendMessage(messageContent, type = 'TALK') {
+        console.log("DEBUG: sendMessage 호출됨. messageContent:", messageContent, "type:", type);
         const messageToSend = messageContent ? messageContent.trim() : '';
-        if (!messageToSend && type === 'TALK') return;
+        if (!messageToSend && type === 'TALK') {
+            return;
+        }
+
         if (stompClient) {
             const chatMessage = {
                 roomId: chatRoomId,
@@ -993,15 +1121,23 @@
                 messageType: type,
                 sendTime: new Date().toISOString()
             };
+
             if (type === 'IMAGE') {
                 chatMessage.imgUrl = messageToSend;
                 chatMessage.message = "이미지를 보냈습니다.";
             }
+
+            console.log("전송할 메시지:", chatMessage);
+
             stompClient.send("/app/pub/chat.sendMessage/" + chatRoomId, {}, JSON.stringify(chatMessage));
-            if (type === 'TALK') messageInput.value = '';
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+            if (type === 'TALK') {
+                messageInput.value = '';
+            }
+            scrollToBottom();
         }
     }
+
     function sendJoinMessage() {
         if (stompClient && !hasSentJoinMessage) {
             const chatMessage = {
@@ -1011,13 +1147,21 @@
                 messageType: 'JOIN',
                 sendTime: new Date().toISOString()
             };
+            console.log("전송할 입장 메시지:", chatMessage);
+
             stompClient.send("/app/pub/chat.addUser/" + chatRoomId, {}, JSON.stringify(chatMessage));
             hasSentJoinMessage = true;
         }
     }
 
-    // =================== 이벤트 리스너 ===================
+    // =========================================================
+    // 5. 이벤트 리스너 등록
+    // =========================================================
+
     document.addEventListener('DOMContentLoaded', () => {
+        console.log("--- DEBUG: DOMContentLoaded 이벤트 발생! ---");
+
+        // 모든 요소들을 여기서 초기화
         chatMessagesDiv = document.getElementById('chatMessages');
         messageInput = document.getElementById('messageInput');
         sendMessageBtn = document.getElementById('sendMessageBtn');
@@ -1040,49 +1184,125 @@
         attachmentButton = document.getElementById('attachmentButton');
         fileInput = document.getElementById('fileInput');
 
-        if (sendMessageBtn) sendMessageBtn.addEventListener('click', () => sendMessage(messageInput.value, "TALK"));
-        if (messageInput) messageInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') sendMessageBtn.click(); });
-        if (togglePanelBtn) togglePanelBtn.addEventListener('click', () => toggleExpandedPanel());
-        if (closePanelBtn) closePanelBtn.addEventListener('click', () => toggleExpandedPanel(false));
-        if (paymentGoBtn) paymentGoBtn.addEventListener('click', () => showPanelSection(paymentPanelContent, true));
-        if (innerButton2) innerButton2.addEventListener('click', () => showPanelSection(priceAdjustmentPanelContent, true));
-        if (tradeCompleteBtn) tradeCompleteBtn.addEventListener('click', () => {
-            if (confirm('거래를 완료하시겠습니까? 완료 후에는 채팅을 할 수 없습니다.')) {
-                sendMessage("거래를 완료했습니다.", "TRADE_COMPLETE");
-                alert("거래가 완료되었습니다.");
+        // 모달 관련 요소 초기화 (확장 패널과 별개로 작동)
+        priceAdjustmentModal = document.getElementById('priceAdjustmentModal');
+        modalCloseBtn = document.getElementById('modalCloseBtn');
+        newPriceInput = document.getElementById('newPriceInput');
+        modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        modalCancelBtn = document.getElementById('modalCancelBtn');
+        imageModal = document.getElementById('imageModal'); // 이미지 모달도 초기화
+        modalImage = document.getElementById('modalImage'); // 이미지 모달 내 이미지 초기화
+
+
+        console.log("DEBUG: togglePanelBtn:", togglePanelBtn);
+        console.log("DEBUG: expandedPanel:", expandedPanel);
+        console.log("DEBUG: defaultPanelContent:", defaultPanelContent);
+        console.log("DEBUG: innerButtonsGrid:", innerButtonsGrid);
+        console.log("DEBUG: paymentGoBtn:", paymentGoBtn);
+
+
+        // 1. 메시지 전송 관련
+        if (sendMessageBtn) {
+            sendMessageBtn.addEventListener('click', () => {
+                sendMessage(messageInput.value, "TALK");
+                messageInput.value = '';
+            });
+        }
+
+        if (messageInput) {
+            messageInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    sendMessageBtn.click();
+                }
+            });
+        }
+
+        // 2. 확장 패널 토글 버튼 (+ 버튼)
+        if (togglePanelBtn) {
+            togglePanelBtn.addEventListener('click', () => {
+                console.log("--- DEBUG: '거래 메뉴' 버튼 클릭됨! ---");
+                toggleExpandedPanel();
+            });
+        } else {
+            console.error("--- DEBUG: 'togglePanelBtn' 요소를 찾을 수 없습니다! ---");
+        }
+
+        // 3. 확장 패널 닫기 버튼 (X 버튼)
+        if (closePanelBtn) {
+            closePanelBtn.addEventListener('click', () => {
+                console.log("--- DEBUG: '패널 닫기' 버튼 클릭됨! ---");
                 toggleExpandedPanel(false);
-                messageInput.disabled = true;
-                sendMessageBtn.disabled = true;
-                togglePanelBtn.disabled = true;
-                attachmentButton.disabled = true;
-                document.getElementById('calendarButton').disabled = true;
-                reportButton.disabled = true;
+            });
+        }
+
+        // 4. 확장 패널 내부 버튼들
+        if (paymentGoBtn) {
+            paymentGoBtn.addEventListener('click', function () {
+                if (currentRentalId) {
+                    toggleExpandedPanel(false);
+                    window.location.href = '/payment/' + currentRentalId;
+                } else {
+                    alert('렌탈 정보가 없어 결제 페이지로 이동할 수 없습니다.');
+                }
+            });
+        }
+
+        if (innerButton2) {
+            innerButton2.addEventListener('click', function() {
+                // 이 버튼은 확장 패널 대신 모달을 띄우도록 변경되었으므로, 기존 패널 섹션 호출은 주석 처리 또는 제거합니다.
+                // showPanelSection(priceAdjustmentPanelContent, true);
+                priceAdjustmentModal.classList.add('active'); // 모달 활성화
+            });
+        }
+
+        const isSeller = /*[[${isSeller}]]*/ false;
+        const rentalStatus = '[[${rental.status}]]'; // 이 변수는 사용되지 않는 것 같습니다.
+        console.log('rentalStatus:', rentalStatus, rentalStatus.length); // 디버깅용 로그
+
+        document.getElementById('tradeCompleteBtn').addEventListener('click', function() {
+            if (!isSeller) {
+                alert('거래완료는 판매자만 가능합니다.\n문제가 있는 경우 고객센터나 신고하기를 이용해주세요.');
+                return;
             }
+
+            fetch('/payment/complete/' + currentRentalId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(res => {
+                    if(res.ok) {
+                        alert('거래가 정상적으로 완료되었습니다.');
+                        location.reload();
+                    } else {
+                        res.text().then(msg => alert(msg));
+                    }
+                });
         });
-        if (processPaymentBtn) processPaymentBtn.addEventListener('click', () => {
-            const amount = paymentAmountInput.value;
-            if (amount && amount > 0) {
-                sendMessage(`[결제 요청] ${amount}원`, "PAYMENT_REQUEST");
-                alert(`결제 요청: ${amount}원`);
-                toggleExpandedPanel(false);
-                showPanelSection(defaultPanelContent, false);
-            } else {
-                alert('유효한 결제 금액을 입력해주세요.');
-            }
-        });
-        if (confirmPricePanelBtn) confirmPricePanelBtn.addEventListener('click', () => {
-            const newPrice = newPriceInputPanel.value;
-            if (newPrice && newPrice >= 0) {
-                sendMessage(`[금액 조절 요청] ${newPrice}원으로 변경`, "PRICE_ADJUSTMENT_REQUEST");
-                alert(`금액 조절 요청: ${newPrice}원`);
-                toggleExpandedPanel(false);
-                showPanelSection(defaultPanelContent, false);
-            } else {
-                alert('유효한 금액을 입력해주세요.');
-            }
-        });
-        if (cancelPricePanelBtn) cancelPricePanelBtn.addEventListener('click', () => showPanelSection(defaultPanelContent, false));
-        if (attachmentButton) attachmentButton.addEventListener('click', () => fileInput.click());
+
+        // 5. 패널 내부 콘텐츠 버튼들
+        if (processPaymentBtn) {
+            processPaymentBtn.addEventListener('click', () => {
+                const amount = paymentAmountInput.value;
+                if (amount && amount > 0) {
+                    sendMessage(`[결제 요청] ${amount}원`, "PAYMENT_REQUEST");
+                    alert(`결제 요청: ${amount}원`);
+                    toggleExpandedPanel(false);
+                    showPanelSection(defaultPanelContent, false);
+                } else {
+                    alert('유효한 결제 금액을 입력해주세요.');
+                }
+            });
+        }
+
+
+        // 6. 파일 첨부 버튼
+        if (attachmentButton) {
+            attachmentButton.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+
         if (fileInput) {
             fileInput.addEventListener('change', async (event) => {
                 const file = event.target.files[0];
@@ -1091,44 +1311,77 @@
                     formData.append('file', file);
                     formData.append('roomId', chatRoomId);
                     formData.append('senderId', currentUserId);
+
                     try {
                         const response = await fetch('/chat/uploadFile', {
                             method: 'POST',
                             body: formData
                         });
+
                         if (response.ok) {
                             const result = await response.json();
-                            sendMessage(result.imgUrl, "IMAGE");
+                            const imageUrl = result.imgUrl;
+                            console.log("DEBUG: 파일 업로드 성공. 서버 응답:", result);
+                            console.log("DEBUG: 서버에서 받은 imageUrl:", imageUrl);
+                            sendMessage(imageUrl, "IMAGE");
                             alert(`파일 업로드 성공: ${file.name}`);
                         } else {
-                            alert(`파일 업로드 실패: ${file.name} - ${response.status}`);
+                            const errorText = await response.text();
+                            console.error('파일 업로드 실패 (서버 응답):', response.status, errorText);
+                            alert(`파일 업로드 실패: ${file.name} - ${response.status} ${errorText}`);
                         }
                     } catch (error) {
+                        console.error('파일 업로드 중 오류 발생 (네트워크 또는 클라이언트 처리 오류):', error);
                         alert(`파일 업로드 중 오류 발생: ${file.name} - ${error.message}`);
+                    } finally {
+                        fileInput.value = '';
                     }
-                    fileInput.value = '';
                 }
             });
         }
-        if (reportButton) reportButton.addEventListener('click', () => {
-            const url = `/report/new/${chatRoomId}?reporterId=${currentUserId}&reportedId=${chatPartnerId}`;
-            window.open(url, '_blank');
-        });
 
+        // ⭐ 이 블록을 남겨두는 것입니다. (fetch를 통해 서버에 금액 변경 요청) ⭐
+        // 금액 조절 확인/취소 버튼 (이전 버튼과 중복되는 로직이 있으니 하나만 남겨야 합니다.)
+        if (confirmPricePanelBtn) {
+            confirmPricePanelBtn.addEventListener('click', function() {
+                const newPrice = parseInt(newPriceInputPanel.value, 10);
+                if (!newPrice || newPrice <= 0) {
+                    alert('유효한 금액을 입력하세요.');
+                    return;
+                }
+
+                fetch(`/api/rental/${currentRentalId}/price`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPrice: newPrice })
+                })
+                    .then(res => {
+                        if (!res.ok) return res.text().then(msg => { throw new Error(msg); });
+                        return res.json();
+                    })
+                    .then(data => {
+                        // paymentAmountInput.value = newPrice; // 이 부분은 결제 패널의 입력 필드입니다. 금액 조절 패널과 연관된 곳이 아니라면 제거하는게 좋습니다.
+                        alert('금액이 변경되었습니다!');
+                        showPanelSection(defaultPanelContent, false);
+                    })
+                    .catch(e => {
+                        alert(e.message || '금액 변경 실패(권한/서버오류)');
+                    });
+            });
+        }
+        if (cancelPricePanelBtn) {
+            cancelPricePanelBtn.addEventListener('click', function() {
+                showPanelSection(defaultPanelContent, false);
+            });
+        }
+
+        // 초기 연결 시도
         connect();
+
+        // 기존 채팅 기록에 있는 이미지에도 클릭 리스너 적용 (DOM 로드 후)
+        addClickListenersToImages();
     });
 
-    function closeImageModal() {
-        const modal = document.getElementById('imageModal');
-        modal.classList.remove('active');
-        modal.style.display = 'none';
-    }
-
-    function openImageModal() {
-        const modal = document.getElementById('imageModal');
-        modal.classList.add('active');
-        modal.style.display = 'flex'; // ⭐️ 이거!!
-    }
 </script>
 </body>
 </html>
