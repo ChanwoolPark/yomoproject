@@ -1,16 +1,58 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>출금 결과</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #FAFAFC;
+            color: #000;
+        }
+
+        .result-container {
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        h3 {
+            margin-bottom: 1.5rem;
+        }
+
+        a {
+            display: inline-block;
+            padding: 0.8rem 1.4rem;
+            background-color: #465BFF;
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #228822;
+        }
+
+        .error {
+            color: #cc2222;
+        }
+    </style>
 </head>
 <body>
-<div th:if="${successMsg}" style="color:green;">
-    <h3 th:text="${successMsg}"></h3>
-    <a th:href="@{/mypage(menu='history')}">내 출금내역 보기</a>
-</div>
-<div th:if="${errorMsg}" style="color:red;">
-    <h3 th:text="${errorMsg}"></h3>
-    <a th:href="@{/withdrawal/request}">출금 신청 다시하기</a>
+<div class="result-container">
+    <div th:if="${successMsg}">
+        <h3 class="success" th:text="${successMsg}"></h3>
+        <a th:href="@{/mypage(menu='history')}">내 출금 내역 보기</a>
+    </div>
+    <div th:if="${errorMsg}">
+        <h3 class="error" th:text="${errorMsg}"></h3>
+        <a th:href="@{/withdrawal/request}">출금 신청 다시 하기</a>
+    </div>
 </div>
 </body>
 </html>
