@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.time.LocalDateTime;
 import java.util.Arrays; // Arrays.asList 사용을 위해 추가
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -233,5 +234,16 @@ public class ChatService {
     @Transactional(readOnly = true)
     public List<ChatRoom> getAllChatRooms() {
         return chatRoomRepository.findAll();
+    }
+
+    public List<ChatRoom> searchChatRoomsFiltered(Long userId, String roomName, String buyerName, String sellerName) {
+        return chatRoomRepository.findAll().stream()
+                .filter(room ->
+                        (room.getBuyer().getId().equals(userId) || room.getSeller().getId().equals(userId)) &&
+                                (roomName == null || room.getRoomName().contains(roomName)) &&
+                                (buyerName == null || room.getBuyer().getUsername().contains(buyerName)) &&
+                                (sellerName == null || room.getSeller().getUsername().contains(sellerName))
+                )
+                .collect(Collectors.toList());
     }
 }

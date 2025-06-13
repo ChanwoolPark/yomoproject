@@ -1,21 +1,76 @@
-<!-- templates/admin/dashboard.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>관리자 대시보드</title>
+    <style>
+        :root {
+            --main-color: #465BFF;
+            --sub-blue: #A3C9FF;
+            --light-bg: #FAFAFC;
+            --soft-purple: #CEC8FE;
+            --text-color: #000;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+        }
+
+        .admin-container {
+            max-width: 800px;
+            margin: 80px auto;
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            color: var(--main-color);
+            border-bottom: 2px solid var(--sub-blue);
+            padding-bottom: 10px;
+            margin-bottom: 2rem;
+        }
+
+        ul.dashboard-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.dashboard-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .btn-link {
+            display: inline-block;
+            padding: 0.9rem 1.5rem;
+            background-color: var(--main-color);
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-link:hover {
+            background-color: #334bcc;
+        }
+    </style>
 </head>
 <body>
-<h1>관리자 대시보드</h1>
-<ul>
-    <li><a th:href="@{/admin/product-reports}">신고 관리</a></li>
-    <li><a th:href="@{/admin/inquiries}">문의 관리</a></li>
-    <li><a th:href="@{/admin/notices}">공지사항 관리</a></li>
-    <!-- 추가: 회원관리, 통계 등 -->
-    <li><a th:href="@{/admin/list}">정산 관리</a></li>
-    <li><a th:href="@{/admin/chatreport-list}">채팅 신고/환불 관리</a></li>
-</ul>
-<div>
-    <!-- 대시보드 통계 등 필요시 출력 -->
+<div class="admin-container">
+    <h1>관리자 대시보드</h1>
+    <ul class="dashboard-menu">
+        <li><a class="btn-link" th:href="@{/admin/product-reports}">📦 상품 신고 관리</a></li>
+        <li><a class="btn-link" th:href="@{/admin/inquiries}">📬 문의 관리</a></li>
+        <li><a class="btn-link" th:href="@{/admin/notices}">📢 공지사항 관리</a></li>
+        <li><a class="btn-link" th:href="@{/admin/list}">💰 정산 관리</a></li>
+        <li><a class="btn-link" th:href="@{/admin/chatreport-list}">💬 채팅 신고/환불 관리</a></li>
+    </ul>
 </div>
 </body>
 </html>
