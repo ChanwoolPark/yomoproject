@@ -767,7 +767,7 @@
                   th:text="${message.senderName}"></span>
 
             <div class="message-content">
-                <th:block th:if="${message.messageType == 'IMAGE'}">
+                <th:block th:if="${message.messageType != null and message.messageType.name() == 'IMAGE'}">
                     <img th:src="${message.imgUrl}"
                          th:alt="${message.message ?: '전송된 이미지'}"
                          style="max-width: 250px; height: auto; border-radius: 8px;">
@@ -776,7 +776,7 @@
                           style="display: block; margin-top: 5px;"></span>
                 </th:block>
                 <th:block th:unless="${message.messageType == 'IMAGE'}">
-                    <th:block th:text="${message.message}"></th:block>
+                    <th:block th:text="${message.message ?: ''}"></th:block>
                 </th:block>
             </div>
             <div class="message-time" th:text="${message.sendTime != null ? #temporals.format(message.sendTime, 'HH:mm') : '시간 없음'}">

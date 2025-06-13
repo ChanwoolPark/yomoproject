@@ -1,4 +1,5 @@
-package com.project.yomozomo.config;// WebConfig.java (다시 확인)
+package com.project.yomozomo.Config;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -10,9 +11,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 클라이언트가 요청할 웹 경로: /uploaded-chat-images/**
-        // ChatController에서 파일을 저장하는 실제 절대 경로: C:\Users\soldesk\IdeaProjects\yomoproject\\uploaded-files\image-chatimage\
+        // ChatController에서 파일을 저장하는 실제 절대 경로: C:\Users\김승주\IdeaProjects\yomoproject\|uploaded-files\image-chatimage\
         registry.addResourceHandler("/uploaded-chat-images/**")
-                .addResourceLocations("file:/C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files/image-chatimage/") // <--- 이 경로가 정확해야 합니다!
+                // ⭐⭐⭐ 이 경로를 새 경로로 변경 ⭐⭐⭐
+                .addResourceLocations("file:///C:/Users/김승주/IdeaProjects/yomoproject/uploaded-files/image-chatimage/")// <--- 주의: 슬래시 방향
                 .setCachePeriod(3600)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver());
