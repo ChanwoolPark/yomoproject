@@ -174,7 +174,6 @@ public class ChatService {
             log.debug("messageType이 null입니다. 'TALK'로 기본 설정합니다.");
             finalMessageType = "TALK";
         }
-        // ⭐⭐⭐ 수정된 로직 끝 ⭐⭐⭐
 
 
         ChatMessage chatMessage = new ChatMessage();
