@@ -16,10 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/rental")
@@ -33,7 +30,9 @@ public class RentalApiController {
 
     public RentalApiController(RentalRepository rentalRepository,
                                ProductRepository productRepository,
-                               UserRepository userRepository, UserService userService, ChatService chatService) {
+                               UserRepository userRepository,
+                               UserService userService,
+                               ChatService chatService) {
         this.rentalRepository = rentalRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
@@ -41,11 +40,21 @@ public class RentalApiController {
         this.chatService = chatService;
     }
 
+    // 날짜 포맷
     private String formatDate(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(date);
     }
 
+    // +1일(캘린더 달력용)
+    private Date plusOneDay(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DATE, 1);
+        return cal.getTime();
+    }
+
+    // 1. 예약된 날짜 리스트 조회
     @GetMapping("/reserved/{productId}")
     public List<Map<String, String>> getReservedDates(@PathVariable int productId) {
         List<Rental> rentals = rentalRepository.findByProduct_ProductIdAndStatusIn(productId, List.of("예약", "대여중"));
@@ -57,38 +66,35 @@ public class RentalApiController {
                 .toList();
     }
 
-    private Date plusOneDay(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.DATE, 1);
-        return cal.getTime();
-    }
-
-
-    // RentalApiController.java 내부에 추가
+    // 2. 대여 생성(예약 + 자동 채팅방 생성)
     @PostMapping
-    public ResponseEntity<?> createRental(@RequestBody RentalRequestDto requestDto,
-                                          Principal principal) {
-        // 로그인 ID 가져오기
-        String username = principal.getName(); // 로그인된 사용자의 username(email, 아이디 등)
-        User user = userService.findByUsername(username); // DB 조회
-        Long userId = user.getId(); // 실제 user_id 추출
-
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-        }
-
+    public ResponseEntity<Map<String, Object>> createRental(@RequestBody RentalRequestDto requestDto, Principal principal) {
+        Map<String, Object> resp = new HashMap<>();
         try {
-            user = userRepository.findById(userId).orElseThrow();
-            Product product = productRepository.findById(requestDto.getProductId()).orElseThrow();
-
+            // 1. 로그인 확인
+            if (principal == null) {
+                resp.put("message", "로그인이 필요합니다.");
+                resp.put("chatRoomId", -1L);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
+            }
+            String username = principal.getName();
+            User user = userService.findByUsername(username);
+            if (user == null) {
+                resp.put("message", "유저 정보 없음.");
+                resp.put("chatRoomId", -1L);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
+            }
+            // 2. 상품 확인
+            Product product = productRepository.findById(requestDto.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("상품 정보를 찾을 수 없습니다: " + requestDto.getProductId()));
+            // 3. 날짜 파싱
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             Date start = sdf.parse(requestDto.getStartDate());
             Date end = sdf.parse(requestDto.getEndDate());
-
             long days = ChronoUnit.DAYS.between(start.toInstant(), end.toInstant()) + 1;
             int totalPrice = (int) days * product.getPrice();
 
+            // 4. Rental 저장
             Rental rental = new Rental();
             rental.setUser(user);
             rental.setProduct(product);
@@ -97,50 +103,59 @@ public class RentalApiController {
             rental.setTotalPrice(totalPrice);
             rental.setStatus("예약");
             rental.setCreatedAt(new Date());
-
             Rental savedRental = rentalRepository.save(rental);
 
-            chatService.findOrCreateChatRoom(user, product.getSeller(), savedRental);
-            return ResponseEntity.ok("예약 완료");
+            // 5. 채팅방 자동 생성
+            Long chatRoomId = chatService.findOrCreateChatRoom(user, product.getSeller(), savedRental);
 
+            resp.put("message", "예약 완료");
+            resp.put("chatRoomId", chatRoomId);
+            return ResponseEntity.ok(resp);
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("예약 실패: " + e.getMessage());
+            resp.put("message", "예약 실패: " + e.getMessage());
+            resp.put("chatRoomId", -1L);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
         }
     }
 
+    // 3. 금액 변경(판매자만)
     @PostMapping("/{rentalId}/price")
-    public ResponseEntity<?> updateRentalPrice(
+    public ResponseEntity<Map<String, Object>> updateRentalPrice(
             @PathVariable Long rentalId,
             @RequestBody Map<String, Integer> req,
             Principal principal) {
-        // 로그인 확인
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            if (principal == null) {
+                resp.put("message", "로그인이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
+            }
+            String username = principal.getName();
+            User user = userRepository.findByUsername(username).orElseThrow();
+            Rental rental = rentalRepository.findById(rentalId).orElse(null);
+            if (rental == null) {
+                resp.put("message", "렌탈 정보 없음");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resp);
+            }
+            // **판매자만 금액 변경**
+            if (!rental.getProduct().getSeller().getId().equals(user.getId())) {
+                resp.put("message", "판매자만 금액을 변경할 수 있습니다.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(resp);
+            }
+            int newPrice = req.getOrDefault("newPrice", 0);
+            if (newPrice <= 0) {
+                resp.put("message", "유효하지 않은 금액입니다.");
+                return ResponseEntity.badRequest().body(resp);
+            }
+            rental.setTotalPrice(newPrice);
+            rentalRepository.save(rental);
+            resp.put("success", true);
+            resp.put("newPrice", newPrice);
+            return ResponseEntity.ok(resp);
+        } catch (Exception e) {
+            resp.put("message", "금액 변경 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
         }
-        String username = principal.getName();
-        User user = userRepository.findByUsername(username).orElseThrow();
-
-        Rental rental = rentalRepository.findById(rentalId).orElse(null);
-        if (rental == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("렌탈 정보 없음");
-        }
-
-        // **판매자만 금액 변경 가능!**
-        if (!rental.getProduct().getSeller().getId().equals(user.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("판매자만 금액을 변경할 수 있습니다.");
-        }
-
-        int newPrice = req.get("newPrice");
-        if (newPrice <= 0) {
-            return ResponseEntity.badRequest().body("유효하지 않은 금액입니다.");
-        }
-        rental.setTotalPrice(newPrice);
-        rentalRepository.save(rental);
-
-        return ResponseEntity.ok(Map.of("success", true, "newPrice", newPrice));
     }
-
-
 }
-
