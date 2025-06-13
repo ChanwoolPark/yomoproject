@@ -20,7 +20,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -148,7 +147,6 @@ public class SecurityConfig {
 
     /**
      * 네이버가 반환하는 JSON 구조(response 안에 id, name, email 등 있음)를
-     *
      * 언팩해서 DefaultOAuth2User를 만들어줍니다.
      */
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> naverOAuth2UserService() {
@@ -157,9 +155,6 @@ public class SecurityConfig {
             OAuth2User oauth2User = delegate.loadUser(userRequest);
             @SuppressWarnings("unchecked")
             Map<String, Object> resp = oauth2User.getAttribute("response");
-
-
-
             return new DefaultOAuth2User(
                     oauth2User.getAuthorities(),
                     resp,

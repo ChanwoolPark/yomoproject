@@ -15,7 +15,7 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Inte
     @Query(value = "SELECT pi.image_url FROM product_image pi " +
             "WHERE pi.product_id = :productId " +
             "ORDER BY pi.image_id ASC FETCH FIRST 1 ROWS ONLY", nativeQuery = true)
-    String findTopImageUrlByProductId(@Param("productId") int productId);
+    String findTopImageUrlByProductId(@Param("productId") Long productId);
 
     // 상세 페이지용: 전체 이미지 조회
     List<ProductImage> findByProductProductId(int productId);
