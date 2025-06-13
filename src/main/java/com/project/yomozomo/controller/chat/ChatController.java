@@ -54,7 +54,6 @@ public class ChatController {
         ChatRoom chatRoom = chatService.getChatRoomById(roomId);
 
 
-
         boolean isBuyer = currentUser.getId().equals(chatRoom.getBuyer().getId());
         boolean isSeller = currentUser.getId().equals(chatRoom.getSeller().getId());
 
@@ -78,6 +77,7 @@ public class ChatController {
         System.out.println("채팅방 ID: " + roomId + ", rental: " + chatRoom.getRental());
         System.out.println("rentalId: " + (chatRoom.getRental() != null ? chatRoom.getRental().getRentalId() : "null"));
 
+
         if (chatRoom.getRental() != null) {
             model.addAttribute("currentRentalId", chatRoom.getRental().getRentalId());
         } else {
@@ -92,8 +92,9 @@ public class ChatController {
         model.addAttribute("currentUserprofile_image", userProfileImageUrl);
         // ⭐ 여기까지 프로필 이미지 URL 추가 로직 ⭐
         Long chatPartnerId = null;
+        Rental rental = null;
         if (chatRoom.getRental() != null) {
-            Rental rental = chatRoom.getRental();
+            rental = chatRoom.getRental();
             model.addAttribute("currentRentalId", rental.getRentalId());
 
             // 여기에서 현재 사용자가 renter인지 seller인지 비교 후 상대방 id 지정
@@ -106,6 +107,11 @@ public class ChatController {
             model.addAttribute("currentRentalId", null);
         }
         model.addAttribute("chatPartnerId", chatPartnerId);
+
+        model.addAttribute("isSeller", isSeller);
+        model.addAttribute("rental", rental);
+        System.out.println("렌탈 status: [" + rental.getStatus() + "]");
+        System.out.println("렌탈 status length: " + rental.getStatus().length());
 
         return "chat";
     }
@@ -127,5 +133,5 @@ public class ChatController {
         // report.html 템플릿을 반환합니다. (src/main/resources/templates/report.html)
         return "report";
     }
-    // ⭐ 새로운 메서드 추가 끝 ⭐
+
 }
