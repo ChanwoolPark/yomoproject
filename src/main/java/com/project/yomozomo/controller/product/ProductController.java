@@ -1,6 +1,8 @@
 package com.project.yomozomo.controller.product;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.ProductImage;
@@ -76,6 +78,16 @@ public class ProductController {
 
         // ⭐️ 리뷰 가져오기 추가
         List<Review> productReviews = productDetailService.findReviewsByProductId((long) productId);
+
+
+        ObjectMapper om = new ObjectMapper();
+        String otherProductsJson = "[]";
+        try {
+            otherProductsJson = om.writeValueAsString(otherProducts);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        model.addAttribute("otherProductsJson", otherProductsJson);
 
         model.addAttribute("product", product);
         model.addAttribute("imageList", imageList);

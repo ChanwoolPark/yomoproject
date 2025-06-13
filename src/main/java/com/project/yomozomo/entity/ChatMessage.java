@@ -62,5 +62,9 @@ public class ChatMessage { // 엔티티 클래스 이름은 ChatMessage로 유�
         } else {
             hasImage = 'N';
         }
+        // message가 null일 경우 빈 문자열로 설정하여 DB의 NOT NULL 제약 조건 위배 방지
+        if (message == null) {
+            message = "";
+        }
     }
 }

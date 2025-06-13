@@ -57,8 +57,6 @@
             -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 */
             display: flex;
             flex-direction: column;
-            /* 메시지는 위에서 아래로 쌓이도록 기본 정렬 유지 */
-            /* justify-content: flex-end; // 메시지를 아래에 정렬하려면 이 주석을 해제 */
         }
         .message-row {
             display: flex;
@@ -120,7 +118,6 @@
             margin-left: auto; /* 사용자 메시지 시간 오른쪽 정렬 */
         }
 
-
         /* 하단 고정 입력 필드 */
         .input-area {
             display: flex;
@@ -153,6 +150,19 @@
             width: 24px;
             height: 24px;
         }
+
+        /* 링크 스타일 */
+        .message-bubble a {
+            display: block; /* 링크를 새 줄에 표시 */
+            margin-top: 10px; /* 위에 여백 주기 */
+            color: #1a73e8; /* 링크 색상 (챗봇 버블용) */
+            text-decoration: underline; /* 밑줄 */
+            font-weight: bold; /* 볼드체 */
+            word-break: break-word; /* 긴 URL이 버블 밖으로 나가지 않도록 */
+        }
+        .message-bubble.user a {
+            color: white; /* 사용자 버블 내 링크 색상 */
+        }
     </style>
 </head>
 <body>
@@ -184,25 +194,38 @@
     const sendMessageButton = document.getElementById('sendMessageButton');
     const chatBody = document.getElementById('chatBody');
 
-    // 메시지 버블을 생성하여 채팅창에 추가하는 함수
-    function addMessage(text, senderType) { // senderType: 'user' 또는 'bot'
+    /**
+     * 메시지 버블을 생성하여 채팅창에 추가하는 함수.
+     * 챗봇 메시지에 링크를 포함할 수 있도록 linkUrl과 linkText 인자를 받습니다.
+     * @param {string} content - 메시지 내용
+     * @param {string} senderType - 'user' 또는 'bot'
+     * @param {string|null} [linkUrl=null] - 링크 URL (옵션)
+     * @param {string|null} [linkText=null] - 링크 텍스트 (옵션)
+     */
+    function addMessage(content, senderType, linkUrl = null, linkText = null) {
         const messageRow = document.createElement('div');
         messageRow.classList.add('message-row', senderType);
 
         const messageBubble = document.createElement('div');
         messageBubble.classList.add('message-bubble', senderType);
-        messageBubble.innerHTML = `<p>${text}</p>`; // HTML 태그도 포함할 수 있도록 innerHTML 사용
 
-        // 현재 시간 추가 (선택 사항)
-        // const now = new Date();
-        // const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        // const messageTime = document.createElement('span');
-        // messageTime.classList.add('message-time');
-        // messageTime.textContent = timeString;
+        // 기본 텍스트 내용 추가
+        const contentParagraph = document.createElement('p');
+        contentParagraph.textContent = content; // textContent 사용으로 XSS 방지
+        messageBubble.appendChild(contentParagraph);
+
+        // 링크가 있다면 링크 엘리먼트 추가
+        if (linkUrl && linkText) {
+            const linkElement = document.createElement('a');
+            linkElement.href = linkUrl;
+            linkElement.textContent = linkText;
+            linkElement.target = '_blank'; // 새 탭에서 열기 (보안 권장)
+            linkElement.rel = 'noopener noreferrer'; // 새 탭 보안 강화
+
+            messageBubble.appendChild(linkElement);
+        }
 
         messageRow.appendChild(messageBubble);
-        // messageRow.appendChild(messageTime); // 시간 추가 시
-
         chatBody.appendChild(messageRow);
         chatBody.scrollTop = chatBody.scrollHeight; // 스크롤을 항상 최하단으로
     }
@@ -231,7 +254,10 @@
 
             // 백엔드 응답에 따라 챗봇 메시지를 채팅창에 추가
             if (data.type === 'ANSWER' && data.answer && data.answer.content) {
-                addMessage(data.answer.content, 'bot');
+                // linkUrl과 linkText는 없을 수도 있으므로 기본값 null 처리
+                const linkUrl = data.answer.linkUrl || null;
+                const linkText = data.answer.linkText || null;
+                addMessage(data.answer.content, 'bot', linkUrl, linkText);
             } else if (data.type === 'QUESTION' && data.question) {
                 // 'question'은 String이므로 .content 제거
                 addMessage(data.question, 'bot');
@@ -248,7 +274,6 @@
     }
 
     // 초기 메시지를 로드하는 함수
-    // chatbot.html
     async function loadInitialMessage() {
         try {
             const response = await fetch('/chatbot/init', {
@@ -262,7 +287,10 @@
             const data = await response.json(); // 백엔드에서 JSON 응답을 기대
 
             if (data.type === 'ANSWER' && data.answer && data.answer.content) {
-                addMessage(data.answer.content, 'bot');
+                // 초기 메시지도 링크를 포함할 수 있도록 전달
+                const linkUrl = data.answer.linkUrl || null;
+                const linkText = data.answer.linkText || null;
+                addMessage(data.answer.content, 'bot', linkUrl, linkText);
             } else {
                 addMessage("챗봇을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.", 'bot');
             }
@@ -285,7 +313,12 @@
     // 페이지 로드 시 초기 메시지 로드 및 스크롤 최하단으로
     window.onload = function() {
         loadInitialMessage(); // 초기 메시지 로드
-        chatBody.scrollTop = chatBody.scrollHeight; // 스크롤을 항상 최하단으로
+        // 초기 메시지가 로드된 후에 스크롤을 최하단으로 이동시켜야 합니다.
+        // 비동기 작업이므로, loadInitialMessage 내에서 스크롤 로직을 호출하거나,
+        // 간단히 여기에 setTimeout을 사용하여 약간의 지연을 줄 수도 있습니다.
+        setTimeout(() => {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }, 100); // 100ms 지연
     };
 
 </script>
