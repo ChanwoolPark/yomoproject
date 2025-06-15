@@ -54,7 +54,7 @@ public class ChatController {
             // ⭐⭐⭐ 이 부분을 새 경로의 '프로젝트 루트'로 변경 ⭐⭐⭐
             // Windows 경로의 역슬래시를 Java 문자열에서는 두 개로 표현해야 합니다.
             // 또는 Path.of를 사용하여 운영체제에 독립적인 경로를 만들 수도 있습니다.
-            String baseUploadDir = "C:\\Users\\김승주\\IdeaProjects\\yomoproject";
+            String baseUploadDir = "C:\\Users\\soldesk\\IdeaProjects\\yomoproject"; // <-- 이 부분을 변경했습니다.
 
             // Paths.get을 사용하면 운영체제에 맞게 경로를 결합해줍니다.
             // "uploaded-files", "image-chatimage"는 하위 디렉토리입니다.

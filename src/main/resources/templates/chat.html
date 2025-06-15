@@ -632,6 +632,13 @@
             font-size: 1.5rem;
             color: #aaa;
             cursor: pointer;
+            transition: color 0.2s;
+            width: 30px; /* 클릭 영역 너비 확장 */
+            height: 30px; /* 클릭 영역 높이 확장 */
+            z-index: 1001; /* 모달 오버레이(1000)보다 위에 오도록 */
+            display: flex; /* 내부 아이콘 중앙 정렬을 위해 */
+            justify-content: center;
+            align-items: center;
         }
         .modal-close-btn:hover {
             color: #333;
@@ -1201,6 +1208,74 @@
         console.log("DEBUG: innerButtonsGrid:", innerButtonsGrid);
         console.log("DEBUG: paymentGoBtn:", paymentGoBtn);
 
+        // priceAdjustmentModal 닫는 함수
+        const closePriceAdjustmentModal = () => {
+            if (priceAdjustmentModal) {
+                priceAdjustmentModal.classList.remove('active');
+                if (newPriceInput) {
+                    newPriceInput.value = ''; // 입력 필드 초기화 (선택 사항)
+                }
+            }
+        };
+
+        if (modalCloseBtn) {
+            console.log("DEBUG: modalCloseBtn 찾음, 클릭 리스너 추가 중");
+            modalCloseBtn.addEventListener('click', closePriceAdjustmentModal);
+        } else {
+            console.error("DEBUG: modalCloseBtn을 찾을 수 없습니다.");
+        }
+
+        if (modalCancelBtn) {
+            console.log("DEBUG: modalCancelBtn 찾음, 클릭 리스너 추가 중");
+            modalCancelBtn.addEventListener('click', closePriceAdjustmentModal);
+        } else {
+            console.error("DEBUG: modalCancelBtn을 찾을 수 없습니다.");
+        }
+
+        if (modalConfirmBtn) {
+            console.log("DEBUG: modalConfirmBtn 찾음, 클릭 리스너 추가 중");
+            modalConfirmBtn.addEventListener('click', function() {
+                const newPrice = parseInt(newPriceInput.value, 10);
+                if (!newPrice || newPrice <= 0) {
+                    alert('유효한 금액을 입력하세요.');
+                    return;
+                }
+
+                fetch(`/api/rental/${currentRentalId}/price`, { // 기존 confirmPricePanelBtn 로직 재활용
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPrice: newPrice })
+                })
+                    .then(res => {
+                        if (!res.ok) return res.text().then(msg => { throw new Error(msg); });
+                        return res.json();
+                    })
+                    .then(data => {
+                        alert('금액이 변경되었습니다!');
+                        sendMessage(`[금액 변경 요청] ${newPrice}원으로 변경`, "PRICE_ADJUSTMENT"); // 채팅 메시지로 금액 변경 알림
+                        closePriceAdjustmentModal(); // 성공 시 모달 닫기
+                    })
+                    .catch(e => {
+                        alert(e.message || '금액 변경 실패(권한/서버오류)');
+                    });
+            });
+        } else {
+            console.error("DEBUG: modalConfirmBtn을 찾을 수 없습니다.");
+        }
+
+        // ⭐ 이미지 모달 닫기 버튼 리스너 추가 ⭐
+        const imageModalCloseBtn = document.querySelector('.image-modal-close');
+        if (imageModalCloseBtn) {
+            imageModalCloseBtn.addEventListener('click', closeImageModal);
+        }
+        // 이미지 모달 오버레이 클릭 시 닫기
+        if (imageModal) {
+            imageModal.addEventListener('click', (event) => {
+                if (event.target === imageModal) { // 오버레이 자체를 클릭했을 때만 닫기
+                    closeImageModal();
+                }
+            });
+        }
 
         // 1. 메시지 전송 관련
         if (sendMessageBtn) {
@@ -1251,8 +1326,7 @@
 
         if (innerButton2) {
             innerButton2.addEventListener('click', function() {
-                // 이 버튼은 확장 패널 대신 모달을 띄우도록 변경되었으므로, 기존 패널 섹션 호출은 주석 처리 또는 제거합니다.
-                // showPanelSection(priceAdjustmentPanelContent, true);
+                // ... (주석 처리된 showPanelSection)
                 priceAdjustmentModal.classList.add('active'); // 모달 활성화
             });
         }
