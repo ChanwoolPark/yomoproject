@@ -5,6 +5,7 @@ import com.project.yomozomo.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,8 +47,9 @@ public class Product {
     @Column(nullable = false)
     private Integer count = 0;
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private Date createdAt;
 
     @Column(name = "is_deleted", columnDefinition = "CHAR(1) DEFAULT 'N'")
