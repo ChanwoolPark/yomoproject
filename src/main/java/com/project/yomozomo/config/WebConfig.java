@@ -1,5 +1,6 @@
 package com.project.yomozomo.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -8,19 +9,24 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    // application.yml 등에서 세팅된 파일 업로드 디렉토리 (프로필용)
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 클라이언트가 요청할 웹 경로: /uploaded-chat-images/**
-        // ChatController에서 파일을 저장하는 실제 절대 경로: C:\Users\김승주\IdeaProjects\yomoproject\|uploaded-files\image-chatimage\
+        // 1. 프로필 이미지 (ex: /uploads/** → uploadDir로 매핑)
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + uploadDir + "/");
+
+        // 2. 채팅 이미지 (ex: /uploaded-chat-images/** → 실제 경로로 매핑)
         registry.addResourceHandler("/uploaded-chat-images/**")
-                // ⭐⭐⭐ 이 경로를 새 경로로 변경 ⭐⭐⭐
-                .addResourceLocations("file:///C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files/image-chatimage/")// <--- 주의: 슬래시 방향
+                .addResourceLocations("file:/C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files/image-chatimage/")
                 .setCachePeriod(3600)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver());
 
-
-        // Spring Boot의 기본 정적 자원 핸들러 (기존 static 폴더 리소스용)
+        // 3. 기존 정적 리소스 (static, public 등)
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/", "classpath:/public/");
     }
