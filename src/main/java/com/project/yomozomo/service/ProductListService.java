@@ -104,9 +104,6 @@ public class ProductListService {
         Pageable pageable = PageRequest.of(page, 28);
         Page<Product> productPage = productRepo.findByCategoryWithPriceFilter(categoryId, minPrice, maxPrice, pageable);
 
-        System.out.println("전체 페이지 수: " + productPage.getTotalPages());
-        System.out.println("전체 상품 수: " + productPage.getTotalElements());
-        System.out.println("현재 페이지: " + productPage.getNumber());
         return new ProductPageDto(mapProductsToDto(productPage), productPage.getTotalPages());
     }
 
@@ -126,9 +123,6 @@ public class ProductListService {
             default -> productRepo.findByCategoryOrderByCreatedAtDesc(categoryId, pageable);
         };
 
-        System.out.println("전체 페이지 수: " + productPage.getTotalPages());
-        System.out.println("전체 상품 수: " + productPage.getTotalElements());
-        System.out.println("현재 페이지: " + productPage.getNumber());
         return new ProductPageDto(mapProductsToDto(productPage), productPage.getTotalPages());
     }
 
