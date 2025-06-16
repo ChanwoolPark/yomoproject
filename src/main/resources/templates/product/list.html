@@ -12,6 +12,7 @@
             background-color: #f9f9f9;
             font-size: 15px;
             line-height: 1.6;
+            overflow-y: auto !important;
         }
 
         h2 {
@@ -393,6 +394,11 @@
             object-fit: cover;
         }
 
+
+        .pagination a:hover {
+            color: #465BFF;
+        }
+
         /* ✌️ 오른쪽 구역 스타일*/
         .product-right h4 {
             text-align: center;
@@ -625,6 +631,11 @@
     <!-- 중앙: 상품 리스트 -->
     <div class="product-center">
 
+        <p>totalPages: [[${totalPages}]]</p>
+        <p>currentPage: [[${currentPage}]]</p>
+        <p>subCategoryId: [[${subCategoryId}]]</p>
+        <p>minPrice: [[${param.minPrice}]], maxPrice: [[${param.maxPrice}]]</p>
+
         <!-- 검색 결과가 없을 때 -->
         <div th:if="${#lists.isEmpty(products)}" style="grid-column: 1 / -1; text-align: center;">
             <p>🔍 검색 결과가 없습니다.</p>
@@ -643,6 +654,50 @@
             </a>
         </div>
     </div>
+
+        <!-- 페이지 네이선 -->
+        <div class="pagination" style="margin: 30px auto; text-align: center;" th:if="${totalPages != null and totalPages > 1}">
+            <ul style="display: inline-flex; list-style: none; padding: 0; gap: 5px;">
+
+                <!-- 이전 버튼 -->
+                <li th:if="${currentPage > 0}">
+                    <a th:if="${subCategoryId != null}"
+                       th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${currentPage - 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">이전</a>
+                    <a th:if="${subCategoryId == null}"
+                       th:href="@{/category/{cid}(cid=${category.categoryId}, page=${currentPage - 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">이전</a>
+                </li>
+
+                <!-- 페이지 번호 -->
+                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                    <a th:if="${subCategoryId != null}"
+                       th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${i}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       th:text="${i + 1}"
+                       style="padding: 8px 12px; background: #f3f3f3; border-radius: 6px; font-weight: bold;"
+                       th:styleappend="${i == currentPage} ? 'background: #465BFF; color: white;'">
+                    </a>
+                    <a th:if="${subCategoryId == null}"
+                       th:href="@{/category/{cid}(cid=${category.categoryId}, page=${i}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       th:text="${i + 1}"
+                       style="padding: 8px 12px; background: #f3f3f3; border-radius: 6px; font-weight: bold;"
+                       th:styleappend="${i == currentPage} ? 'background: #465BFF; color: white;'">
+                    </a>
+                </li>
+
+                <!-- 다음 버튼 -->
+                <li th:if="${currentPage < totalPages - 1}">
+                    <a th:if="${subCategoryId != null}"
+                       th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${currentPage + 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">다음</a>
+                    <a th:if="${subCategoryId == null}"
+                       th:href="@{/category/{cid}(cid=${category.categoryId}, page=${currentPage + 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">다음</a>
+                </li>
+
+            </ul>
+        </div>
+
     </div>
 
     <!-- 오른쪽: 최근 본 상품 & 찜 -->

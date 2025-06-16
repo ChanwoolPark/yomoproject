@@ -5,7 +5,11 @@ import com.project.yomozomo.domain.SubCategory;
 import com.project.yomozomo.domain.ViewedProduct;
 import com.project.yomozomo.domain.Wishlist;
 import com.project.yomozomo.dto.ProductDto;
+import com.project.yomozomo.dto.ProductPageDto;
 import com.project.yomozomo.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,24 +45,11 @@ public class ProductListService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductDto> getProductsByCategory(int categoryId) {
-        List<Product> products = productRepo.findBySubCategory_Category_CategoryIdAndIsDeleted(categoryId, NOT_DELETED);
-        return mapProductsToDto(products);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ProductDto> getProductsBySubCategoryId(int subCategoryId) {
-        List<Product> products = productRepo.findBySubCategory_SubCategoryIdAndIsDeleted(subCategoryId, NOT_DELETED);
-        return mapProductsToDto(products);
-    }
-
-    // 관심항목
-    @Transactional(readOnly = true)
     public List<ProductDto> getWishlist(Long userId) {
         List<Wishlist> wishlist = wishlistRepo.findByUserId(userId);
 
         return wishlist.stream()
-                .sorted((w1, w2) -> w2.getLikedDate().compareTo(w1.getLikedDate())) // 최신순
+                .sorted((w1, w2) -> w2.getLikedDate().compareTo(w1.getLikedDate()))
                 .limit(5)
                 .map(w -> {
                     Product p = w.getProduct();
@@ -67,15 +58,14 @@ public class ProductListService {
                 .toList();
     }
 
-    // 최근본 항목
     @Transactional(readOnly = true)
     public List<ViewedProduct> getRecentlyViewed(Long userId) {
-        return viewedRepo.findTop5ByUserIdOrderByViewedAtDesc(userId); // 목록이나 사이드바용
+        return viewedRepo.findTop5ByUserIdOrderByViewedAtDesc(userId);
     }
 
     @Transactional(readOnly = true)
     public List<ViewedProduct> getAllRecentlyViewed(Long userId) {
-        return viewedRepo.findByUserIdOrderByViewedAtDesc(userId); // 마이페이지용
+        return viewedRepo.findByUserIdOrderByViewedAtDesc(userId);
     }
 
     private List<ProductDto> mapProductsToDto(List<Product> products) {
@@ -105,40 +95,51 @@ public class ProductListService {
                 .toList();
     }
 
-
-    /*가격 필터 (대카테고리용)*/
-    @Transactional(readOnly = true)
-    public List<ProductDto> getProductsByCategoryAndPriceRange(int categoryId, Integer minPrice, Integer maxPrice) {
-        List<Product> products = productRepo.findByCategoryWithPriceFilter(categoryId, minPrice, maxPrice);
-        return mapProductsToDto(products);
-    }
-    /*가격 필터 (서브카테고리용)*/
-    @Transactional(readOnly = true)
-    public List<ProductDto> getProductsBySubCategoryAndPriceRange(int subCategoryId, Integer minPrice, Integer maxPrice) {
-        List<Product> products = productRepo.findBySubCategoryWithPriceFilter(subCategoryId, minPrice, maxPrice);
-        return mapProductsToDto(products);
+    private List<ProductDto> mapProductsToDto(Page<Product> page) {
+        return mapProductsToDto(page.getContent());
     }
 
-    /*정렬 메서드*/
     @Transactional(readOnly = true)
-    public List<ProductDto> getProductsByCategorySorted(int categoryId, String sort) {
-        List<Product> products = switch (sort) {
-            case "views" -> productRepo.findByCategoryOrderByCountDesc(categoryId);
-            case "price" -> productRepo.findByCategoryOrderByPriceAsc(categoryId);
-            default -> productRepo.findByCategoryOrderByCreatedAtDesc(categoryId); // 최신순
+    public ProductPageDto getCategoryPriceFilteredPage(int categoryId, Integer minPrice, Integer maxPrice, int page) {
+        Pageable pageable = PageRequest.of(page, 28);
+        Page<Product> productPage = productRepo.findByCategoryWithPriceFilter(categoryId, minPrice, maxPrice, pageable);
+
+        System.out.println("전체 페이지 수: " + productPage.getTotalPages());
+        System.out.println("전체 상품 수: " + productPage.getTotalElements());
+        System.out.println("현재 페이지: " + productPage.getNumber());
+        return new ProductPageDto(mapProductsToDto(productPage), productPage.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
+    public ProductPageDto getSubCategoryPriceFilteredPage(int subCategoryId, Integer minPrice, Integer maxPrice, int page) {
+        Pageable pageable = PageRequest.of(page, 28);
+        Page<Product> productPage = productRepo.findBySubCategoryWithPriceFilter(subCategoryId, minPrice, maxPrice, pageable);
+        return new ProductPageDto(mapProductsToDto(productPage), productPage.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
+    public ProductPageDto getCategorySortedPage(int categoryId, String sort, int page) {
+        Pageable pageable = PageRequest.of(page, 28);
+        Page<Product> productPage = switch (sort) {
+            case "views" -> productRepo.findByCategoryOrderByCountDesc(categoryId, pageable);
+            case "price" -> productRepo.findByCategoryOrderByPriceAsc(categoryId, pageable);
+            default -> productRepo.findByCategoryOrderByCreatedAtDesc(categoryId, pageable);
         };
 
-        return mapProductsToDto(products);
+        System.out.println("전체 페이지 수: " + productPage.getTotalPages());
+        System.out.println("전체 상품 수: " + productPage.getTotalElements());
+        System.out.println("현재 페이지: " + productPage.getNumber());
+        return new ProductPageDto(mapProductsToDto(productPage), productPage.getTotalPages());
     }
 
     @Transactional(readOnly = true)
-    public List<ProductDto> getProductsBySubCategorySorted(int subCategoryId, String sort) {
-        List<Product> products = switch (sort) {
-            case "views" -> productRepo.findBySubCategoryOrderByCountDesc(subCategoryId);
-            case "price" -> productRepo.findBySubCategoryOrderByPriceAsc(subCategoryId);
-            default -> productRepo.findBySubCategoryOrderByCreatedAtDesc(subCategoryId); // 최신순
+    public ProductPageDto getSubCategorySortedPage(int subCategoryId, String sort, int page) {
+        Pageable pageable = PageRequest.of(page, 28);
+        Page<Product> productPage = switch (sort) {
+            case "views" -> productRepo.findBySubCategoryOrderByCountDesc(subCategoryId, pageable);
+            case "price" -> productRepo.findBySubCategoryOrderByPriceAsc(subCategoryId, pageable);
+            default -> productRepo.findBySubCategoryOrderByCreatedAtDesc(subCategoryId, pageable);
         };
-        return mapProductsToDto(products);
+        return new ProductPageDto(mapProductsToDto(productPage), productPage.getTotalPages());
     }
-    
 }
