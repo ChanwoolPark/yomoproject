@@ -1281,19 +1281,7 @@
         });
 
         // 5. 패널 내부 콘텐츠 버튼들
-        if (processPaymentBtn) {
-            processPaymentBtn.addEventListener('click', () => {
-                const amount = paymentAmountInput.value;
-                if (amount && amount > 0) {
-                    sendMessage(`[결제 요청] ${amount}원`, "PAYMENT_REQUEST");
-                    alert(`결제 요청: ${amount}원`);
-                    toggleExpandedPanel(false);
-                    showPanelSection(defaultPanelContent, false);
-                } else {
-                    alert('유효한 결제 금액을 입력해주세요.');
-                }
-            });
-        }
+
 
 
         // 6. 파일 첨부 버튼

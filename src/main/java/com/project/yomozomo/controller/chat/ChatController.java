@@ -238,16 +238,16 @@ public class ChatController {
     }
 
     // ========== [5] 신고 폼 ==========
-    @GetMapping("/reportForm")
-    public String showReportForm(Model model, Principal principal) {
-        if (principal != null) {
-            String currentUsername = principal.getName();
-            User currentUser = userService.getUserByUsername(currentUsername);
-            if (currentUser != null) {
-                model.addAttribute("reporterId", currentUser.getId());
-                model.addAttribute("reporterNickname", currentUser.getNickname());
-            }
-        }
-        return "report";
-    }
+//    @GetMapping("/reportForm")
+//    public String showReportForm(Model model, Principal principal) {
+//        if (principal != null) {
+//            String currentUsername = principal.getName();
+//            User currentUser = userService.getUserByUsername(currentUsername);
+//            if (currentUser != null) {
+//                model.addAttribute("reporterId", currentUser.getId());
+//                model.addAttribute("reporterNickname", currentUser.getNickname());
+//            }
+//        }
+//        return "report";
+//    }
 }
