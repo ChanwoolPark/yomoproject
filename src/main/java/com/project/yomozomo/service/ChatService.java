@@ -49,10 +49,10 @@ public class ChatService {
         Rental rental = rentalRepository.findById(rentalId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 렌탈 ID입니다: " + rentalId));
 
-        User participant1 = buyer.getId() < seller.getId() ? buyer : seller;
-        User participant2 = buyer.getId() < seller.getId() ? seller : buyer;
+/*        User participant1 = buyer.getId() < seller.getId() ? buyer : seller;
+        User participant2 = buyer.getId() < seller.getId() ? seller : buyer;*/
 
-        Optional<ChatRoom> existingRoom = chatRoomRepository.findByBuyerAndSellerAndRental(participant1, participant2, rental);
+        Optional<ChatRoom> existingRoom = chatRoomRepository.findByBuyerAndSellerAndRental(buyer, seller, rental);
 
         if (existingRoom.isPresent()) {
             log.info("기존 렌탈 채팅방 발견: Room ID {}", existingRoom.get().getRoomId());
@@ -69,8 +69,8 @@ public class ChatService {
 
             ChatRoom newChatRoom = ChatRoom.builder()
                     .roomName(roomName)
-                    .buyer(participant1)
-                    .seller(participant2)
+                    .buyer(buyer)
+                    .seller(seller)
                     .rental(rental)
                     .build();
 

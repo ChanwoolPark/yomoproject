@@ -139,7 +139,7 @@
                style="font-weight: bold; text-decoration: none; color: inherit;">
               <span th:text="${seller.nickname}">닉네임</span>
             </a>
-            <span th:text="${seller.grade}" style="font-size: 14px; color: #777;">등급</span>
+            <span th:utext="${@starUtil.renderStars(seller.rating)}" style="font-size: 14px; color: #777;">평점</span>
           </div>
 
           <!-- 주소는 아래 줄 -->
