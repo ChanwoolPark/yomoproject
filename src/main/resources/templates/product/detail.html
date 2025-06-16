@@ -9,8 +9,20 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <link rel="stylesheet" href="/css/header.css">
   <style>
-    .container { display: flex; padding: 20px; gap: 40px; }
-    .left, .right { width: 50%;}
+    .container {
+      display: flex;
+      flex-wrap: wrap;            /* ✅ 너비 줄면 줄바꿈 허용 */
+      gap: 40px;
+      padding: 20px;
+      max-width: 1400px;          /* ✅ 최대 너비 제한 */
+      margin: 0 auto;             /* ✅ 가운데 정렬 */
+      box-sizing: border-box;
+    }
+    .left, .right {
+      flex: 1 1 0;                /* ✅ 비율 기반 너비 (고정 아님) */
+      min-width: 300px;           /* ✅ 최소 너비 설정 */
+      box-sizing: border-box;
+    }
     /*.product-image { width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 10px; }*/
     .seller-box {
       border: 1px solid #ddd; padding: 15px; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
@@ -111,24 +123,33 @@
 
       <!-- 페이지네이션 점 -->
       <div class="swiper-pagination"></div>
-
     </div>
 
     <div class="seller-box">
-      <div class="seller-profile">
+      <div class="seller-profile" style="display: flex; align-items: center; gap: 10px;">
         <img th:src="${seller.profileImageUrl} != null ? ${seller.profileImageUrl} : '/images/default-profile.png'"
              alt="프로필 이미지"
              style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:1px solid #ddd; background:#eee;"
              onerror="this.onerror=null;this.src='/images/default-profile.png';">
-        <div>
-          <a th:href="@{'/mypage/profile/' + ${seller.username}}"
-             style="font-weight: bold; text-decoration: none; color: inherit;">
-            <span th:text="${seller.nickname}">닉네임</span>
-          </a><br/>
-          <span th:text="${seller.grade}">등급</span>
+
+        <div style="flex: 1;">
+          <!-- 닉네임과 등급을 같은 줄에, 좌우 정렬 -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <a th:href="@{'/mypage/profile/' + ${seller.username}}"
+               style="font-weight: bold; text-decoration: none; color: inherit;">
+              <span th:text="${seller.nickname}">닉네임</span>
+            </a>
+            <span th:text="${seller.grade}" style="font-size: 14px; color: #777;">등급</span>
+          </div>
+
+          <!-- 주소는 아래 줄 -->
+          <div>
+            <span th:text="${seller.address}" style="font-size: 14px; color: #555;">주소</span>
+          </div>
         </div>
       </div>
     </div>
+
     <div class="map-placeholder">
       <div id="map" style="width:100%; height:300px;"></div>
     </div>

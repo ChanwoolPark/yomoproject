@@ -1,11 +1,10 @@
 package com.project.yomozomo.service;
-import com.project.yomozomo.entity.User;
+
 import com.project.yomozomo.dto.SignupForm;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.ReviewRepository;
 import com.project.yomozomo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -93,6 +92,11 @@ public class UserService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(u.getUsername());
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        System.out.println("가입 요청 확인 👉 username: " + form.getUsername());
+        System.out.println("👉 password: " + form.getPassword());
+        System.out.println("👉 email: " + form.getEmail());
+        System.out.println("👉 nickname: " + form.getNickname());
 
         return u;
     }
