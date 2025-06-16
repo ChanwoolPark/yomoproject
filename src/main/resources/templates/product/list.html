@@ -12,6 +12,7 @@
             background-color: #f9f9f9;
             font-size: 15px;
             line-height: 1.6;
+            overflow-y: auto !important;
         }
 
         h2 {
@@ -276,6 +277,8 @@
         /* ✌️ 중앙 전체를 감싸는 래퍼 */
         .product-main {
             flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 70%;      /* ✅ 전체 너비의 약 70% 정도만 차지하도록 제한 */
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -285,8 +288,8 @@
         /* 중앙 영역 (정렬 + 리스트) */
         .product-center {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
         }
 
         /* 정렬 영역 전체 (최상단) */
@@ -365,9 +368,23 @@
         }
 
         .product-box {
-            border: 1px solid #ccc;
+            border: 1.5px solid #ccc;
             padding: 10px;
             text-align: center;
+
+            /* ✅ 부드러운 테두리 추가 */
+            border-radius: 7px;
+
+            /* 선택사항: 약간의 그림자 추가 */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-box:hover {
+            transform: scale(1.03);
+            border-color: #465BFF;
+            box-shadow: 0 6px 16px rgba(70, 91, 255, 0.35);
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
 
@@ -377,6 +394,11 @@
             object-fit: cover;
         }
 
+
+        .pagination a:hover {
+            color: #465BFF;
+        }
+
         /* ✌️ 오른쪽 구역 스타일*/
         .product-right h4 {
             text-align: center;
@@ -384,7 +406,7 @@
             margin-bottom: 30px;
             font-size: 18px;
             font-weight: 600;
-            color: #3C3C8C;
+            color: #465BFF;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -627,6 +649,50 @@
             </a>
         </div>
     </div>
+
+        <!-- 페이지 네이선 -->
+        <div class="pagination" style="margin: 30px auto; text-align: center;" th:if="${totalPages != null and totalPages > 1}">
+            <ul style="display: inline-flex; list-style: none; padding: 0; gap: 5px;">
+
+                <!-- 이전 버튼 -->
+                <li th:if="${currentPage > 0}">
+                    <a th:if="${subCategoryId != null}"
+                       th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${currentPage - 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">이전</a>
+                    <a th:if="${subCategoryId == null}"
+                       th:href="@{/category/{cid}(cid=${category.categoryId}, page=${currentPage - 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">이전</a>
+                </li>
+
+                <!-- 페이지 번호 -->
+                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                    <a th:if="${subCategoryId != null}"
+                       th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${i}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       th:text="${i + 1}"
+                       style="padding: 8px 12px; background: #f3f3f3; border-radius: 6px; font-weight: bold;"
+                       th:styleappend="${i == currentPage} ? 'background: #465BFF; color: white;'">
+                    </a>
+                    <a th:if="${subCategoryId == null}"
+                       th:href="@{/category/{cid}(cid=${category.categoryId}, page=${i}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       th:text="${i + 1}"
+                       style="padding: 8px 12px; background: #f3f3f3; border-radius: 6px; font-weight: bold;"
+                       th:styleappend="${i == currentPage} ? 'background: #465BFF; color: white;'">
+                    </a>
+                </li>
+
+                <!-- 다음 버튼 -->
+                <li th:if="${currentPage < totalPages - 1}">
+                    <a th:if="${subCategoryId != null}"
+                       th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${currentPage + 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">다음</a>
+                    <a th:if="${subCategoryId == null}"
+                       th:href="@{/category/{cid}(cid=${category.categoryId}, page=${currentPage + 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">다음</a>
+                </li>
+
+            </ul>
+        </div>
+
     </div>
 
     <!-- 오른쪽: 최근 본 상품 & 찜 -->
