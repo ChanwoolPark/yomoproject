@@ -1,10 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>fail</title>
+    <title>결제 실패</title>
+    <style>
+        :root {
+            --main-color: #465BFF;
+            --sub-blue: #A3C9FF;
+            --yellow: #FFED7B;
+            --light-bg: #FAFAFC;
+            --soft-purple: #CEC8FE;
+            --text-color: #000;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+        }
+
+        .fail-container {
+            max-width: 500px;
+            margin: 100px auto;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--main-color);
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 0.9rem 1.6rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            background-color: var(--main-color);
+            transition: background-color 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #334bcc;
+        }
+    </style>
 </head>
 <body>
-<h2>결제 실패 페이지</h2>
+<div class="fail-container">
+    <h2>❌ 결제 실패</h2>
+    <div class="message">
+        잔액이 부족하여 결제에 실패했습니다.<br>
+        포인트를 충전한 후 다시 시도해 주세요.
+    </div>
+
+    <div class="button-group">
+        <a href="http://localhost:8080/mypage?menu=yomopay" class="btn">충전하러 가기</a>
+        <a href="http://localhost:8080/" class="btn">메인으로 가기</a>
+    </div>
+</div>
 </body>
 </html>

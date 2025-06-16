@@ -1,24 +1,102 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <title>결제 페이지</title>
+  <style>
+    :root {
+      --main-color: #465BFF;
+      --sub-blue: #A3C9FF;
+      --yellow: #FFED7B;
+      --light-bg: #FAFAFC;
+      --soft-purple: #CEC8FE;
+      --text-color: #000;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--light-bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text-color);
+    }
+
+    .payment-container {
+      max-width: 600px;
+      margin: 60px auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 14px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    h2 {
+      color: var(--main-color);
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--sub-blue);
+      padding-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    .info-line {
+      font-size: 1rem;
+      margin-bottom: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .info-line span {
+      font-weight: bold;
+      color: var(--main-color);
+    }
+
+    form {
+      margin-top: 2rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.9rem;
+      font-size: 1.05rem;
+      background-color: var(--main-color);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #334bcc;
+    }
+
+    .error {
+      color: red;
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-<h2>대여 결제</h2>
-<p>구매자: <span th:text="${user.nickname}"></span></p>
-<p>상품명: <span th:text="${product.title}"></span></p>
-<p>판매자: <span th:text="${seller.nickname}"></span></p>
-<p>대여기간: <span th:text="${#dates.format(rental.startDate, 'yyyy-MM-dd')}"></span> ~
-  <span th:text="${#dates.format(rental.endDate, 'yyyy-MM-dd')}"></span></p>
-<p>가격: <span th:text="${totalPrice}"></span> 포인트</p>
-<p>보증금: <span th:text="${deposit}"></span> 포인트</p>
-<p>내 잔액: <span th:text="${balance}"></span> 포인트</p>
-<form method="post" th:action="@{/payment/submit}">
-  <input type="hidden" name="rentalId" th:value="${rental.rentalId}" />
-  <button type="submit">결제하기</button>
-</form>
-<div th:if="${error}" style="color:red;" th:text="${error}"></div>
+<div class="payment-container">
+  <h2>대여 결제</h2>
+
+  <div class="info-line">👤 구매자: <span th:text="${user.nickname}"></span></div>
+  <div class="info-line">📦 상품명: <span th:text="${product.title}"></span></div>
+  <div class="info-line">👨‍💼 판매자: <span th:text="${seller.nickname}"></span></div>
+  <div class="info-line">🗓 대여기간: <span th:text="${#dates.format(rental.startDate, 'yyyy-MM-dd')}"></span> ~
+    <span th:text="${#dates.format(rental.endDate, 'yyyy-MM-dd')}"></span></div>
+  <div class="info-line">💰 가격: <span th:text="${totalPrice}"></span> P</div>
+  <div class="info-line">🔐 보증금: <span th:text="${deposit}"></span> P</div>
+  <div class="info-line">💳 내 잔액: <span th:text="${balance}"></span> P</div>
+
+  <form method="post" th:action="@{/payment/submit}">
+    <input type="hidden" name="rentalId" th:value="${rental.rentalId}" />
+    <button type="submit">✅ 결제하기</button>
+  </form>
+
+  <div th:if="${error}" class="error" th:text="${error}"></div>
+</div>
 </body>
 </html>
-

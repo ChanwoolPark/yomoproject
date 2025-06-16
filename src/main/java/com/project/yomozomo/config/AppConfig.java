@@ -1,4 +1,4 @@
-package com.project.yomozomo.Config;
+package com.project.yomozomo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,9 +13,5 @@ public class AppConfig {
         return new BCryptPasswordEncoder();
     }
 
-/*    @Bean
-    public SpringSecurityDialect springSecurityDialect() {
-        return new SpringSecurityDialect();
-    }*/
 }
 
