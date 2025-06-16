@@ -1007,11 +1007,10 @@
 
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
-        //이미지
+
         if (message.messageType === 'IMAGE') {
             if (message.imgUrl) {
                 const imgElement = document.createElement('img');
-
                 imgElement.src = message.imgUrl;
                 imgElement.alt = message.message || "전송된 이미지";
                 imgElement.style.maxWidth = '250px';
@@ -1326,7 +1325,8 @@
 
         if (innerButton2) {
             innerButton2.addEventListener('click', function() {
-                // ... (주석 처리된 showPanelSection)
+                // 이 버튼은 확장 패널 대신 모달을 띄우도록 변경되었으므로, 기존 패널 섹션 호출은 주석 처리 또는 제거합니다.
+                // showPanelSection(priceAdjustmentPanelContent, true);
                 priceAdjustmentModal.classList.add('active'); // 모달 활성화
             });
         }
@@ -1356,31 +1356,7 @@
         });
 
         // 5. 패널 내부 콘텐츠 버튼들
-        if (processPaymentBtn) {
-            processPaymentBtn.addEventListener('click', () => {
-                //  추가된 로직: isSeller가 false면 alert 메시지 후 함수 종료
-                if (!isSeller) {
-                    alert('결제 요청은 판매자만 가능합니다.\n문제가 있는 경우 고객센터나 신고하기를 이용해주세요.');
-                    return;
-                }
 
-                const amount = paymentAmountInput.value;
-                if (amount && amount > 0) {
-                    sendMessage(`[결제 요청] ${amount}원`, "PAYMENT_REQUEST");
-                    alert(`결제 요청: ${amount}원`);
-                    toggleExpandedPanel(false); // 확장 패널 닫기
-                    showPanelSection(defaultPanelContent, false); // 기본 패널 섹션으로 전환
-
-                    // ⭐ 추가된 로직: priceAdjustmentModal 닫기 ⭐
-                    if (priceAdjustmentModal) {
-                        priceAdjustmentModal.classList.remove('active');
-                    }
-
-                } else {
-                    alert('유효한 결제 금액을 입력해주세요.');
-                }
-            });
-        }
 
 
         // 6. 파일 첨부 버튼
@@ -1470,5 +1446,5 @@
     });
 
 </script>
-    </body>
-    </html>
+</body>
+</html>

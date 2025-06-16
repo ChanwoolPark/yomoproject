@@ -1,67 +1,162 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>채팅방 관리</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { color: #333; }
-    .search-form { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9; }
-    .search-form label { margin-right: 10px; }
-    .search-form input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-    .search-form button { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    .search-form button:hover { background-color: #0056b3; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background-color: #f2f2f2; }
-    .no-data { text-align: center; color: #777; padding: 20px; }
+    :root {
+      --main-color: #465BFF;
+      --sub-blue: #A3C9FF;
+      --light-bg: #FAFAFC;
+      --soft-purple: #CEC8FE;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--light-bg);
+      margin: 0;
+      padding: 0;
+      color: #000;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 60px auto;
+      background: white;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    h1 {
+      color: var(--main-color);
+      border-bottom: 2px solid var(--sub-blue);
+      padding-bottom: 10px;
+      margin-bottom: 2rem;
+    }
+
+    .search-form {
+      margin-bottom: 2rem;
+      background-color: var(--soft-purple);
+      padding: 1.5rem;
+      border-radius: 10px;
+    }
+
+    .search-form label {
+      margin-right: 0.5rem;
+      font-weight: bold;
+    }
+
+    .search-form input[type="text"] {
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-right: 1rem;
+    }
+
+    .search-form button {
+      padding: 0.7rem 1.3rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 0.5rem;
+    }
+
+    .search-form button[type="submit"] {
+      background-color: var(--main-color);
+      color: white;
+    }
+
+    .search-form button[type="button"] {
+      background-color: #888;
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+    }
+
+    thead {
+      background-color: #ECEAFE;
+    }
+
+    .no-data {
+      text-align: center;
+      color: gray;
+      padding: 2rem;
+    }
+
+    .view-btn {
+      background-color: var(--main-color);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .view-btn:hover {
+      background-color: #334bcc;
+    }
   </style>
   <link rel="stylesheet" href="/css/header.css">
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
 
-<h1>채팅방 관리</h1>
+<div class="container">
+  <h1>채팅방 관리</h1>
 
-<div class="search-form">
-  <form th:action="@{/templates/admin/chatrooms}" method="get">
-    <label for="roomName">채팅방 이름:</label>
-    <input type="text" id="roomName" name="roomName" th:value="${param.roomName}">
-    <label for="buyerName">구매자 이름:</label>
-    <input type="text" id="buyerName" name="buyerName" th:value="${param.buyerName}">
-    <label for="sellerName">판매자 이름:</label>
-    <input type="text" id="sellerName" name="sellerName" th:value="${param.sellerName}">
-    <button type="submit">검색</button>
-    <button type="button" onclick="location.href='admin/chatrooms'">초기화</button>
-  </form>
+  <div class="search-form">
+    <form th:action="@{/admin/chatrooms}" method="get">
+      <label for="roomName">채팅방 이름:</label>
+      <input type="text" id="roomName" name="roomName" th:value="${param.roomName}">
+      <label for="buyerName">구매자:</label>
+      <input type="text" id="buyerName" name="buyerName" th:value="${param.buyerName}">
+      <label for="sellerName">판매자:</label>
+      <input type="text" id="sellerName" name="sellerName" th:value="${param.sellerName}">
+      <button type="submit">검색</button>
+      <button type="button" onclick="location.href='/admin/chatrooms'">초기화</button>
+    </form>
+  </div>
+
+  <table>
+    <thead>
+    <tr>
+      <th>ROOM ID</th>
+      <th>채팅방 이름</th>
+      <th>구매자</th>
+      <th>판매자</th>
+      <th>렌탈 ID</th>
+      <th>생성일</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="room : ${chatRooms}">
+      <td th:text="${room.roomId}">1</td>
+      <td th:text="${room.roomName}">상품 관련 채팅</td>
+      <td th:text="${room.buyer.username}">buyer</td>
+      <td th:text="${room.seller.username}">seller</td>
+      <td th:text="${room.rental.rentalId}">21</td>
+      <td th:text="${#temporals.format(room.createdAt, 'yyyy-MM-dd HH:mm')}">2025-06-13 10:00</td>
+      <td><a th:href="@{/chat/{roomId}(roomId=${room.roomId})}" class="view-btn">채팅 보기</a></td>
+    </tr>
+    <tr th:if="${chatRooms.empty}">
+      <td colspan="7" class="no-data">채팅방이 없습니다.</td>
+    </tr>
+    </tbody>
+  </table>
 </div>
-
-<table>
-  <thead>
-  <tr>
-    <th>ROOM ID</th>
-    <th>채팅방 이름</th>
-    <th>구매자</th>
-    <th>판매자</th>
-    <th>연관 렌탈 ID</th>
-    <th>생성일</th>
-    <th>관리</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="room : ${chatRooms}">
-    <td th:text="${room.roomId}">1</td>
-    <td th:text="${room.roomName}">상품 관련 채팅</td>
-    <td th:text="${room.buyer.username}">buyer1</td> <td th:text="${room.seller.username}">seller1</td> <td th:text="${room.rental.rentalId}">21</td> <td th:text="${#temporals.format(room.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-31 10:00</td>
-    <td>
-      <a th:href="@{/chat/{roomId}(roomId=${room.roomId})}">채팅 보기</a>
-    </td>
-  </tr>
-  <tr th:if="${chatRooms.empty}">
-    <td colspan="7" class="no-data">채팅방이 없습니다.</td>
-  </tr>
-  </tbody>
-</table>
-
 </body>
 </html>
