@@ -15,24 +15,24 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ChatbotOption {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID") // DB 컬럼명과 매핑
     private Long id;
 
-    @Column(nullable = true, length = 255)
-    private String text; // 옵션 텍스트 (예: "온라인 결제")
+    @Column(name = "CONTENT", nullable = true, length = 255) // DB 컬럼명과 매핑
+    private String content; // 필드명도 DB 컬럼명과 일치시키는 것을 권장 (content로 변경)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id") // 이 옵션이 속한 질문
+    @JoinColumn(name = "QUESTION_ID") // DB 컬럼명과 매핑
     private ChatbotQuestion question;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "next_question_id") // 이 옵션을 선택했을 때 연결될 다음 질문
+    @JoinColumn(name = "NEXT_QUESTION_ID") // DB 컬럼명과 매핑
     private ChatbotQuestion nextQuestion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "answer_id") // 이 옵션을 선택했을 때 연결될 최종 답변
+    @JoinColumn(name = "ANSWER_ID") // DB 컬럼명과 매핑
     private ChatbotAnswer answer;
 
-    @Column(nullable = false)
-    private Integer displayOrder; // 옵션 표시 순서
+    @Column(name = "DISPLAY_ORDER", nullable = false) // DB 컬럼명과 매핑
+    private Integer displayOrder;
 }

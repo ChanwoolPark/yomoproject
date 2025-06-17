@@ -1332,7 +1332,7 @@
         }
 
         const isSeller = /*[[${isSeller}]]*/ false;
-        const rentalStatus = '[[${rental.status}]]'; // 이 변수는 사용되지 않는 것 같습니다.
+        const rentalStatus = '[[${rental.status}]]';
         console.log('rentalStatus:', rentalStatus, rentalStatus.length); // 디버깅용 로그
 
         document.getElementById('tradeCompleteBtn').addEventListener('click', function() {
@@ -1354,12 +1354,7 @@
                     }
                 });
         });
-
-        // 5. 패널 내부 콘텐츠 버튼들
-
-
-
-        // 6. 파일 첨부 버튼
+        // 5. 파일 첨부 버튼
         if (attachmentButton) {
             attachmentButton.addEventListener('click', () => {
                 fileInput.click();
@@ -1402,8 +1397,7 @@
                 }
             });
         }
-
-        // ⭐ 이 블록을 남겨두는 것입니다. (fetch를 통해 서버에 금액 변경 요청) ⭐
+//=======================================================================================================
         // 금액 조절 확인/취소 버튼 (이전 버튼과 중복되는 로직이 있으니 하나만 남겨야 합니다.)
         if (confirmPricePanelBtn) {
             confirmPricePanelBtn.addEventListener('click', function() {
