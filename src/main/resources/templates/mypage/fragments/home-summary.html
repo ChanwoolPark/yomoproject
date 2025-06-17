@@ -15,8 +15,6 @@
       <span class="profile-point-badge">
         <span style="font-size:1.08em;">🪙</span> 요모포인트 <span th:text="${point}">1000</span> p
       </span>
-        <span class="profile-coupon-badge">
-        <span style="font-size:1.07em;">🎟️</span> 쿠폰 <strong th:text="${user.couponCount}">3</strong>장
       </span>
       </div>
       <div class="profile-btn-row">
@@ -75,7 +73,7 @@
                   (${rental.status} == '반납완료' ? 'status-done' : '')))"></span>
             </div>
           <div class="rental-period">
-            <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy.MM.dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy.MM.dd')}"></span>
+            <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy.MM.dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy.MM.dd')}" style="color: #3c1e1e"></span>
           </div>
         </div>
       </div>

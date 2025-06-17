@@ -3,61 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <title>판매중 목록</title>
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
     <style>
-        .list-title {
-            font-size: 19px;
-            font-weight: bold;
+        .rental-history-card {
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1.2px solid var(--card-border);
+            padding: 36px 38px 30px 38px;
+            margin-bottom: 32px;
+        }
+
+        .rental-history-card h3 {
+            font-size: 1.34em;
+            font-weight: 800;
+            color: #222;
             margin-bottom: 20px;
-            margin-top: 10px;
-            color: #3849c7;
         }
-        .card-box {
-            border: 1px solid #eee;
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 18px;
-            background: #fafbfc;
-            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
+
+        .rental-item {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            padding: 13px 0;
+            border-bottom: 1px dashed #eee;
         }
-        .card-link {
-            color: #4a90e2;
+
+        .rental-item:last-child {
+            border-bottom: none;
+        }
+
+        .rental-thumb {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px #a3c9ff1a;
+            border: 1px solid #f0f0f0;
+        }
+
+        .rental-info {
+            flex: 1;
+        }
+
+        .rental-title {
+            font-weight: 700;
+            font-size: 1.02rem;
+            color: #222;
+            display: block;
+            margin-bottom: 4px;
+            text-decoration: none;
+        }
+
+        .rental-title:hover {
             text-decoration: underline;
-            font-weight: 500;
-            font-size: 1.07rem;
-            margin-bottom: 2px;
-            cursor: pointer;
         }
-        .status {
-            color: #888;
-            margin-left: 10px;
-            font-size: 14px;
+
+        .rental-status {
+            font-size: 0.95rem;
+            color: #666;
         }
+
         .empty-msg {
-            color: #bbb;
-            font-size: 1.09rem;
-            padding: 24px 0;
+            padding: 24px;
             text-align: center;
-            border-radius: 8px;
-            background: #f6f7fa;
-            border: 1.5px dashed #e5e5e5;
+            background: #fafbfd;
+            border-radius: 1.4rem;
+            border: 1px solid #f0eefb;
+            box-shadow: 0 1px 6px #a3c9ff12;
+            font-size: 0.98rem;
+            color: #999;
         }
     </style>
 </head>
 <body>
-<div class="profile-sales">
-    <h3 class="list-title">판매중인 목록</h3>
-    <div th:if="${#lists.isEmpty(sellingList)}" class="card-box">상품이 없습니다.</div>
-    <div th:each="item : ${sellingList}" class="card-box">
-        <img th:src="${item.thumbnailUrl} != null ? ${item.thumbnailUrl} : '/images/no-image.png'"
+
+<div class="rental-history-card">
+    <h3>🛍️ 판매중인 목록</h3>
+
+    <!-- 없을 경우 -->
+    <div th:if="${#lists.isEmpty(sellingList)}" class="empty-msg">
+        판매중인 상품이 없습니다.
+    </div>
+
+    <!-- 있을 경우 -->
+    <div th:each="item : ${sellingList}" class="rental-item">
+        <img th:src="${item.thumbnailUrl != null ? item.thumbnailUrl : '/images/no-image.png'}"
+             class="rental-thumb"
              alt="상품 이미지"
-             style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; margin-right: 18px;"
              onerror="this.onerror=null;this.src='/images/no-image.png';">
-        <!-- 상품명 클릭 시 상세로 이동 -->
-        <a th:href="@{'/product/' + ${item.productId}}" class="card-link" th:text="${item.title}"></a>
-        <span style="margin-left: 10px; color: #888;" th:text="'(' + ${item.status} + ')'"></span>
+
+        <div class="rental-info">
+            <a th:href="@{'/product/' + ${item.productId}}"
+               class="rental-title"
+               th:text="${item.title}">상품명</a>
+            <div class="rental-status" th:text="'상태: ' + ${item.status}">상태</div>
+        </div>
     </div>
 </div>
+
 </body>
 </html>

@@ -6,7 +6,7 @@
   <link rel="stylesheet" type="text/css" href="/style.css" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>토스페이먼츠 샘플 프로젝트</title>
+  <title>포인트충전</title>
   <!-- 토스페이먼츠 SDK 추가 -->
   <script src="https://js.tosspayments.com/v2/standard"></script>
   <style>
@@ -254,7 +254,7 @@
     <div style="padding-left: 25px">
       <div class="checkable typography--p">
         <label for="coupon-box" class="checkable__label typography--regular"
-        ><input id="coupon-box" class="checkable__input" type="checkbox" aria-checked="true" /><span class="checkable__label-text">5,000원 쿠폰 적용</span></label
+        ><input id="coupon-box" class="checkable__input" type="checkbox" aria-checked="true" /><span class="checkable__label-text">[선택]맞춤형 광고 추천</span></label
         >
       </div>
     </div>
@@ -315,7 +315,7 @@
       if (coupon.checked) {
         await widgets.setAmount({
           currency: "KRW",
-          value: amount.value - 5000,
+          value: amount.value - 0,
         });
 
         return;

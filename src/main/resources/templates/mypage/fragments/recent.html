@@ -4,40 +4,92 @@
     <meta charset="UTF-8">
     <title>최근 본 상품</title>
     <style>
+        .recent-section {
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1.2px solid var(--card-border);
+            padding: 36px 38px 30px 38px;
+            margin-bottom: 32px;
+        }
+
+        .recent-section h2 {
+            font-size: 1.34em;
+            font-weight: 800;
+            color: #222;
+            margin-bottom: 20px;
+        }
+
         .recent-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            padding: 20px;
+            gap: 18px;
         }
+
         .recent-item {
-            border: 1px solid #ccc;
-            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 1.2rem;
+            padding: 14px;
             text-align: center;
+            background: #fafbfd;
+            box-shadow: 0 1px 6px #a3c9ff12;
         }
+
         .recent-item img {
             width: 100%;
-            height: 150px;
+            height: 120px;
             object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .recent-item p {
+            font-size: 0.95rem;
+            color: #222;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .recent-item a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .recent-item a:hover p {
+            text-decoration: underline;
+        }
+
+        .empty-msg {
+            padding: 24px;
+            text-align: center;
+            background: #fafbfd;
+            border-radius: 1.4rem;
+            border: 1px solid #f0eefb;
+            box-shadow: 0 1px 6px #a3c9ff12;
+            font-size: 0.98rem;
+            color: #999;
         }
     </style>
 </head>
 <body>
-<div th:fragment="content">
-    <h2 style="padding-left: 20px;">최근 본 상품 전체</h2>
 
-    <div th:if="${#lists.isEmpty(recentlyViewed)}">
-        <p style="padding: 20px;">최근 본 상품이 없습니다.</p>
+<div class="recent-section">
+    <h2>🕓 최근 본 상품</h2>
+
+    <div th:if="${#lists.isEmpty(recentlyViewed)}" class="empty-msg">
+        최근 본 상품이 없습니다.
     </div>
 
     <div class="recent-grid" th:if="${!#lists.isEmpty(recentlyViewed)}">
         <div th:each="item : ${recentlyViewed}" class="recent-item">
             <a th:href="@{'/product/' + ${item.product.productId}}">
-                <img th:src="${item.product.thumbnailUrl}" alt="상품 이미지">
-                <p th:text="${item.product.title}"></p>
+                <img th:src="${item.product.thumbnailUrl}" alt="상품 이미지"
+                     onerror="this.onerror=null;this.src='/images/no-image.png';">
+                <p th:text="${item.product.title}">상품명</p>
             </a>
         </div>
     </div>
 </div>
+
 </body>
 </html>

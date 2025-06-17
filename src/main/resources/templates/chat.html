@@ -593,8 +593,6 @@
         }
 
 
-        /* 💰 금액 조절 모달 스타일 (기존 유지) - 이 부분은 확장 패널 내부가 아닌 별도의 모달이므로 독립적임 */
-        /* 이 모달은 현재 확장 패널 내의 금액 조절 기능과 별개로 작동합니다. */
         .modal-overlay {
             display: none; /* 기본적으로 숨김 */
             position: fixed;
@@ -802,9 +800,8 @@
             <button id="togglePanelBtn" title="거래 메뉴">
                 <span class="material-icons">add_circle</span> </button>
             <button id="attachmentButton" title="파일 첨부"> <span class="material-icons">attach_file</span> </button>
-            <button id="button3" title="달력 / 일정">
-                <span class="material-icons">event</span> </button>
             <button id="reportButton" title="신고 / 문의"> <span class="material-icons">report_problem</span> </button>
+            <button class="button p-grid-col5" onclick="location.href='http://localhost:8080';">✕</button>
         </div>
     </div>
 
@@ -1332,7 +1329,7 @@
         }
 
         const isSeller = /*[[${isSeller}]]*/ false;
-        const rentalStatus = '[[${rental.status}]]';
+        const rentalStatus = '[[${rental.status}]]'; // 이 변수는 사용되지 않는 것 같습니다.
         console.log('rentalStatus:', rentalStatus, rentalStatus.length); // 디버깅용 로그
 
         document.getElementById('tradeCompleteBtn').addEventListener('click', function() {
@@ -1354,7 +1351,21 @@
                     }
                 });
         });
-        // 5. 파일 첨부 버튼
+
+        // 5. 패널 내부 콘텐츠 버튼들
+        if (reportButton) {
+            reportButton.addEventListener('click', function () {
+                // 채팅방 ID와 유저 ID를 URL 파라미터로 넘김 (Thymeleaf 변수 사용!)
+                const url = `/report/new/${chatRoomId}?reporterId=${currentUserId}&reportedId=${chatPartnerId}`;
+                // 새 창 또는 같은 창에서 이동, 둘 중 원하는 방식으로!
+                window.open(url, '_blank');  // 새 탭
+                // 또는 window.location.href = url;  // 같은 탭
+            });
+        }
+
+
+
+        // 6. 파일 첨부 버튼
         if (attachmentButton) {
             attachmentButton.addEventListener('click', () => {
                 fileInput.click();
@@ -1397,7 +1408,8 @@
                 }
             });
         }
-//=======================================================================================================
+
+        // ⭐ 이 블록을 남겨두는 것입니다. (fetch를 통해 서버에 금액 변경 요청) ⭐
         // 금액 조절 확인/취소 버튼 (이전 버튼과 중복되는 로직이 있으니 하나만 남겨야 합니다.)
         if (confirmPricePanelBtn) {
             confirmPricePanelBtn.addEventListener('click', function() {
