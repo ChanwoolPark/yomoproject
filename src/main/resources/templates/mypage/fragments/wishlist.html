@@ -3,18 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <title>관심목록</title>
+    <style>
+        .wishlist-section {
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1.2px solid var(--card-border);
+            padding: 36px 38px 30px 38px;
+            margin-bottom: 32px;
+        }
+
+        .wishlist-section h2 {
+            font-size: 1.34em;
+            font-weight: 800;
+            color: #222;
+            margin-bottom: 20px;
+        }
+
+        .wishlist-item {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 13px 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .wishlist-item:last-child {
+            border-bottom: none;
+        }
+
+        .wishlist-thumb {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 5px #a3c9ff1a;
+        }
+
+        .wishlist-info a {
+            display: block;
+            font-weight: 700;
+            font-size: 1.02rem;
+            color: #222;
+            text-decoration: none;
+        }
+
+        .wishlist-info a:hover {
+            text-decoration: underline;
+        }
+
+        .empty-msg {
+            padding: 24px;
+            text-align: center;
+            background: #fafbfd;
+            border-radius: 1.4rem;
+            border: 1px solid #f0eefb;
+            box-shadow: 0 1px 6px #a3c9ff12;
+            font-size: 0.98rem;
+            color: #999;
+        }
+    </style>
 </head>
 <body>
-<h2>관심목록 전체 보기</h2>
 
-<div th:if="${wishlist.size() == 0}">
-    <p>찜한 상품이 없습니다.</p>
-</div>
+<div class="wishlist-section">
+    <h2>💗 관심목록</h2>
 
-<div th:each="item : ${wishlist}" class="wishlist-item" style="display: flex; margin-bottom: 10px;">
-    <img th:src="${item.imageUrl}" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px;">
-    <div>
-        <a th:href="@{'/product/' + ${item.productId}}" th:text="${item.title}" style="font-size: 16px;"></a>
+    <div th:if="${wishlist.size() == 0}" class="empty-msg">
+        찜한 상품이 없습니다.
+    </div>
+
+    <div th:each="item : ${wishlist}" class="wishlist-item">
+        <img th:src="${item.imageUrl}" alt="상품 이미지" class="wishlist-thumb"
+             onerror="this.onerror=null;this.src='/images/no-image.png';">
+        <div class="wishlist-info">
+            <a th:href="@{'/product/' + ${item.productId}}" th:text="${item.title}">상품명</a>
+        </div>
     </div>
 </div>
 
