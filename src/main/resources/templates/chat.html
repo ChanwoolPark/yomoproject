@@ -593,8 +593,6 @@
         }
 
 
-        /* 💰 금액 조절 모달 스타일 (기존 유지) - 이 부분은 확장 패널 내부가 아닌 별도의 모달이므로 독립적임 */
-        /* 이 모달은 현재 확장 패널 내의 금액 조절 기능과 별개로 작동합니다. */
         .modal-overlay {
             display: none; /* 기본적으로 숨김 */
             position: fixed;
@@ -802,9 +800,8 @@
             <button id="togglePanelBtn" title="거래 메뉴">
                 <span class="material-icons">add_circle</span> </button>
             <button id="attachmentButton" title="파일 첨부"> <span class="material-icons">attach_file</span> </button>
-            <button id="button3" title="달력 / 일정">
-                <span class="material-icons">event</span> </button>
             <button id="reportButton" title="신고 / 문의"> <span class="material-icons">report_problem</span> </button>
+            <button class="button p-grid-col5" onclick="location.href='http://localhost:8080';">✕</button>
         </div>
     </div>
 
@@ -1356,6 +1353,15 @@
         });
 
         // 5. 패널 내부 콘텐츠 버튼들
+        if (reportButton) {
+            reportButton.addEventListener('click', function () {
+                // 채팅방 ID와 유저 ID를 URL 파라미터로 넘김 (Thymeleaf 변수 사용!)
+                const url = `/report/new/${chatRoomId}?reporterId=${currentUserId}&reportedId=${chatPartnerId}`;
+                // 새 창 또는 같은 창에서 이동, 둘 중 원하는 방식으로!
+                window.open(url, '_blank');  // 새 탭
+                // 또는 window.location.href = url;  // 같은 탭
+            });
+        }
 
 
 
