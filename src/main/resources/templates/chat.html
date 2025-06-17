@@ -1354,12 +1354,11 @@
         // 5. 패널 내부 콘텐츠 버튼들
         if (reportButton) {
             reportButton.addEventListener('click', function () {
-                if (chatRoomId) {
-                    toggleExpandedPanel(false);
-                    window.location.href = '/report/new/' + chatRoomId;
-                } else {
-                    alert('렌탈 정보가 없어 신고 페이지로 이동할 수 없습니다.');
-                }
+                // 채팅방 ID와 유저 ID를 URL 파라미터로 넘김 (Thymeleaf 변수 사용!)
+                const url = `/report/new/${chatRoomId}?reporterId=${currentUserId}&reportedId=${chatPartnerId}`;
+                // 새 창 또는 같은 창에서 이동, 둘 중 원하는 방식으로!
+                window.open(url, '_blank');  // 새 탭
+                // 또는 window.location.href = url;  // 같은 탭
             });
         }
 
