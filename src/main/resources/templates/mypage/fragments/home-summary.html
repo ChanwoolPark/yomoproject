@@ -75,7 +75,7 @@
                   (${rental.status} == '반납완료' ? 'status-done' : '')))"></span>
             </div>
           <div class="rental-period">
-            <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy.MM.dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy.MM.dd')}"></span>
+            <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy.MM.dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy.MM.dd')}" style="color: #3c1e1e"></span>
           </div>
         </div>
       </div>

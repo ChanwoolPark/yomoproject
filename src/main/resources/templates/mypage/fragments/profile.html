@@ -1,55 +1,103 @@
+<style>
+    .profile-grade {
+        display: inline-block;
+        font-size: 0.92rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 12px;
+        margin-left: 10px;
+        color: #fff;
+    }
+
+    /* 등급별 스타일 */
+    .grade-bronze {
+        background: linear-gradient(135deg, #cd7f32, #a97142);
+    }
+
+    .grade-silver {
+        background: linear-gradient(135deg, #c0c0c0, #999);
+    }
+
+    .grade-gold {
+        background: linear-gradient(135deg, #ffd700, #f2c200);
+        color: #222;
+    }
+
+    .grade-platinum {
+        background: linear-gradient(135deg, #e5e4e2, #b2b2b2);
+        color: #222;
+    }
+
+    .grade-diamond {
+        background: linear-gradient(135deg, #b9f2ff, #5fd6ff);
+        color: #004c66;
+    }
+
+</style>
 <div th:fragment="profile">
-<div class="yomo-card profile-card">
-    <img th:src="${user.profileImageUrl} != null ? ${user.profileImageUrl} : '/images/default-profile.png'"
-         class="profile-img"
-         alt="프로필 이미지"
-         onerror="this.onerror=null;this.src='/images/default-profile.png';">
-    <div style="flex:1">
-        <div class="profile-main-row">
-            <span class="profile-nickname" th:text="${user.nickname}"></span>
-            <span style="color:#888; font-size:1em;" th:text="'(' + ${user.username} + ')'"></span>
-            <span class="profile-grade" th:if="${user.grade != null}" th:text="${user.grade}">일반회원</span>
-            <button class="yomo-btn"
-                    th:if="${#authentication.name == user.username}"
-                    onclick="loadContent('edit-info')"
-                    style="margin-left:14px; padding:7px 17px 8px 17px; font-size:0.99em;">
-                내 정보 수정
-            </button>
-        </div>
-        <div class="profile-points">
-            <span class="profile-point-badge">⭐ <b th:text="${user.rating}">4.5</b></span>
-            <span class="profile-point-badge">재거래 희망률 <b style="margin-left:2px;">92%</b></span>
-            <span class="profile-point-badge">응답률 <b style="margin-left:2px;">95%</b></span>
-            <span class="profile-coupon-badge" th:if="${user.couponCount > 0}">쿠폰 <b th:text="${user.couponCount}"></b></span>
+    <div class="yomo-card profile-card">
+        <img th:src="${user.profileImageUrl} != null ? ${user.profileImageUrl} : '/images/default-profile.png'"
+             class="profile-img"
+             alt="프로필 이미지"
+             onerror="this.onerror=null;this.src='/images/default-profile.png';">
+        <div style="flex:1">
+            <div class="profile-main-row">
+                <span class="profile-nickname" th:text="${user.nickname}"></span>
+                <span style="color:#888; font-size:1em;" th:text="'(' + ${user.username} + ')'"></span>
+                <span class="profile-grade"
+                      th:if="${user.grade != null}"
+                      th:text="
+                    ${user.grade} == 'BRONZE' ? '🧵 BRONZE' :
+                    (${user.grade} == 'SILVER' ? '🧷 SILVER' :
+                    (${user.grade} == 'GOLD' ? '🥇 GOLD' :
+                    (${user.grade} == 'PLATINUM' ? '🔹 PLATINUM' :
+                    (${user.grade} == 'DIAMOND' ? '💎 DIAMOND' : user.grade))))"
+                      th:classappend="
+                    ${user.grade} == 'BRONZE' ? 'grade-bronze' :
+                    (${user.grade} == 'SILVER' ? 'grade-silver' :
+                    (${user.grade} == 'GOLD' ? 'grade-gold' :
+                    (${user.grade} == 'PLATINUM' ? 'grade-platinum' :
+                    (${user.grade} == 'DIAMOND' ? 'grade-diamond' : ''))))">
+                일반회원
+            </span>
+                <button class="yomo-btn"
+                        th:if="${#authentication.name == user.username}"
+                        onclick="loadContent('edit-info')"
+                        style="margin-left:14px; padding:7px 17px 8px 17px; font-size:0.99em;">
+                    내 정보 수정
+                </button>
+            </div>
+            <div class="profile-points">
+                <span class="profile-point-badge">⭐ <b th:text="${user.rating}">4.5</b></span>
+            </div>
         </div>
     </div>
-</div>
-<hr class="yomo-break">
+    <hr class="yomo-break">
 
-<div class="yomo-card">
-    <h3>🛒 판매중인 목록</h3>
-    <div th:if="${#lists.isEmpty(myProductList)}" class="mini-box" style="text-align:center; padding:18px; width:100%;">상품이 없습니다.</div>
-    <div class="recent-list-row" th:each="item : ${myProductList}">
-        <div class="mini-box" style="display:flex;align-items:center;gap:11px;width:100%;">
-            <img th:src="${item.thumbnailUrl} != null ? ${item.thumbnailUrl} : '/images/no-image.png'"
-                 class="recent-img"
-                 alt="상품 이미지"
-                 onerror="this.onerror=null;this.src='/images/no-image.png';">
-            <div>
-                <a th:href="@{'/product/' + ${item.productId}}" class="card-link recent-title" th:text="${item.title}"></a>
-                <div class="rental-status">
+    <div class="yomo-card">
+        <h3>🛒 판매중인 목록</h3>
+        <div th:if="${#lists.isEmpty(myProductList)}" class="mini-box" style="text-align:center; padding:18px; width:100%;">상품이 없습니다.</div>
+        <div class="recent-list-row" th:each="item : ${myProductList}">
+            <div class="mini-box" style="display:flex;align-items:center;gap:11px;width:100%;">
+                <img th:src="${item.thumbnailUrl} != null ? ${item.thumbnailUrl} : '/images/no-image.png'"
+                     class="recent-img"
+                     alt="상품 이미지"
+                     onerror="this.onerror=null;this.src='/images/no-image.png';">
+                <div>
+                    <a th:href="@{'/product/' + ${item.productId}}" class="card-link recent-title" th:text="${item.title}"></a>
+                    <div class="rental-status">
               <span th:text="'상태: ' + ${item.status}"
                     th:classappend="
                   ${item.status} == '대여중' ? 'status-ing' :
                   (${item.status} == '예약중' ? 'rental-period' :
                   (${item.status} == '삭제됨' ? 'status-cancle' :
                   (${item.status} == '판매중' ? 'status-done' : '')))"></span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<hr class="yomo-break">
+    <hr class="yomo-break">
 
     <div class="yomo-card">
         <h3>🛒 대여 목록</h3>
@@ -83,20 +131,20 @@
 
     <hr class="yomo-break">
 
-<div class="yomo-card">
-    <h3>⭐ 받은 리뷰</h3>
-    <div th:if="${#lists.isEmpty(reviews)}" class="mini-box" style="text-align:center; padding:18px;">아직 받은 리뷰가 없습니다.</div>
-    <div th:each="review : ${reviews}" class="mini-box" style="display:flex;align-items:center;gap:13px; margin-bottom:12px; width:100%;">
-        <img th:src="${review.reviewer.profileImageUrl} != null ? ${review.reviewer.profileImageUrl} : '/images/default-profile.png'"
-             alt="리뷰어 프로필"
-             style="width:48px; height:48px; border-radius:50%; object-fit:cover;"
-             onerror="this.onerror=null;this.src='/images/default-profile.png';">
-        <div style="flex:1">
-            <a th:href="@{'/mypage/profile/' + ${review.reviewer.username}}" class="card-link" th:text="${review.reviewer.name}"></a>
-            <span class="stars" th:utext="${@starUtil.renderStars(review.rating)}" style="margin-left:7px;"></span>
-            <p th:text="${review.reviewText}" style="margin: 7px 0 3px 0;"></p>
-            <small style="color:#aaa;" th:text="${#temporals.format(review.createdAt, 'yyyy.MM.dd')}"></small>
+    <div class="yomo-card">
+        <h3>⭐ 받은 리뷰</h3>
+        <div th:if="${#lists.isEmpty(reviews)}" class="mini-box" style="text-align:center; padding:18px;">아직 받은 리뷰가 없습니다.</div>
+        <div th:each="review : ${reviews}" class="mini-box" style="display:flex;align-items:center;gap:13px; margin-bottom:12px; width:100%;">
+            <img th:src="${review.reviewer.profileImageUrl} != null ? ${review.reviewer.profileImageUrl} : '/images/default-profile.png'"
+                 alt="리뷰어 프로필"
+                 style="width:48px; height:48px; border-radius:50%; object-fit:cover;"
+                 onerror="this.onerror=null;this.src='/images/default-profile.png';">
+            <div style="flex:1">
+                <a th:href="@{'/mypage/profile/' + ${review.reviewer.username}}" class="card-link" th:text="${review.reviewer.name}"></a>
+                <span class="stars" th:utext="${@starUtil.renderStars(review.rating)}" style="margin-left:7px;"></span>
+                <p th:text="${review.reviewText}" style="margin: 7px 0 3px 0;"></p>
+                <small style="color:#aaa;" th:text="${#temporals.format(review.createdAt, 'yyyy.MM.dd')}"></small>
+            </div>
         </div>
     </div>
-</div>
 </div>
