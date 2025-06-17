@@ -1,89 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
 <div th:fragment="content">
-  <div style="display: flex; align-items: center; margin-bottom: 30px;">
-    <img th:src="${user.profileImageUrl} != null ? ${user.profileImageUrl} : '/images/default-profile.png'"
-         alt="프로필 이미지"
-         style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-right: 16px;"
+
+  <!-- 프로필 카드 -->
+  <div class="yomo-card profile-card">
+    <img th:src="${user.profileImageUrl} != null ? ${user.profileImageUrl} : '/images/default-profile.png'" alt="프로필 이미지" class="profile-img"
          onerror="this.onerror=null;this.src='/images/default-profile.png';">
 
     <div>
-      <div>
-        <strong th:text="${user.grade}">BRONZE</strong>
-        <span th:text="${user.nickname}">누나</span> 님 환영합니다.
+      <div class="profile-main-row">
+        <strong th:text="${user.grade}" class="profile-grade">BRONZE</strong>
+        <span th:text="${user.nickname}" class="profile-nickname">누나</span>
+        <span class="profile-hi">님 환영해요! <span style="font-size:1.12em;">👋</span></span>
       </div>
-      <div style="margin-top: 10px;">
-        요모포인트 <span th:text="${point}">1000</span> p, 쿠폰 <strong th:text="${user.couponCount}">3</strong>장
+      <div class="profile-points">
+      <span class="profile-point-badge">
+        <span style="font-size:1.08em;">🪙</span> 요모포인트 <span th:text="${point}">1000</span> p
+      </span>
+      </span>
       </div>
-      <div style="margin-top: 10px;">
-        <button type="button" onclick="loadContent('profile')" style="all: unset; color: blue; text-decoration: underline;">
-          프로필 상세보기 &gt;
+      <div class="profile-btn-row">
+        <button type="button" onclick="loadContent('profile')" class="yomo-btn">
+          프로필 상세보기 <span class="profile-btn-arrow">→</span>
         </button>
       </div>
     </div>
   </div>
+  <hr class="yomo-break">
 
-  <hr>
-
-  <div style="margin-top: 30px;">
-    <h3>최근 본 상품</h3>
+  <!-- 최근 본 상품 -->
+  <div class="yomo-card">
+    <h3>👀 최근 본 상품</h3>
     <div th:if="${#lists.isEmpty(recentlyViewed)}">
-      <p>최근 본 상품이 없습니다.</p>
+      <p style="color:#888; font-size:0.99em; margin:14px 0 22px 8px;">최근 본 상품이 없습니다.</p>
     </div>
-    <div th:if="${!#lists.isEmpty(recentlyViewed)}" style="display: flex; gap: 15px;">
-      <div th:each="item : ${recentlyViewed}" class="recent-item" style="text-align: center;">
+    <div th:if="${!#lists.isEmpty(recentlyViewed)}" class="recent-list-row">
+      <div th:each="item : ${recentlyViewed}" class="mini-box recent-item-box">
         <a th:href="@{'/product/' + ${item.product.productId}}">
           <img th:src="${item.product.thumbnailUrl}" alt="최근 본 이미지"
-               style="width: 100px; height: 100px; object-fit: cover;"><br>
-          <span th:text="${item.product.title}" style="font-size: 14px;"></span>
+               class="recent-img"><br>
+          <span th:text="${item.product.title}" class="recent-title"></span>
         </a>
       </div>
     </div>
     <div style="margin-top: 10px;">
-      <a href="/mypage/recent">전체 보기 →</a>
+      <a href="/mypage/recent" style="font-size: 0.98em; font-weight:600;">전체 보기 →</a>
     </div>
   </div>
+  <hr class="yomo-break">
 
-  <hr>
-
-  <div style="margin-top: 30px;">
-    <h3>대여 목록</h3>
-    <!-- 대여 내역이 없을 때 -->
+  <!-- 대여 목록 -->
+  <div class="yomo-card">
+    <h3>🛒 대여 목록</h3>
     <div th:if="${#lists.isEmpty(myRentalList)}">
-      <p>진행 중인 대여가 없습니다.</p>
+      <p style="color:#888; font-size:0.98em; margin:14px 0 22px 8px;">진행 중인 대여가 없습니다.</p>
     </div>
-    <!-- 대여 내역이 있을 때 -->
-    <div th:if="${!#lists.isEmpty(myRentalList)}" style="display: flex; gap: 20px; flex-wrap: wrap;">
-      <div th:each="rental : ${myRentalList}"
-           style="flex: 1 1 280px; min-width: 260px; max-width: 330px; background: #f9fafd; border-radius: 15px; box-shadow: 0 4px 12px 0 rgba(80,100,200,0.05); padding: 20px 18px 16px 18px; margin-bottom: 16px; border: 1.5px solid #e3e8fd;">
+    <div th:if="${!#lists.isEmpty(myRentalList)}" class="rental-list-row">
+      <div th:each="rental : ${myRentalList}" class="mini-box rental-item-box">
         <img th:src="${rental.product.thumbnailUrl} != null ? ${rental.product.thumbnailUrl} : '/images/no-image.png'"
-             alt="상품 이미지"
-             style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; margin-right: 18px;"
+             alt="상품 이미지" class="rental-img"
              onerror="this.onerror=null;this.src='/images/no-image.png';">
-        <div style="font-size: 1.09rem; font-weight: 700; margin-bottom: 4px;">
-          <a th:href="@{'/product/' + ${rental.product.productId}}"
-             th:text="${rental.product.title}"
-             style="color: #465bff; text-decoration: none;">
-            상품명
-          </a>
-        </div>
-        <div style="font-size: 0.98rem; color: #535a80; margin-bottom: 6px;">
-          <span th:text="'상태: ' + ${rental.status}"></span>
-        </div>
-        <div style="font-size: 0.97rem; color: #868899;">
-          <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy.MM.dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy.MM.dd')}"></span>
+        <div>
+          <div class="rental-title">
+            <a th:href="@{'/product/' + ${rental.product.productId}}"
+               th:text="${rental.product.title}">상품명</a>
+          </div>
+          <div class="rental-status">
+            <div class="rental-status">
+              <span th:text="'상태: ' + ${rental.status}"
+                th:classappend="
+                  ${rental.status} == '대여중' ? 'status-ing' :
+                  (${rental.status} == '예약' ? 'rental-period' :
+                  (${rental.status} == '취소' ? 'status-cancle' :
+                  (${rental.status} == '반납완료' ? 'status-done' : '')))"></span>
+            </div>
+          <div class="rental-period">
+            <span th:text="'대여기간: ' + ${#dates.format(rental.startDate, 'yyyy.MM.dd')} + ' ~ ' + ${#dates.format(rental.endDate, 'yyyy.MM.dd')}" style="color: #3c1e1e"></span>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
-
 </div>
-
-</body>
-</html>
+</div>

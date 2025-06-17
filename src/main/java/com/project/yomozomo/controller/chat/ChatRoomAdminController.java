@@ -1,63 +1,49 @@
-// src/main/java/com/project/yomozomo/controller/ChatRoomAdminController.java
 package com.project.yomozomo.controller.chat;
 
+import com.project.yomozomo.domain.Category;
 import com.project.yomozomo.entity.ChatRoom;
+import com.project.yomozomo.entity.User;
+import com.project.yomozomo.service.CategoryService;
 import com.project.yomozomo.service.ChatService;
-import com.project.yomozomo.service.UserService; // 사용자 이름 검색을 위해 필요할 수 있음
+import com.project.yomozomo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @Controller
-@RequestMapping("/chatadmin/chatrooms") // 관리자 페이지 URL 프리픽스
+@RequestMapping("/chatadmin/chatrooms")
 @RequiredArgsConstructor
 public class ChatRoomAdminController {
 
     private final ChatService chatService;
-    private final UserService userService; // User 엔티티에서 이름으로 검색하려면 필요
+    private final UserService userService;
+    private final CategoryService categoryService;
+
 
     @GetMapping
     public String getChatRoomAdminPage(
             @RequestParam(value = "roomName", required = false) String roomName,
             @RequestParam(value = "buyerName", required = false) String buyerName,
             @RequestParam(value = "sellerName", required = false) String sellerName,
+            Principal principal,
             Model model) {
 
-        List<ChatRoom> chatRooms;
+        // 로그인한 사용자 정보
+        User currentUser = userService.getUserByUsername(principal.getName());
 
-        // 검색 조건이 있다면 해당 조건으로 검색
-        if (roomName != null && !roomName.isEmpty()) {
-            chatRooms = chatService.searchChatRoomsByRoomName(roomName);
-        } else if (buyerName != null && !buyerName.isEmpty()) {
-            // 사용자 이름으로 검색하려면 UserService에 해당 기능이 있어야 합니다.
-            // 예시: User buyer = userService.getUserByUsername(buyerName);
-            //       if (buyer != null) chatRooms = chatService.getChatRoomsByBuyer(buyer);
-            // 현재는 간단히 모든 채팅방을 가져옵니다. 이 부분은 실제 User 검색 로직으로 교체해야 합니다.
-            chatRooms = chatService.getAllChatRooms(); // 임시: 검색 로직 미구현 시
-        } else if (sellerName != null && !sellerName.isEmpty()) {
-            chatRooms = chatService.getAllChatRooms(); // 임시: 검색 로직 미구현 시
-        }
-        else {
-            chatRooms = chatService.getAllChatRooms(); // 모든 채팅방 조회
-        }
+        // 채팅방 검색 결과
+        List<ChatRoom> chatRooms = chatService.searchChatRoomsFiltered(
+                currentUser.getId(), roomName, buyerName, sellerName
+        );
+
+        List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
+        model.addAttribute("categories", categories);
 
         model.addAttribute("chatRooms", chatRooms);
-        return "chat_room_admin"; // chat_room_admin.html 템플릿 반환
+        return "chat_room_admin"; // templates/chat_room_admin.html
     }
-
-    // ⭐ 추가: 특정 채팅방 상세 보기 페이지 (필요하다면) ⭐
-    // @GetMapping("/{roomId}")
-    // public String getChatRoomDetails(@PathVariable Long roomId, Model model) {
-    //     ChatRoom chatRoom = chatService.getChatRoomById(roomId);
-    //     model.addAttribute("chatRoom", chatRoom);
-    //     // 해당 채팅방의 메시지들도 가져와야 한다면 ChatMessageService 등을 이용
-    //     // List<ChatMessage> messages = chatMessageService.getMessagesByRoomId(roomId);
-    //     // model.addAttribute("messages", messages);
-    //     return "chat_room_detail"; // 상세 보기 템플릿
-    // }
 }

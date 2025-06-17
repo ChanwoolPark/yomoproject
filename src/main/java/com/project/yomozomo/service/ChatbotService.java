@@ -3,12 +3,10 @@ package com.project.yomozomo.service;
 import com.project.yomozomo.entity.ChatbotAnswer;
 import com.project.yomozomo.entity.ChatbotOption;
 import com.project.yomozomo.entity.ChatbotKeyword;
-// import com.project.yomozomo.entity.ChatbotQuestion; // ChatbotQuestion 관련 코드를 사용하지 않으므로 주석 처리하거나 삭제
 
 import com.project.yomozomo.repository.ChatbotAnswerRepository;
 import com.project.yomozomo.repository.ChatbotOptionRepository;
 import com.project.yomozomo.repository.ChatbotKeywordRepository;
-// import com.project.yomozomo.repository.ChatbotQuestionRepository; // ChatbotQuestion 관련 코드를 사용하지 않으므로 주석 처리하거나 삭제
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,8 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.List;
 import java.util.Arrays;
-import java.util.HashMap; // Map 사용을 위한 import
-import java.util.Map;     // Map 사용을 위한 import
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class ChatbotService {
@@ -25,73 +23,96 @@ public class ChatbotService {
     private final ChatbotOptionRepository optionRepository;
     private final ChatbotAnswerRepository answerRepository;
     private final ChatbotKeywordRepository keywordRepository;
-    // private final ChatbotQuestionRepository questionRepository; // ChatbotQuestion 관련 코드를 사용하지 않으므로 주석 처리하거나 삭제
 
     @Autowired
     public ChatbotService(
             ChatbotOptionRepository optionRepository,
             ChatbotAnswerRepository answerRepository,
             ChatbotKeywordRepository keywordRepository) {
-        // ChatbotQuestionRepository questionRepository) { // ChatbotQuestion 관련 코드를 사용하지 않으므로 주석 처리하거나 삭제
         this.optionRepository = optionRepository;
         this.answerRepository = answerRepository;
         this.keywordRepository = keywordRepository;
-        // this.questionRepository = questionRepository; // ChatbotQuestion 관련 코드를 사용하지 않으므로 주석 처리하거나 삭제
     }
 
-    // Map으로 응답 반환
+    // --- getInitialMessage() 메서드 수정 ---
+    // Map으로 응답 반환: 초기 메시지에 링크 포함 가능하도록
     public Map<String, Object> getInitialMessage() {
         Map<String, Object> response = new HashMap<>();
-        response.put("type", "ANSWER"); // 타입을 문자열로 직접 지정
+        response.put("type", "ANSWER");
         response.put("question", null); // 질문은 없으므로 null
-        ChatbotAnswer initialMessage = new ChatbotAnswer(null, "안녕하세요 yomozomo 챗봇 상담이에요. 무엇을 도와드릴까요?", null);
-        response.put("answer", initialMessage); // 답변 엔티티
+
+        // ChatbotAnswer 엔티티가 linkUrl과 linkText 필드를 가지고 있다고 가정합니다.
+        // 초기 메시지에 링크가 필요하다면 아래처럼 인스턴스 생성 시 값을 넣어주세요.
+        // 현재는 링크가 없는 초기 메시지로 설정합니다.
+        ChatbotAnswer initialMessage = new ChatbotAnswer(null, "안녕하세요 yomozomo 챗봇 상담이에요. 무엇을 도와드릴까요?", null, null, null); // ChatbotAnswer 생성자 변경 가정
+
+        // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
+        Map<String, Object> answerMap = new HashMap<>();
+        answerMap.put("content", initialMessage.getContent());
+        answerMap.put("linkUrl", initialMessage.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
+        answerMap.put("linkText", initialMessage.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
+
+        response.put("answer", answerMap);
         return response;
     }
 
-    // Map으로 응답 반환
+    // --- processOptionSelection() 메서드 수정 ---
+    // Map으로 응답 반환: 옵션 선택 시 링크 포함 가능하도록
     public Map<String, Object> processOptionSelection(Long optionId) {
         Map<String, Object> response = new HashMap<>();
         Optional<ChatbotOption> optionalOption = optionRepository.findById(optionId);
 
         if (optionalOption.isPresent()) {
             ChatbotOption option = optionalOption.get();
-            // ChatbotOption 엔티티에 nextQuestion 필드가 있다면 이 로직을 활성화 (현재 ChatbotService에서 관련 로직 없음)
-            // if (option.getNextQuestion() != null) {
-            //     response.put("type", "QUESTION");
-            //     response.put("question", option.getNextQuestion().getContent());
-            //     response.put("answer", null);
-            // } else
-            if (option.getAnswer() != null) { // <<<--- 이 부분을 getAnswer()로 수정
+
+            if (option.getAnswer() != null) {
                 response.put("type", "ANSWER");
                 response.put("question", null);
-                response.put("answer", option.getAnswer());
+
+                // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
+                ChatbotAnswer chatbotAnswer = option.getAnswer();
+                Map<String, Object> answerMap = new HashMap<>();
+                answerMap.put("content", chatbotAnswer.getContent());
+                answerMap.put("linkUrl", chatbotAnswer.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
+                answerMap.put("linkText", chatbotAnswer.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
+
+                response.put("answer", answerMap);
             } else {
                 response.put("type", "ERROR"); // 답변이 연결되지 않은 옵션
-                response.put("content", "해당 옵션에 연결된 답변이 없습니다."); // 추가적인 에러 메시지
+                response.put("errorMessage", "해당 옵션에 연결된 답변이 없습니다."); // 클라이언트에서 errorMessage 필드를 기대하므로 수정
             }
         } else {
             response.put("type", "ERROR");
-            response.put("content", "유효하지 않은 옵션입니다."); // 추가적인 에러 메시지
+            response.put("errorMessage", "유효하지 않은 옵션입니다."); // 클라이언트에서 errorMessage 필드를 기대하므로 수정
         }
         return response;
     }
 
-    // Map으로 응답 반환
+    // --- processUserText() 메서드 수정 ---
+    // Map으로 응답 반환: 사용자 텍스트 처리 시 링크 포함 가능하도록
     public Map<String, Object> processUserText(String userText) {
         Map<String, Object> response = new HashMap<>();
         String cleanedText = userText.trim();
 
+        // 1. 키워드 매칭
         Optional<ChatbotKeyword> optionalKeyword = keywordRepository.findByKeyword(cleanedText);
 
         if (optionalKeyword.isPresent()) {
-            ChatbotAnswer foundAnswerByKeyword = optionalKeyword.get().getAnswer(); // <<<--- 이 줄을 수정합니다.
+            ChatbotAnswer foundAnswerByKeyword = optionalKeyword.get().getAnswer();
             response.put("type", "ANSWER");
             response.put("question", null);
-            response.put("answer", foundAnswerByKeyword);
+
+            // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
+            Map<String, Object> answerMap = new HashMap<>();
+            answerMap.put("content", foundAnswerByKeyword.getContent());
+            answerMap.put("linkUrl", foundAnswerByKeyword.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
+            answerMap.put("linkText", foundAnswerByKeyword.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
+
+            response.put("answer", answerMap);
             return response;
         }
 
+        // 2. 연관 키워드 매칭
         List<ChatbotAnswer> allAnswers = answerRepository.findAll();
         Optional<ChatbotAnswer> foundAnswerByRelatedKeywords = Optional.empty();
         int maxMatchCount = 0;
@@ -115,14 +136,30 @@ public class ChatbotService {
         if (foundAnswerByRelatedKeywords.isPresent()) {
             response.put("type", "ANSWER");
             response.put("question", null);
-            response.put("answer", foundAnswerByRelatedKeywords.get());
+
+            // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
+            ChatbotAnswer chatbotAnswer = foundAnswerByRelatedKeywords.get();
+            Map<String, Object> answerMap = new HashMap<>();
+            answerMap.put("content", chatbotAnswer.getContent());
+            answerMap.put("linkUrl", chatbotAnswer.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
+            answerMap.put("linkText", chatbotAnswer.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
+
+            response.put("answer", answerMap);
             return response;
         }
 
-        ChatbotAnswer defaultAnswer = new ChatbotAnswer(null, "죄송합니다. 이해하지 못했습니다. 다른 질문을 해주세요.", null);
+        // 3. 일치하는 키워드가 없을 경우 기본 답변
+        ChatbotAnswer defaultAnswer = new ChatbotAnswer(null, "죄송합니다. 이해하지 못했습니다. 다른 질문을 해주세요.", null, null, null); // ChatbotAnswer 생성자 변경 가정
         response.put("type", "ANSWER"); // 기본 답변도 ANSWER 타입으로 처리
         response.put("question", null);
-        response.put("answer", defaultAnswer);
+
+        // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
+        Map<String, Object> answerMap = new HashMap<>();
+        answerMap.put("content", defaultAnswer.getContent());
+        answerMap.put("linkUrl", defaultAnswer.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
+        answerMap.put("linkText", defaultAnswer.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
+
+        response.put("answer", answerMap);
         return response;
     }
 }

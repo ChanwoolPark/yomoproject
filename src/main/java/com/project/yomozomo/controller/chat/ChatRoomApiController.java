@@ -1,50 +1,66 @@
-// src/main/java/com/project/yomozomo/controller/ChatRoomApiController.java (이름 변경 추천)
 package com.project.yomozomo.controller.chat;
 
+import com.project.yomozomo.dto.ChatStartRequest;
 import com.project.yomozomo.repository.RentalRepository;
 import com.project.yomozomo.repository.UserRepository;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor;
-import java.util.List;
-import java.security.Principal;
-
 import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.service.ChatService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@RestController // 여전히 RESTful API 컨트롤러
-@RequestMapping("/api/chatrooms") // API 프리픽스 유지
+import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/chatrooms")
 @RequiredArgsConstructor
-public class ChatRoomApiController { // 이름을 좀 더 명확하게 변경 (선택 사항)
+public class ChatRoomApiController {
 
     private final ChatService chatService;
     private final UserRepository userRepository;
     private final RentalRepository rentalRepository;
 
+    // [채팅방 시작/생성]
     @PostMapping("/start")
-    @ResponseBody
-    public Long startChat(@RequestParam Long rentalId,
-                          @RequestParam Long sellerId,
-                          Principal principal) {
+    public ResponseEntity<Long> startChat(@RequestBody ChatStartRequest request, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(-1L);
+        }
+        Long rentalId = request.getRentalId();
+        if (rentalId == null) {
+            return ResponseEntity.badRequest().body(-1L);
+        }
         User buyer = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new IllegalArgumentException("구매자 없음"));
-        User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new IllegalArgumentException("판매자 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("구매자 정보를 찾을 수 없습니다."));
+
         Rental rental = rentalRepository.findById(rentalId)
-                .orElseThrow(() -> new IllegalArgumentException("렌탈 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("렌탈 정보를 찾을 수 없습니다. ID: " + rentalId));
+        User seller = rental.getUser(); // Rental 객체에 연결된 판매자
 
-        return chatService.findOrCreateChatRoom(buyer, seller, rental);
+        if (seller == null) {
+            return ResponseEntity.badRequest().body(-1L);
+        }
+        Long chatRoomId = chatService.findOrCreateChatRoomForRental(buyer, seller, rental.getRentalId());
+        return ResponseEntity.ok(chatRoomId);
     }
 
-    @GetMapping("/{roomId}") // /api/chatrooms/{roomId} (채팅방 상세 정보 조회 API)
+    // [채팅방 상세 조회]
+    @GetMapping("/{roomId}")
     public ResponseEntity<ChatRoom> getRoomDetails(@PathVariable Long roomId) {
-        ChatRoom chatRoom = chatService.getChatRoomById(roomId);
-        return ResponseEntity.ok(chatRoom);
+        Optional<ChatRoom> chatRoomOpt = chatService.getChatRoomById(roomId);
+        if (chatRoomOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(chatRoomOpt.get());
     }
 
-    @GetMapping // /api/chatrooms (모든 채팅방 목록 조회 API)
+    // [전체 채팅방 목록]
+    @GetMapping
     public ResponseEntity<List<ChatRoom>> getAllRooms() {
         List<ChatRoom> rooms = chatService.getAllChatRooms();
         return ResponseEntity.ok(rooms);

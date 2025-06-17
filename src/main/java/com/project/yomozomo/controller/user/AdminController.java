@@ -22,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Controller
@@ -115,8 +116,10 @@ public class AdminController {
     @GetMapping("/report/{reportId}")
     public String reportDetail(@PathVariable Long reportId, Model model) {
         ChatroomReport report = chatroomReportService.getReport(reportId).orElseThrow();
-        ChatRoom chatRoom = chatService.getChatRoomById(report.getChatRoomId());
-        Rental rental = chatRoom.getRental();
+        Optional<ChatRoom> chatRoom = chatService.getChatRoomById(report.getChatRoomId());
+        ChatRoom chatRoomEntity = chatRoom
+                .orElseThrow(() -> new IllegalArgumentException("채팅방 없음"));
+        Rental rental = chatRoomEntity.getRental();
         User seller = rental.getProduct().getSeller();
         User buyer = rental.getUser();
 

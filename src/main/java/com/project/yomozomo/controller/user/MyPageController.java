@@ -46,6 +46,15 @@ public class MyPageController {
         User user = usersRepository.findByUsername(username).orElseThrow();; // 또는 findByEmail
         List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
 
+        UserWallet wallet = userWalletRepository.findByUserId(user.getId());
+
+        if (wallet == null) {
+            wallet = new UserWallet();
+            wallet.setUserId(user.getId());
+            wallet.setBalance(0); // 초기 잔액 0
+            userWalletRepository.save(wallet);
+        }
+
         model.addAttribute("user", user);  // ★ 이게 안 들어가면 Thymeleaf에서 user.profileImageUrl 못 씀
         model.addAttribute("categories", categories);
 
