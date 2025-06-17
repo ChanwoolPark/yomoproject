@@ -4,60 +4,93 @@
     <meta charset="UTF-8">
     <title>내가 쓴 리뷰</title>
     <style>
-        .list-title {
-            font-size: 16px;
-            margin-bottom: 10px;
-            margin-top: 22px;
+        .review-section {
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1.2px solid var(--card-border);
+            padding: 36px 38px 30px 38px;
+            margin-bottom: 32px;
         }
-        .card-box {
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 14px;
-            margin-bottom: 16px;
-            background: #fafbfc;
-            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
+
+        .review-section h3 {
+            font-size: 1.34em;
+            font-weight: 800;
+            color: #222;
+            margin-bottom: 20px;
         }
-        .card-link {
-            color: #4a90e2;
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: bold;
+
+        .review-card {
+            border-bottom: 1px dashed #eee;
+            padding: 16px 0;
         }
-        .product-link {
-            color: #7c4dff;
-            text-decoration: underline;
-            font-size: 15px;
-            font-weight: 600;
-            margin-right: 8px;
-            cursor: pointer;
+
+        .review-card:last-child {
+            border-bottom: none;
         }
+
         .review-meta {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
+        }
+
+        .product-link, .card-link {
+            display: inline-block;
+            font-size: 0.97rem;
+            font-weight: 600;
+            color: #4a90e2;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .product-link:hover, .card-link:hover {
+            text-decoration: underline;
+        }
+
+        .review-text {
+            font-size: 0.96rem;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .review-date {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .empty-msg {
+            padding: 24px;
+            text-align: center;
+            background: #fafbfd;
+            border-radius: 1.4rem;
+            border: 1px solid #f0eefb;
+            box-shadow: 0 1px 6px #a3c9ff12;
+            font-size: 0.98rem;
+            color: #999;
         }
     </style>
 </head>
 <body>
-<div class="my-reviews-section">
-    <h3 class="list-title">내가 쓴 리뷰</h3>
-    <div th:if="${#lists.isEmpty(myWrittenReviews)}" class="card-box">
+
+<div class="review-section">
+    <h3>📝 내가 쓴 리뷰</h3>
+
+    <div th:if="${#lists.isEmpty(myWrittenReviews)}" class="empty-msg">
         아직 내가 작성한 리뷰가 없습니다.
     </div>
-    <div th:each="review : ${myWrittenReviews}" class="card-box">
+
+    <div th:each="review : ${myWrittenReviews}" class="review-card">
         <div class="review-meta">
-            <!-- 상품명(상세로), 대상자(프로필로) 둘 다 링크 -->
             <a th:href="@{'/product/' + ${review.product.productId}}"
                class="product-link"
-               th:text="'[' + ${review.product.title} + ']'"></a>
+               th:text="'[' + ${review.product.title} + ']'">[상품명]</a>
             <a th:href="@{'/mypage/profile/' + ${review.target.username}}"
                class="card-link"
-               th:text="'[대상] ' + ${review.target.name}"></a>
+               th:text="'[대상] ' + ${review.target.name}">[대상자]</a>
         </div>
-        <p th:text="${review.reviewText}" style="margin: 6px 0 2px;"></p>
-        <small th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}" style="color: #888;">날짜</small>
+        <div class="review-text" th:text="${review.reviewText}">리뷰 내용</div>
+        <div class="review-date" th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd')}">작성일</div>
     </div>
 </div>
+
 </body>
 </html>
