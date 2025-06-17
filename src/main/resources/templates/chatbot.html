@@ -163,6 +163,32 @@
         .message-bubble.user a {
             color: white; /* 사용자 버블 내 링크 색상 */
         }
+
+        /* --- 추가된 스타일 시작 (추천 키워드 버튼) --- */
+        .suggested-keywords-container {
+            display: flex;
+            flex-wrap: wrap; /* 키워드가 많을 경우 줄 바꿈 */
+            gap: 8px; /* 키워드 버튼 간 간격 */
+            margin-top: 10px;
+            margin-bottom: 10px; /* 입력 필드와의 간격 */
+            justify-content: flex-start; /* 챗봇 메시지처럼 왼쪽 정렬 */
+        }
+
+        .keyword-button {
+            background-color: #e0f2f7; /* 연한 파란색 배경 */
+            border: 1px solid #b3e5fc; /* 테두리 */
+            border-radius: 20px; /* 둥근 버튼 */
+            padding: 8px 15px;
+            font-size: 14px;
+            color: #01579b; /* 진한 파란색 텍스트 */
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap; /* 텍스트가 줄 바꿈되지 않도록 */
+        }
+        .keyword-button:hover {
+            background-color: #b3e5fc;
+        }
+        /* --- 추가된 스타일 끝 --- */
     </style>
 </head>
 <body>
@@ -230,6 +256,32 @@
         chatBody.scrollTop = chatBody.scrollHeight; // 스크롤을 항상 최하단으로
     }
 
+    /**
+     * 추천 키워드 버튼을 생성하여 채팅창에 추가하는 함수
+     * @param {Array<string>} keywords - 추천 키워드 문자열 배열
+     */
+    function addSuggestedKeywords(keywords) {
+        const keywordsContainer = document.createElement('div');
+        keywordsContainer.classList.add('suggested-keywords-container');
+
+        keywords.forEach(keyword => {
+            const keywordButton = document.createElement('button');
+            keywordButton.classList.add('keyword-button');
+            keywordButton.textContent = keyword;
+
+            keywordButton.addEventListener('click', function() {
+                // 클릭 시 해당 키워드로 메시지 전송
+                messageInput.value = keyword;
+                sendMessage();
+                // 키워드 버튼 클릭 후 해당 키워드들이 다시 나타나지 않도록 컨테이너를 지울 수도 있습니다.
+                keywordsContainer.remove(); // 이 줄을 추가하면 클릭 후 버튼 사라짐
+            });
+            keywordsContainer.appendChild(keywordButton);
+        });
+        chatBody.appendChild(keywordsContainer);
+        chatBody.scrollTop = chatBody.scrollHeight; // 스크롤 최하단으로
+    }
+
     // 메시지 전송 로직
     async function sendMessage() {
         const userMessage = messageInput.value.trim();
@@ -258,11 +310,22 @@
                 const linkUrl = data.answer.linkUrl || null;
                 const linkText = data.answer.linkText || null;
                 addMessage(data.answer.content, 'bot', linkUrl, linkText);
+                // 추천 키워드가 있다면 표시
+                if (data.suggestedKeywords && data.suggestedKeywords.length > 0) {
+                    addSuggestedKeywords(data.suggestedKeywords);
+                }
             } else if (data.type === 'QUESTION' && data.question) {
-                // 'question'은 String이므로 .content 제거
                 addMessage(data.question, 'bot');
+                // 질문과 함께 추천 키워드가 있다면 표시
+                if (data.suggestedKeywords && data.suggestedKeywords.length > 0) {
+                    addSuggestedKeywords(data.suggestedKeywords);
+                }
             } else if (data.type === 'ERROR' && data.errorMessage) {
                 addMessage(`오류: ${data.errorMessage}`, 'bot');
+                // 오류 메시지와 함께 추천 키워드가 있다면 표시
+                if (data.suggestedKeywords && data.suggestedKeywords.length > 0) {
+                    addSuggestedKeywords(data.suggestedKeywords);
+                }
             } else {
                 addMessage("죄송합니다. 처리 중 오류가 발생했습니다.", 'bot');
             }
@@ -291,6 +354,16 @@
                 const linkUrl = data.answer.linkUrl || null;
                 const linkText = data.answer.linkText || null;
                 addMessage(data.answer.content, 'bot', linkUrl, linkText);
+                // 초기 메시지와 함께 추천 키워드가 있다면 표시
+                if (data.suggestedKeywords && data.suggestedKeywords.length > 0) {
+                    addSuggestedKeywords(data.suggestedKeywords);
+                }
+            } else if (data.type === 'QUESTION' && data.question) {
+                addMessage(data.question, 'bot');
+                // 초기 질문과 함께 추천 키워드가 있다면 표시
+                if (data.suggestedKeywords && data.suggestedKeywords.length > 0) {
+                    addSuggestedKeywords(data.suggestedKeywords);
+                }
             } else {
                 addMessage("챗봇을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.", 'bot');
             }
