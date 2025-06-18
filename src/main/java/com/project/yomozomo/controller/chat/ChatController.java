@@ -4,6 +4,7 @@ import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.ChatMessage;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.domain.Rental;
+import com.project.yomozomo.domain.Product; // Product 엔티티 import
 import com.project.yomozomo.dto.ChatMessageDTO;
 import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.RentalService;
@@ -51,22 +52,12 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", "업로드할 파일이 없습니다."));
         }
         try {
-            // ⭐⭐⭐ 이 부분을 새 경로의 '프로젝트 루트'로 변경 ⭐⭐⭐
-            // Windows 경로의 역슬래시를 Java 문자열에서는 두 개로 표현해야 합니다.
-            // 또는 Path.of를 사용하여 운영체제에 독립적인 경로를 만들 수도 있습니다.
-            String baseUploadDir = "C:\\Users\\soldesk\\IdeaProjects\\yomoproject"; // <-- 이 부분을 변경했습니다.
-
-            // Paths.get을 사용하면 운영체제에 맞게 경로를 결합해줍니다.
-            // "uploaded-files", "image-chatimage"는 하위 디렉토리입니다.
-            String specificUploadPathStr = Paths.get(baseUploadDir, "uploaded-files", "image-chatimage").toString();
-
+            String baseUploadDir = "C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files";
+            String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString();
             File uploadPath = new File(specificUploadPathStr);
-
             if (!uploadPath.exists()) {
-                Files.createDirectories(uploadPath.toPath()); // 디렉토리가 없으면 생성
-                log.info("DEBUG: 생성된 업로드 디렉토리: " + uploadPath.getAbsolutePath()); // 로그 추가
+                Files.createDirectories(uploadPath.toPath());
             }
-
             String originalFileName = file.getOriginalFilename();
             String fileExtension = "";
             int dotIndex = originalFileName.lastIndexOf('.');
@@ -75,23 +66,15 @@ public class ChatController {
             }
             String storedFileName = UUID.randomUUID().toString() + fileExtension;
             File dest = new File(uploadPath, storedFileName);
-
-            Files.copy(file.getInputStream(), dest.toPath()); // ⭐ 여기서 IOException 발생 가능성 높음 ⭐
-
-            String fileUrl = "/uploaded-chat-images/" + storedFileName; // WebConfig와 매핑되는 URL
+            Files.copy(file.getInputStream(), dest.toPath());
+            String fileUrl = "/uploaded-chat-images/" + storedFileName;
             Map<String, String> response = new HashMap<>();
             response.put("imgUrl", fileUrl);
             response.put("messageType", "IMAGE");
-            log.info("DEBUG: 파일 업로드 성공: " + dest.getAbsolutePath()); // 성공 로그 추가
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            log.error("파일 저장 중 오류 발생: " + e.getMessage(), e); // 에러 로그에 스택 트레이스 추가
             return ResponseEntity.status(500)
-                    .body(Map.of("error", "파일 저장 중 오류가 발생했습니다. 서버 로그를 확인하세요."));
-        } catch (Exception e) { // 기타 예상치 못한 예외 처리
-            log.error("알 수 없는 파일 업로드 오류 발생: " + e.getMessage(), e); // 에러 로그에 스택 트레이스 추가
-            return ResponseEntity.status(500)
-                    .body(Map.of("error", "알 수 없는 파일 업로드 오류가 발생했습니다. 서버 로그를 확인하세요."));
+                    .body(Map.of("error", "파일 저장 중 오류가 발생했습니다."));
         }
     }
 
@@ -199,35 +182,29 @@ public class ChatController {
         model.addAttribute("chatPartnerNickname", chatPartnerUser.getNickname());
         model.addAttribute("chatRoomId", roomId);
 
-        if (chatRoom.getRental() != null) {
+        // ===== 이 부분을 수정합니다. =====
+        String productImageUrl = null;
+        if (chatRoom.getRental() != null && chatRoom.getRental().getProduct() != null) {
+            Product product = chatRoom.getRental().getProduct();
             model.addAttribute("currentRentalId", chatRoom.getRental().getRentalId());
-            if (chatRoom.getRental().getProduct() != null) {
-                model.addAttribute("productTitle", chatRoom.getRental().getProduct().getTitle());
-            } else {
-                model.addAttribute("productTitle", "상품 정보 없음");
-            }
+            model.addAttribute("productTitle", product.getTitle());
+            // Product 엔티티의 getThumbnailUrl() 메소드를 호출하여 이미지 URL을 가져옵니다.
+            // 이 메소드는 productImages 리스트의 첫 번째 이미지 URL을 반환하거나,
+            // 이미지가 없을 경우 /img/default.png를 반환합니다.
+            productImageUrl = product.getThumbnailUrl();
         } else {
+            // 렌탈 정보나 상품 정보가 없는 경우
             model.addAttribute("currentRentalId", null);
             model.addAttribute("productTitle", "일반 채팅");
+            // 상품 이미지가 없으므로 기본 이미지 사용
+            productImageUrl = "/img/default.png"; // Product 엔티티의 기본값과 일치시킵니다.
         }
 
-        // 프로필 이미지 URL(기본값 처리)
-        String currentUserProfileImageUrl = currentUser.getProfileImageUrl();
-        if (currentUserProfileImageUrl == null || currentUserProfileImageUrl.isEmpty()) {
-            currentUserProfileImageUrl = "/images/default-profile.png";
-        }
-        model.addAttribute("currentUserProfileImage", currentUserProfileImageUrl);
-
-        String chatPartnerProfileImageUrl = chatPartnerUser.getProfileImageUrl();
-        if (chatPartnerProfileImageUrl == null || chatPartnerProfileImageUrl.isEmpty()) {
-            chatPartnerProfileImageUrl = "/images/default-profile.png";
-        }
-        model.addAttribute("chatPartnerProfileImage", chatPartnerProfileImageUrl);
-
+        // 최종적으로 productImageUrl을 모델에 추가합니다.
+        model.addAttribute("productImageUrl", productImageUrl);
         // 기존 채팅 메시지
         try {
             List<ChatMessage> chatHistoryEntities = chatService.getChatMessagesByRoomId(roomId);
-
             List<ChatMessageDTO> chatHistoryDtos = chatHistoryEntities.stream().map(entity -> {
                 ChatMessageDTO dto = new ChatMessageDTO();
                 dto.setRoomId(entity.getRoomId());
@@ -254,19 +231,5 @@ public class ChatController {
         model.addAttribute("rental", chatRoom.getRental());
 
         return "chat";
-    }
-
-    // ========== [5] 신고 폼 ==========
-    @GetMapping("/reportForm")
-    public String showReportForm(Model model, Principal principal) {
-        if (principal != null) {
-            String currentUsername = principal.getName();
-            User currentUser = userService.getUserByUsername(currentUsername);
-            if (currentUser != null) {
-                model.addAttribute("reporterId", currentUser.getId());
-                model.addAttribute("reporterNickname", currentUser.getNickname());
-            }
-        }
-        return "report";
     }
 }
