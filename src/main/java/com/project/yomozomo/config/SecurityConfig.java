@@ -66,7 +66,7 @@ public class SecurityConfig {
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
                                 "/find-id","/find-password.html",
                                 "/test-login", "/uploads/**", "/login-required", "/subcategory/**",
-                                "/product/**","/mypage/profile/{username}","/search/**"
+                                "/product/**","/mypage/profile/{username}", "/search/**", "/search"
                         ).permitAll()
                         .anyRequest().authenticated()
 
