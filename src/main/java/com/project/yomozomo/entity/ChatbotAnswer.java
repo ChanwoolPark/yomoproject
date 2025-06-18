@@ -15,19 +15,18 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ChatbotAnswer {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ANSWER_ID") // DB 컬럼명과 매핑
     private Long id;
 
-    @Column(nullable = false, length = 1000)
-    private String content; // 답변 내용 (예: "로그인 문제는 다음과 같이 해결할 수 있습니다...")
+    @Column(name = "CONTENT", nullable = false, length = 1000) // DB 컬럼명과 매핑
+    private String content;
 
-    @Column(length = 255)
-    private String relatedKeywords; // 이 답변과 연관된 키워드 (콤마로 구분)
-    // 예: "로그인, 오류, 비밀번호, 계정"
+    @Column(name = "RELATED_KEYWORDS", length = 255) // DB 컬럼명과 매핑
+    private String relatedKeywords;
 
-    @Column(length = 500) // 링크 URL을 저장할 필드
+    @Column(name = "LINK_URL", length = 500) // DB 컬럼명과 매핑
     private String linkUrl;
 
-    @Column(length = 100) // 링크 텍스트 (예: "자세히 보기", "바로가기")를 저장할 필드
+    @Column(name = "LINK_TEXT", length = 100) // DB 컬럼명과 매핑
     private String linkText;
 }

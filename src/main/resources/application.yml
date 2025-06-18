@@ -24,7 +24,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # create, update, none ? ?? ??
+      ddl-auto: none  # create, update, none ? ?? ??
     show-sql: true
     database-platform: org.hibernate.dialect.OracleDialect
 

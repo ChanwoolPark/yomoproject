@@ -50,6 +50,11 @@
 
 <div class="form-container">
     <h2>상품 등록</h2>
+
+    <!-- 에러 메시지 -->
+    <div th:if="${errorMessage}" style="color: red; text-align: center; margin-bottom: 10px;">
+        <p th:text="${errorMessage}"></p>
+    </div>
     <form th:action="@{/product/write}" method="post" enctype="multipart/form-data">
 
         <!-- 1. 카테고리 -->

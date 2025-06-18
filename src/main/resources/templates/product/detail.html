@@ -13,22 +13,25 @@
       font-family: 'GmarketSans', 'sans-serif';
       font-size: 15px;
       line-height: 1.6;
-      color: #464646;            /* ✅ 전체 텍스트 컬러 지정 */
+      color: #464646;            /* 전체 텍스트 컬러 지정 */
       background-color: #f9f9f9;
     }
     .container {
       display: flex;
-      flex-wrap: wrap;            /* ✅ 너비 줄면 줄바꿈 허용 */
+      flex-wrap: wrap;            /* 너비 줄면 줄바꿈 허용 */
       gap: 40px;
       padding: 20px;
-      max-width: 1400px;          /* ✅ 최대 너비 제한 */
-      margin: 0 auto;             /* ✅ 가운데 정렬 */
+      max-width: 1400px;          /* 최대 너비 제한 */
+      margin: 0 auto;             /* 가운데 정렬 */
       box-sizing: border-box;
     }
     .left, .right {
-      flex: 1 1 0;                /* ✅ 비율 기반 너비 (고정 아님) */
-      min-width: 300px;           /* ✅ 최소 너비 설정 */
+      flex: 1 1 0;                /* 비율 기반 너비 (고정 아님) */
+      min-width: 300px;
       box-sizing: border-box;
+    }
+    .right > *:not(.product-title-bar):not(.two-wide-buttons) {
+      padding-left: 15px;
     }
     /*.product-image { width: 100%; max-height: 400px; object-fit: contain; margin-bottom: 10px; }*/
     .seller-box {
@@ -83,15 +86,15 @@
 
 
     .btn-common {
-      padding: 8px 12px;             /* ✅ 작게 */
-      font-size: 13px;               /* ✅ 작게 */
+      padding: 8px 12px;
+      font-size: 13px;
       border-radius: 4px;
       border: none;
       background-color: #465BFF;     /* 연회색 */
       color: white;
       cursor: pointer;
       transition: all 0.2s ease;
-      min-width: 70px;               /* ✅ 더 작게 */
+      min-width: 70px;               /* 더 작게 */
     }
 
     .btn-common:hover {
@@ -107,11 +110,11 @@
 
     /*카테고리 구역*/
     .product-meta {
-      font-size: 17px;              /* ✅ 글씨 키움 */
+      font-size: 17px;              /* 글씨 키움 */
       font-weight: 600;
       display: flex;
       flex-wrap: wrap;
-      gap: 19px;                    /* ✅ 간격 일정하게 */
+      gap: 19px;                    /* 간격 일정하게 */
       align-items: center;
       margin-bottom: 10px;
     }
@@ -135,13 +138,13 @@
     }
 
     .product-price {
-      font-size: 20px;
+      font-size: 23px;
       font-weight: bold;
       color: #6e6e6e;
     }
 
     .product-deposit {
-      font-size: 18px;
+      font-size: 20px;
       margin: 4px 0 12px;
       color: #6e6e6e;
     }
@@ -167,13 +170,83 @@
       height: 200px;
       overflow-y: auto;
       padding: 10px;
-      border: none;                  /* ✅ 테두리 제거 */
-      border-radius: 0;              /* ✅ 둥근 테두리도 제거 */
+      border: none;                  /* 테두리 제거 */
+      border-radius: 0;              /* 둥근 테두리도 제거 */
       background-color: #f9f9f9;
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1.6;
       color: #6e6e6e;
       white-space: pre-wrap;
+    }
+
+    /* 조회수 / 찜하기 구역 */
+    .product-stats {
+      display: flex;
+      gap: 80px;                  /* 찜/조회수 사이 간격 */
+      font-size: 20px;            /* 전체 글자 크기 */
+
+      margin-bottom: 15px;
+      color: #6e6e6e;
+    }
+
+    .product-stats span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;                   /* 아이콘~숫자 사이 간격 */
+    }
+
+    .product-stat-number {
+      margin-left: 10px;           /* 숫자 앞 간격 조정 */
+      font-weight: bold;
+    }
+
+    .two-wide-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .two-wide-buttons .wide-btn {
+      flex: 1;                      /* ✅ 1:1 비율 */
+      padding: 14px 0;
+      font-size: 17px;
+      border-radius: 4px;
+      border: none;
+      background-color: #c8c8c8;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      min-width: 120px;             /* ✅ 최소 너비 */
+    }
+
+    .two-wide-buttons .wide-btn:hover {
+      background-color: #465BFF;
+    }
+
+
+    /* 리뷰 작성 부분 */
+    .review-scroll-area {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 4px; /* 스크롤바 공간 보정 */
+    }
+
+    /* 버튼 (목록) */
+    .list-btn {
+      margin-top: 20px;
+      padding: 15px 50px;
+      font-size: 17px;
+      border-radius: 4px;
+      background-color: #c8c8c8;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .list-btn:hover {
+      background-color: #465BFF;
+      color: white;
     }
 
     /* 달력 부분 */
@@ -205,16 +278,20 @@
       background: #999 !important;
     }
 
-    /*사용자의 다른 상품글*/
-    .seller-other-products {
-      margin-top: 40px;
+    /* 사용자의 다른 상품글 */
+    .seller-other-products-full {
+      width: 100%;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .product-scroll-container {
+    .product-scroll-container-horizontal {
       display: flex;
       overflow-x: auto;
       gap: 16px;
       padding: 10px 0;
+      height: 200px;           /* ✅ 높이 고정 */
     }
 
     .product-item {
@@ -225,14 +302,9 @@
 
     .product-item img {
       width: 100%;
-      height: auto;
+      height: 120px;
+      object-fit: cover;
       border-radius: 8px;
-    }
-
-    .product-item p {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #333;
     }
   </style>
 
@@ -257,7 +329,7 @@
         <div class="swiper-slide" th:each="img : ${imageList}">
           <img th:src="@{${img.imageUrl}}"
                alt="상품 이미지"
-               style="width: 100%; height: 300px; object-fit: cover;" />
+               style="width: 100%; height: 600px; object-fit: cover;" />
         </div>
       </div>
 
@@ -313,7 +385,7 @@
     </form>
   </span>
     </div>
-    <hr style="height: 2px; background-color: #aaaaaa; border: none; margin: 5px 0;" />
+    <hr style="height: 3px; background-color: #aaaaaa; border: none; margin: 5px 0;" />
     <p class="product-meta">
       <span th:text="'상품 카테고리 : ' + ${product.subCategory.name}">상품 카테고리</span>
       <span class="meta-separator">|</span>
@@ -321,7 +393,7 @@
       <span class="meta-separator">|</span>
       <span th:text="'상품 등록일 : ' + ${createdAt}">등록일</span>
     </p>
-    <hr style="height: 2px; background-color: #d2d2d2; border: none; margin: 5px 0;" />
+    <hr style="height: 3px; background-color: #d2d2d2; border: none; margin: 5px 0;" />
     <div class="price-report-bar">
       <strong th:text="${product.price} + '원 / 일'" class="product-price">가격</strong>
       <button type="button" class="btn-common report-btn" onclick="openReportModal()">신고하기</button>
@@ -338,17 +410,24 @@
 
     <hr style="height: 3px; background-color: #d2d2d2; border: none; margin: 20px 0;" />
 
-    <p>
-      찜 개수 <span th:text="${wishlistCount}">0</span>명 · 조회수 <span th:text="${product.count != null ? product.count : 0}">0</span>
-    </p>
-
+    <div class="product-stats">
+  <span>
+    찜 개수 💕
+    <span class="product-stat-number" th:text="${wishlistCount}">0</span>명
+  </span>
+      <span>
+    조회수 👀
+    <span class="product-stat-number" th:text="${product.count != null ? product.count : 0}">0</span>
+  </span>
+    </div>
+    <hr style="height: 3px; background-color: #d2d2d2; border: none; margin: 5px 0;" />
     <!-- 버튼 -->
     <!-- 상단: 찜하기, 1:1 채팅 -->
-    <div class="buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <div class="buttons two-wide-buttons">
       <!-- 찜 안 되어 있을 때 -->
       <button type="button"
               th:if="${!wished}"
-              class="wishlist-btn"
+              class="wishlist-btn wide-btn"
               th:data-product-id="${product.productId}">
         찜하기
       </button>
@@ -356,68 +435,58 @@
       <!-- 찜 되어 있을 때 -->
       <button type="button"
               th:if="${wished}"
-              class="unwishlist-btn"
+              class="unwishlist-btn wide-btn"
               th:data-product-id="${product.productId}">
         찜 취소
       </button>
 
-      <button type="button" class="reservation-btn">예약 신청</button>
+      <button type="button" class="reservation-btn wide-btn">예약 신청</button>
     </div>
-
-    <!-- 하단: 수정, 삭제, 목록 (판매자만 수정/삭제 가능) -->
-    <div class="buttons" style="display: flex; gap: 10px;">
-
-      <!-- 항상 보이는 목록 버튼 -->
-
-      <a th:href="@{'/category/' + ${product.subCategory.category.categoryId}}" style="margin-left: auto;">
-        <button type="button">목록</button>
-      </a>
-    </div>
-
-    <!--사용자의 다른 판매글-->
-    <div class="seller-other-products">
-      <h3>판매자의 다른 상품</h3>
-
-
-
-      <div class="product-scroll-container">
-        <div class="product-item" th:each="p : ${otherProducts}">
-          <a th:href="@{'/product/' + ${p.productId}}">
-            <img th:src="@{${p.thumbnailUrl}}" alt="상품 이미지" />
-            <p th:text="${p.title}">상품 제목</p>
-          </a>
-        </div>
-      </div>
-    </div>
+    <hr style="height: 4px; background-color: #d2d2d2; border: none; margin: -10px 0 12px 0;" />
 
     <!-- 상품 리뷰 영역 -->
     <div class="product-review-section" style="margin-top: 40px;">
       <h3>이 상품에 대한 리뷰</h3>
-      <div th:if="${#lists.isEmpty(productReviews)}" style="color:#888; font-size: 0.97rem; margin-top:10px;">
+
+      <div th:if="${#lists.isEmpty(productReviews)}"
+           style="color:#888; font-size: 0.97rem; margin-top:10px;">
         아직 작성된 리뷰가 없습니다.
       </div>
-      <div th:each="review : ${productReviews}"
-           style="margin-top: 16px; padding: 14px; border-radius: 8px; border: 1px solid #eee; background: #f9f9f9; display: flex; align-items: flex-start; gap: 16px;">
-        <!-- 프로필 이미지 (없으면 기본이미지) -->
-        <img th:src="${review.reviewer.profileImageUrl} != null ? ${review.reviewer.profileImageUrl} : '/images/default-profile.png'"
-             alt="프로필 이미지"
-             style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:1px solid #ddd; background:#eee;"
-             onerror="this.onerror=null;this.src='/images/default-profile.png';">
-        <div style="flex:1;">
-          <a th:href="@{'/mypage/profile/' + ${review.reviewer.username}}"
-             style="font-weight: bold; color: #3849c7; text-decoration: none;">
-            <span th:text="${review.reviewer.nickname}">닉네임</span>
-          </a>
-          <div style="margin-top: 6px; font-size: 0.95rem;" th:text="${review.reviewText}">리뷰 내용</div>
-          <div style="margin-top: 4px; font-size: 0.85rem; color: #aaa;">
-            평점:
-            <span th:text="${review.rating}">5.0</span> / 5.0
-            <span th:utext="${@starUtil.renderStars(review.rating)}" style="margin-left:6px; color: #ffd600; font-size: 1.05em;"></span>
-            <!-- ↑ 별모양 추가 (색상, 크기 필요하면 style 조절) -->
+
+      <!-- 스크롤 영역 시작 -->
+      <div class="review-scroll-area">
+        <div th:each="review : ${productReviews}"
+             style="margin-top: 16px; padding: 14px; border-radius: 8px; border: 1px solid #eee; background: #f9f9f9; display: flex; align-items: flex-start; gap: 16px;">
+          <!-- 리뷰 내용 -->
+          <img th:src="${review.reviewer.profileImageUrl} != null ? ${review.reviewer.profileImageUrl} : '/images/default-profile.png'"
+               alt="프로필 이미지"
+               style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:1px solid #ddd; background:#eee;"
+               onerror="this.onerror=null;this.src='/images/default-profile.png';">
+          <div style="flex:1;">
+            <a th:href="@{'/mypage/profile/' + ${review.reviewer.username}}"
+               style="font-weight: bold; color: #3849c7; text-decoration: none;">
+              <span th:text="${review.reviewer.nickname}">닉네임</span>
+            </a>
+            <div style="margin-top: 6px; font-size: 0.95rem;" th:text="${review.reviewText}">리뷰 내용</div>
+            <div style="margin-top: 4px; font-size: 0.85rem; color: #aaa;">
+              평점:
+              <span th:text="${review.rating}">5.0</span> / 5.0
+              <span th:utext="${@starUtil.renderStars(review.rating)}"
+                    style="margin-left:6px; color: #ffd600; font-size: 1.05em;"></span>
+            </div>
           </div>
         </div>
       </div>
+      <!-- 스크롤 영역 끝 -->
+    </div>
 
+    <!-- 항상 보이는 목록 버튼 -->
+    <div style="display: flex; justify-content: center; min-height: 60px;">
+      <button type="button"
+              class="list-btn"
+              th:onclick="'location.href=\'/category/' + ${product.subCategory.category.categoryId} + '\''">
+        목록
+      </button>
     </div>
 
 
@@ -431,7 +500,23 @@
 
   </div>
 
+  <!-- 좌우 레이아웃 끝나는 곳 바로 아래에 위치 -->
+  <div class="seller-other-products-full">
+    <h3>판매자의 다른 상품</h3>
+
+    <div class="product-scroll-container-horizontal">
+      <div class="product-item" th:each="p : ${otherProducts}">
+        <a th:href="@{'/product/' + ${p.productId}}">
+          <img th:src="@{${p.thumbnailUrl}}" alt="상품 이미지" />
+          <p th:text="${p.title}">상품 제목</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+
 </div>
 
 
@@ -461,38 +546,53 @@
 
 
 <!-- 신고하기 모달 부분(뷰) -->
-<div id="reportModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
-  <h3>신고하기</h3>
+<div id="reportModal"
+     style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px;
+            background:#fff; border-radius:12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); padding:20px;
+            z-index:1000; font-family: 'GmarketSans', sans-serif;">
+  <h3 style="text-align:center; margin-bottom: 20px; color: #465BFF;">신고하기</h3>
+
   <form id="reportForm">
     <input type="hidden" name="productId" th:value="${product.productId}" />
 
-    <div>
-      <label>작성자:</label>
-      <input type="text" th:value="${#authentication.name}" readonly />
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight:bold;">작성자</label>
+      <input type="text" th:value="${#authentication.name}" readonly
+             style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px; background: #f2f2f2;">
     </div>
 
-    <div>
-      <label>신고 대상자:</label>
-      <input type="text" th:value="${product.seller.username}" readonly />
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight:bold;">신고 대상자</label>
+      <input type="text" th:value="${product.seller.username}" readonly
+             style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px; background: #f2f2f2;">
     </div>
 
-    <div>
-      <label>신고 상품:</label>
-      <input type="text" th:value="${product.title}" readonly />
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight:bold;">신고 상품</label>
+      <input type="text" th:value="${product.title}" readonly
+             style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px; background: #f2f2f2;">
     </div>
 
-    <div>
-      <label for="title">신고 제목:</label>
-      <input type="text" id="title" name="title" required />
+    <div class="form-group" style="margin-bottom: 15px;">
+      <label for="title" style="font-weight: bold;">신고 제목</label>
+      <input type="text" id="title" name="title" required
+             style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px;">
     </div>
 
-    <div>
-      <label for="details">신고 내용:</label>
-      <textarea id="details" name="details" rows="5" required></textarea>
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label for="details" style="font-weight: bold;">신고 내용</label>
+      <textarea id="details" name="details" rows="5" required
+                style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px;"></textarea>
     </div>
 
-    <button type="submit">신고 제출</button>
-    <button type="button" onclick="closeReportModal()">닫기</button>
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button type="submit"
+              style="padding: 10px 16px; background-color: #465BFF; color: white; border: none;
+                     border-radius: 5px; cursor: pointer;">신고 제출</button>
+      <button type="button" onclick="closeReportModal()"
+              style="padding: 10px 16px; background-color: #bbb; color: white; border: none;
+                     border-radius: 5px; cursor: pointer;">닫기</button>
+    </div>
   </form>
 </div>
 
