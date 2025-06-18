@@ -617,6 +617,15 @@
                 <div th:if="${isSearch}" style="min-height: 28px;">
                     <span style="font-size: 16px; font-weight: 500; color: #666;">검색하신 상품입니다.</span>
                 </div>
+
+                <!-- ✅ 가격 필터 중일 때 안내 -->
+                <div th:if="${isPriceFiltered}" style="min-height: 28px;">
+                    <span style="font-size: 17px; font-weight: 600; color: #465BFF; margin-left: 12px;">
+                        <span th:text="${minPrice}" style="font-size: 18px; font-weight: 600; color: #465BFF;"></span>원 ~
+                        <span th:text="${maxPrice}" style="font-size: 18px; font-weight: 600; color: #465BFF;"></span>원 상품 목록입니다.
+                    </span>
+                </div>
+
             </div>
 
             <!-- 글쓰기 버튼 (항상 오른쪽 고정) -->

@@ -1,165 +1,110 @@
+// src/main/java/com/project/yomozomo/service/ChatbotService.java
 package com.project.yomozomo.service;
 
+import com.project.yomozomo.dto.ChatbotResponse;
 import com.project.yomozomo.entity.ChatbotAnswer;
-import com.project.yomozomo.entity.ChatbotOption;
 import com.project.yomozomo.entity.ChatbotKeyword;
-
+import com.project.yomozomo.entity.ChatbotOption;
+import com.project.yomozomo.entity.ChatbotQuestion;
 import com.project.yomozomo.repository.ChatbotAnswerRepository;
-import com.project.yomozomo.repository.ChatbotOptionRepository;
 import com.project.yomozomo.repository.ChatbotKeywordRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.project.yomozomo.repository.ChatbotOptionRepository;
+import com.project.yomozomo.repository.ChatbotQuestionRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.List;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatbotService {
 
-    private final ChatbotOptionRepository optionRepository;
-    private final ChatbotAnswerRepository answerRepository;
-    private final ChatbotKeywordRepository keywordRepository;
+    private final ChatbotQuestionRepository chatbotQuestionRepository;
+    private final ChatbotAnswerRepository chatbotAnswerRepository;
+    private final ChatbotOptionRepository chatbotOptionRepository;
+    private final ChatbotKeywordRepository chatbotKeywordRepository;
 
-    @Autowired
-    public ChatbotService(
-            ChatbotOptionRepository optionRepository,
-            ChatbotAnswerRepository answerRepository,
-            ChatbotKeywordRepository keywordRepository) {
-        this.optionRepository = optionRepository;
-        this.answerRepository = answerRepository;
-        this.keywordRepository = keywordRepository;
+    private static final Long INITIAL_QUESTION_ID = 1L;
+
+    public ChatbotService(ChatbotQuestionRepository chatbotQuestionRepository,
+                          ChatbotAnswerRepository chatbotAnswerRepository,
+                          ChatbotOptionRepository chatbotOptionRepository,
+                          ChatbotKeywordRepository chatbotKeywordRepository) {
+        this.chatbotQuestionRepository = chatbotQuestionRepository;
+        this.chatbotAnswerRepository = chatbotAnswerRepository;
+        this.chatbotOptionRepository = chatbotOptionRepository;
+        this.chatbotKeywordRepository = chatbotKeywordRepository;
     }
 
-    // --- getInitialMessage() 메서드 수정 ---
-    // Map으로 응답 반환: 초기 메시지에 링크 포함 가능하도록
-    public Map<String, Object> getInitialMessage() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("type", "ANSWER");
-        response.put("question", null); // 질문은 없으므로 null
-
-        // ChatbotAnswer 엔티티가 linkUrl과 linkText 필드를 가지고 있다고 가정합니다.
-        // 초기 메시지에 링크가 필요하다면 아래처럼 인스턴스 생성 시 값을 넣어주세요.
-        // 현재는 링크가 없는 초기 메시지로 설정합니다.
-        ChatbotAnswer initialMessage = new ChatbotAnswer(null, "안녕하세요 yomozomo 챗봇 상담이에요. 무엇을 도와드릴까요?", null, null, null); // ChatbotAnswer 생성자 변경 가정
-
-        // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
-        Map<String, Object> answerMap = new HashMap<>();
-        answerMap.put("content", initialMessage.getContent());
-        answerMap.put("linkUrl", initialMessage.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
-        answerMap.put("linkText", initialMessage.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
-
-        response.put("answer", answerMap);
-        return response;
+    public ChatbotResponse getInitialMessage() {
+        Optional<ChatbotQuestion> initialQuestionOpt = chatbotQuestionRepository.findById(INITIAL_QUESTION_ID);
+        if (initialQuestionOpt.isPresent()) {
+            ChatbotQuestion initialQuestion = initialQuestionOpt.get();
+            List<String> suggestedKeywords = getSuggestedKeywordsFromInitialOptions();
+            // ChatbotResponse 생성자 수정 (질문 유형은 question, answer는 null)
+            return new ChatbotResponse("QUESTION", null, initialQuestion.getContent(), null, suggestedKeywords);
+        }
+        // 에러 응답도 적절한 생성자를 사용하도록 변경
+        return new ChatbotResponse("ERROR", "챗봇을 시작할 수 없습니다.");
     }
 
-    // --- processOptionSelection() 메서드 수정 ---
-    // Map으로 응답 반환: 옵션 선택 시 링크 포함 가능하도록
-    public Map<String, Object> processOptionSelection(Long optionId) {
-        Map<String, Object> response = new HashMap<>();
-        Optional<ChatbotOption> optionalOption = optionRepository.findById(optionId);
+    public ChatbotResponse processMessage(String message) {
+        Optional<ChatbotKeyword> matchedKeywordOpt = chatbotKeywordRepository.findByKeyword(message);
 
-        if (optionalOption.isPresent()) {
-            ChatbotOption option = optionalOption.get();
-
-            if (option.getAnswer() != null) {
-                response.put("type", "ANSWER");
-                response.put("question", null);
-
-                // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
-                ChatbotAnswer chatbotAnswer = option.getAnswer();
-                Map<String, Object> answerMap = new HashMap<>();
-                answerMap.put("content", chatbotAnswer.getContent());
-                answerMap.put("linkUrl", chatbotAnswer.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
-                answerMap.put("linkText", chatbotAnswer.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
-
-                response.put("answer", answerMap);
-            } else {
-                response.put("type", "ERROR"); // 답변이 연결되지 않은 옵션
-                response.put("errorMessage", "해당 옵션에 연결된 답변이 없습니다."); // 클라이언트에서 errorMessage 필드를 기대하므로 수정
+        if (matchedKeywordOpt.isPresent()) {
+            ChatbotKeyword matchedKeyword = matchedKeywordOpt.get();
+            Optional<ChatbotAnswer> answerOpt = chatbotAnswerRepository.findById(matchedKeyword.getAnswerId());
+            if (answerOpt.isPresent()) {
+                // *** 이 부분 수정 ***
+                // ChatbotResponse("ANSWER", ChatbotAnswer 엔티티) 생성자를 호출합니다.
+                // ChatbotResponse 내부에서 ChatbotAnswer를 ChatbotAnswerResponseDto로 변환합니다.
+                return new ChatbotResponse("ANSWER", answerOpt.get()); // question, errorMessage, suggestedKeywords는 null로 초기화될 것임
             }
-        } else {
-            response.put("type", "ERROR");
-            response.put("errorMessage", "유효하지 않은 옵션입니다."); // 클라이언트에서 errorMessage 필드를 기대하므로 수정
-        }
-        return response;
-    }
-
-    // --- processUserText() 메서드 수정 ---
-    // Map으로 응답 반환: 사용자 텍스트 처리 시 링크 포함 가능하도록
-    public Map<String, Object> processUserText(String userText) {
-        Map<String, Object> response = new HashMap<>();
-        String cleanedText = userText.trim();
-
-        // 1. 키워드 매칭
-        Optional<ChatbotKeyword> optionalKeyword = keywordRepository.findByKeyword(cleanedText);
-
-        if (optionalKeyword.isPresent()) {
-            ChatbotAnswer foundAnswerByKeyword = optionalKeyword.get().getAnswer();
-            response.put("type", "ANSWER");
-            response.put("question", null);
-
-            // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
-            Map<String, Object> answerMap = new HashMap<>();
-            answerMap.put("content", foundAnswerByKeyword.getContent());
-            answerMap.put("linkUrl", foundAnswerByKeyword.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
-            answerMap.put("linkText", foundAnswerByKeyword.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
-
-            response.put("answer", answerMap);
-            return response;
         }
 
-        // 2. 연관 키워드 매칭
-        List<ChatbotAnswer> allAnswers = answerRepository.findAll();
-        Optional<ChatbotAnswer> foundAnswerByRelatedKeywords = Optional.empty();
-        int maxMatchCount = 0;
+        // 2. 옵션 매칭 시도
+        // ChatbotOption 엔티티에도 @ManyToOne(fetch = FetchType.LAZY) 설정이 되어 있다면
+        // nextQuestion과 answer 필드에 접근할 때 주의해야 합니다.
+        // 현재 ChatbotOption의 nextQuestion과 answer 필드에 @Getter가 있다면 문제가 없을 수도 있습니다.
+        // 하지만 만약 nextQuestion이나 answer가 null인데 .getId()나 다른 메서드를 호출하면 NPE가 발생할 수 있습니다.
+        Optional<ChatbotOption> matchedOptionOpt = chatbotOptionRepository.findByContent(message);
+        if (matchedOptionOpt.isPresent()) {
+            ChatbotOption matchedOption = matchedOptionOpt.get();
 
-        for (ChatbotAnswer answer : allAnswers) {
-            if (answer.getRelatedKeywords() != null && !answer.getRelatedKeywords().isEmpty()) {
-                List<String> keywordsInAnswer = Arrays.asList(answer.getRelatedKeywords().toLowerCase().split(","));
-                int currentMatchCount = 0;
-                for (String keyword : keywordsInAnswer) {
-                    if (cleanedText.toLowerCase().contains(keyword.trim())) {
-                        currentMatchCount++;
-                    }
+            // 다음 질문으로 이동하는 경우
+            if (matchedOption.getNextQuestion() != null) { // ID로 먼저 체크
+                Optional<ChatbotQuestion> nextQuestionOpt = chatbotQuestionRepository.findById(matchedOption.getNextQuestion().getId());
+                if(nextQuestionOpt.isPresent()) {
+                    ChatbotQuestion nextQuestion = nextQuestionOpt.get();
+                    List<String> suggestedKeywords = getSuggestedKeywordsFromQuestionOptions(nextQuestion.getId());
+                    return new ChatbotResponse("QUESTION", null, nextQuestion.getContent(), null, suggestedKeywords);
                 }
-                if (currentMatchCount > maxMatchCount) {
-                    maxMatchCount = currentMatchCount;
-                    foundAnswerByRelatedKeywords = Optional.of(answer);
+            }
+            // 최종 답변으로 이동하는 경우
+            else if (matchedOption.getAnswer() != null) { // ID로 먼저 체크
+                Optional<ChatbotAnswer> answerOpt = chatbotAnswerRepository.findById(matchedOption.getAnswer().getId());
+                if (answerOpt.isPresent()) {
+                    List<String> suggestedKeywords = getSuggestedKeywordsFromInitialOptions(); // 답변 후 초기 옵션 추천
+                    // *** 이 부분 수정 ***
+                    return new ChatbotResponse("ANSWER", answerOpt.get());
                 }
             }
         }
 
-        if (foundAnswerByRelatedKeywords.isPresent()) {
-            response.put("type", "ANSWER");
-            response.put("question", null);
+        // 3. 어떤 것도 매칭되지 않았을 경우
+        List<String> suggestedKeywords = getSuggestedKeywordsFromInitialOptions();
+        return new ChatbotResponse("ERROR", "죄송합니다. 이해하지 못했습니다. 다음 키워드를 이용해 보세요.", suggestedKeywords);
+    }
 
-            // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
-            ChatbotAnswer chatbotAnswer = foundAnswerByRelatedKeywords.get();
-            Map<String, Object> answerMap = new HashMap<>();
-            answerMap.put("content", chatbotAnswer.getContent());
-            answerMap.put("linkUrl", chatbotAnswer.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
-            answerMap.put("linkText", chatbotAnswer.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
+    private List<String> getSuggestedKeywordsFromInitialOptions() {
+        return chatbotOptionRepository.findByQuestionId(INITIAL_QUESTION_ID).stream()
+                .map(ChatbotOption::getContent)
+                .collect(Collectors.toList());
+    }
 
-            response.put("answer", answerMap);
-            return response;
-        }
-
-        // 3. 일치하는 키워드가 없을 경우 기본 답변
-        ChatbotAnswer defaultAnswer = new ChatbotAnswer(null, "죄송합니다. 이해하지 못했습니다. 다른 질문을 해주세요.", null, null, null); // ChatbotAnswer 생성자 변경 가정
-        response.put("type", "ANSWER"); // 기본 답변도 ANSWER 타입으로 처리
-        response.put("question", null);
-
-        // ChatbotAnswer 객체를 Map 형태로 변환하여 반환
-        Map<String, Object> answerMap = new HashMap<>();
-        answerMap.put("content", defaultAnswer.getContent());
-        answerMap.put("linkUrl", defaultAnswer.getLinkUrl()); // ChatbotAnswer에 getLinkUrl() 메서드 필요
-        answerMap.put("linkText", defaultAnswer.getLinkText()); // ChatbotAnswer에 getLinkText() 메서드 필요
-
-        response.put("answer", answerMap);
-        return response;
+    private List<String> getSuggestedKeywordsFromQuestionOptions(Long questionId) {
+        return chatbotOptionRepository.findByQuestionId(questionId).stream()
+                .map(ChatbotOption::getContent)
+                .collect(Collectors.toList());
     }
 }
