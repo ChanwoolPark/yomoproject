@@ -46,65 +46,55 @@
         /* =================================================== */
         .chat-header {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: linear-gradient(to right, #4477ee, #2b5cdb); /* 그라데이션 추가 */
-            color: white;
-            padding: 15px 20px; /* 좌우 패딩 증가 */
-            font-size: 1.2rem; /* 폰트 크기 약간 조절 */
-            font-weight: 600;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            position: relative;
-            z-index: 20;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08); /* 헤더 그림자 추가 */
+            align-items: center; /* 수직 중앙 정렬 */
+            justify-content: center; /* 수평 중앙 정렬 */
+            background-color: #f5f5f5; /* 예시: 배경색 (이미지 여백이 생길 때 보일 색상) */
+            padding: 0; /* 이미지가 꽉 차도록 패딩 제거 */
+            overflow: hidden; /* 혹시 모를 오버플로우 대비 */
+            height: 80px; /* 헤더의 고정 높이 설정 (원하는 높이로 조절) */
+            position: relative; /* h3 내부 absolute 요소의 기준으로 사용 */
         }
 
         .chat-header h3 {
+            display: flex; /* h3를 플렉스 컨테이너로 만듭니다. */
+            align-items: center;
+            justify-content: center;
             margin: 0;
-            flex-grow: 1;
-            text-align: center;
-            order: 2;
-        }
-        .chat-header h3 p {
-            margin: 0; /* p 태그 기본 마진 제거 */
-        }
-
-        /* 프로필 이미지 스타일 (공통) */
-        .profile-image-header {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(255,255,255,0.8); /* 투명도 있는 흰색 테두리 */
-            flex-shrink: 0;
-        }
-        .profile-image-header.left {
-            margin-right: 10px;
-            order: 1;
-        }
-        .profile-image-header.right {
-            margin-left: 10px;
-            order: 3;
-        }
-
-        /* 프로필 이미지 로드 실패 시 또는 src가 없을 때 */
-        .profile-image-header:not([src]):before {
-            content: "👤"; /* 사용자 아이콘 */
-            display: block;
             width: 100%;
             height: 100%;
-            background-color: #ccc;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 40px;
-            font-size: 24px;
-            color: #666;
-        }
-        .profile-image-header[src]:before {
-            content: none;
+            position: relative; /* 닉네임 텍스트를 absolute로 배치하기 위한 기준 */
         }
 
+        .chat-header .product-image-header {
+            width: 100%; /* 부모(h3) 너비에 맞게 */
+            height: 100%; /* 부모(h3) 높이에 맞게 */
+            object-fit: contain; /* 중요: 이미지가 잘리지 않고 전체가 보이도록 컨테이너 안에 맞춰집니다. */
+            /* 이 경우 이미지 주변에 빈 공간(레터박스/필러박스)이 생길 수 있습니다. */
+            border-radius: 0; /* 둥근 모서리 제거 (꽉 채우려면) */
+            margin: 0;
+            box-shadow: none;
+            display: block;
+        }
+
+        /* 닉네임 텍스트 스타일 (h3 안에 <p> 태그가 있다고 가정) */
+        .chat-header h3 p {
+            position: absolute; /* 이미지 위에 겹쳐서 배치 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* 정확한 중앙 정렬 */
+            color: white; /* 텍스트 색상 (이미지 위에 잘 보이도록) */
+            font-size: 1.2em; /* 폰트 크기 조절 */
+            font-weight: bold; /* 폰트 두께 */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* 텍스트 가독성을 위한 그림자 */
+            z-index: 1; /* 이미지보다 위에 오도록 */
+            margin: 0; /* p 태그의 기본 마진 제거 */
+            white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 */
+        }
+
+        /* 프로필 이미지 대신 사용될 플레이스홀더 스타일 */
+        .chat-header .header-placeholder {
+            display: none; /* 이미지가 꽉 채울 것이므로 플레이스홀더는 숨깁니다. */
+        }
         /* =================================================== */
         /* 채팅 메시지 영역 스타일 */
         /* =================================================== */
@@ -427,7 +417,7 @@
         /* 개별 버튼 색상 */
         #paymentGoBtn { background-color: #28a745; } /* 초록색 */
         #paymentGoBtn:hover { background-color: #218838; }
-        #innerButton2 { background-color: #ffc107; color: #333; } /* 노란색, 글자색 어둡게 */
+        #innerButton2 { background-color: #ffc107; color: #333; } /* 노란t색, 글자색 어둡게 */
         #innerButton2:hover { background-color: #e0a800; }
         #tradeCompleteBtn { background-color: #dc3545; } /* 빨간색 */
         #tradeCompleteBtn:hover { background-color: #c82333; }
@@ -700,7 +690,7 @@
         /* 이미지 팝업 모달 스타일 (새로 추가) */
         /* =================================================== */
         .image-modal-overlay {
-            display: none; /* ⭐ 이 부분을 추가하거나 수정합니다. ⭐ */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -757,10 +747,13 @@
 <body>
 <div class="chat-container">
     <div class="chat-header">
-        <img id="chatPartnerProfileImage" class="profile-image-header left" th:src="${chatPartnerProfileImage}" alt="상대방 프로필">
+        <div class="header-placeholder left-placeholder"></div>
+
         <h3 id="chatHeader">
-            <p th:text="${chatPartnerNickname + '님과의 채팅'}">[상대방 닉네임]</p> </h3>
-        <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserProfileImage}" alt="내 프로필">
+            <img id="productImageHeader" class="product-image-header" th:src="${productImageUrl}" alt="상품 이미지">
+        </h3>
+
+        <div class="header-placeholder right-placeholder"></div>
     </div>
 
     <div class="chat-messages" id="chatMessages">
@@ -913,10 +906,9 @@
     const chatPartnerId = /*[[${chatPartnerId}]]*/ 0;
     const currentUserName = /*[[${currentUserName}]]*/ '나';
     const chatPartnerNickname = /*[[${chatPartnerNickname}]]*/ '상대방';
-    const currentUserProfileImage = /*[[${currentUserProfileImage}]]*/ '/images/default_profile.png';
-    const chatPartnerProfileImage = /*[[${chatPartnerProfileImage}]]*/ '/images/default_profile.png';
+    const productImages = /*[[${productImages}]]*/ "/img/default.png";;
 
-    // 모달 관련 요소 초기화 (확장 패널과 별개로 작동)
+    // 모달 관련 요소 초기화 (확장 패널과 별개로 작동)productImages
     let priceAdjustmentModal = null; // DOMContentLoaded에서 초기화
     let modalCloseBtn = null;
     let newPriceInput = null;
