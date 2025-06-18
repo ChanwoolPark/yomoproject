@@ -660,43 +660,42 @@
     </div>
 
         <!-- 페이지 네이선 -->
-        <div class="pagination" style="margin: 30px auto; text-align: center;" th:if="${totalPages != null and totalPages > 1}">
-            <ul style="display: inline-flex; list-style: none; padding: 0; gap: 5px;">
+        <div class="pagination" th:if="${totalPages > 1}" style="text-align:center; margin: 30px 0;">
+            <ul style="list-style:none; display:inline-flex; gap:8px; padding:0;">
 
-                <!-- 이전 버튼 -->
-                <li th:if="${currentPage > 0}">
-                    <a th:if="${subCategoryId != null}"
-                       th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${currentPage - 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
-                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">이전</a>
-                    <a th:if="${subCategoryId == null}"
-                       th:href="@{/category/{cid}(cid=${category.categoryId}, page=${currentPage - 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
-                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">이전</a>
+                <!-- 🔹 이전 블럭 -->
+                <li th:if="${hasPrevBlock and subCategoryId != null}">
+                    <a th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${startPage - 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 6px 12px;">이전</a>
+                </li>
+                <li th:if="${hasPrevBlock and subCategoryId == null}">
+                    <a th:href="@{/category/{cid}(cid=${category.categoryId}, page=${startPage - 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 6px 12px;">이전</a>
                 </li>
 
-                <!-- 페이지 번호 -->
-                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                <!-- 🔹 페이지 번호 -->
+                <li th:each="i : ${#numbers.sequence(startPage, endPage - 1)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+
+                    <!-- 서브카테고리 있을 때 -->
                     <a th:if="${subCategoryId != null}"
                        th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${i}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
-                       th:text="${i + 1}"
-                       style="padding: 8px 12px; background: #f3f3f3; border-radius: 6px; font-weight: bold;"
-                       th:styleappend="${i == currentPage} ? 'background: #465BFF; color: white;'">
-                    </a>
+                       th:text="${i + 1}" style="padding: 6px 12px;"></a>
+
+                    <!-- 서브카테고리 없을 때 -->
                     <a th:if="${subCategoryId == null}"
                        th:href="@{/category/{cid}(cid=${category.categoryId}, page=${i}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
-                       th:text="${i + 1}"
-                       style="padding: 8px 12px; background: #f3f3f3; border-radius: 6px; font-weight: bold;"
-                       th:styleappend="${i == currentPage} ? 'background: #465BFF; color: white;'">
-                    </a>
+                       th:text="${i + 1}" style="padding: 6px 12px;"></a>
                 </li>
 
-                <!-- 다음 버튼 -->
-                <li th:if="${currentPage < totalPages - 1}">
-                    <a th:if="${subCategoryId != null}"
-                       th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${currentPage + 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
-                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">다음</a>
-                    <a th:if="${subCategoryId == null}"
-                       th:href="@{/category/{cid}(cid=${category.categoryId}, page=${currentPage + 1}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
-                       style="padding: 8px 12px; background: #eee; border-radius: 6px;">다음</a>
+                <!-- 🔹 다음 블럭 -->
+                <li th:if="${hasNextBlock and subCategoryId != null}">
+                    <a th:href="@{/category/{cid}/subcategory/{sid}(cid=${category.categoryId}, sid=${subCategoryId}, page=${endPage}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 6px 12px;">다음</a>
+                </li>
+                <li th:if="${hasNextBlock and subCategoryId == null}">
+                    <a th:href="@{/category/{cid}(cid=${category.categoryId}, page=${endPage}, sort=${currentSort}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                       style="padding: 6px 12px;">다음</a>
                 </li>
 
             </ul>
