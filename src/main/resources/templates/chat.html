@@ -40,60 +40,83 @@
             position: relative; /* 자식 요소 (expanded-panel)의 absolute 위치 기준 */
             z-index: 10; /* 모달보다는 아래, body 콘텐츠보다는 위에 */
         }
-
-        /* =================================================== */
-        /* 채팅 헤더 스타일 */
-        /* =================================================== */
+        /* ====== 채팅 헤더 전체 컨테이너 ====== */
         .chat-header {
             display: flex;
             align-items: center; /* 수직 중앙 정렬 */
-            justify-content: center; /* 수평 중앙 정렬 */
-            background-color: #f5f5f5; /* 예시: 배경색 (이미지 여백이 생길 때 보일 색상) */
-            padding: 0; /* 이미지가 꽉 차도록 패딩 제거 */
-            overflow: hidden; /* 혹시 모를 오버플로우 대비 */
-            height: 80px; /* 헤더의 고정 높이 설정 (원하는 높이로 조절) */
+            justify-content: center; /* h3를 수평 중앙에 배치 */
+            background-color: #f5f5f5; /* 헤더 배경색 */
+            padding: 0;
+            overflow: hidden; /* 중요: 이미지가 헤더 영역을 넘어가면 이 부분에서 잘립니다. */
+            height: 100px; /* 중요: 헤더의 고정 높이 설정 (원하는 높이로 조절) */
+            /* 600px은 너무 클 수 있으므로 예시로 100px로 줄였습니다. 적절한 값으로 변경하세요. */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 10px 10px 0 0;
+            width: 100%;
+            box-sizing: border-box;
+            flex-shrink: 0;
             position: relative; /* h3 내부 absolute 요소의 기준으로 사용 */
         }
 
+        /* ====== h3 (상품 이미지 + 닉네임 텍스트 컨테이너) 스타일 ====== */
         .chat-header h3 {
-            display: flex; /* h3를 플렉스 컨테이너로 만듭니다. */
+            display: flex;
             align-items: center;
             justify-content: center;
             margin: 0;
-            width: 100%;
-            height: 100%;
+            padding: 0;
+            width: 100%; /* h3가 헤더 너비를 채우도록 */
+            height: 100%; /* h3가 헤더 높이를 채우도록 */
             position: relative; /* 닉네임 텍스트를 absolute로 배치하기 위한 기준 */
         }
 
+        /* ====== 상품 이미지 스타일 ====== */
         .chat-header .product-image-header {
             width: 100%; /* 부모(h3) 너비에 맞게 */
             height: 100%; /* 부모(h3) 높이에 맞게 */
-            object-fit: contain; /* 중요: 이미지가 잘리지 않고 전체가 보이도록 컨테이너 안에 맞춰집니다. */
-            /* 이 경우 이미지 주변에 빈 공간(레터박스/필러박스)이 생길 수 있습니다. */
-            border-radius: 0; /* 둥근 모서리 제거 (꽉 채우려면) */
+            object-fit: cover; /* 중요: 이미지가 컨테이너를 꽉 채우도록 크기 조정 (일부 잘릴 수 있음) */
+            border-radius: 0;
             margin: 0;
             box-shadow: none;
             display: block;
         }
 
-        /* 닉네임 텍스트 스타일 (h3 안에 <p> 태그가 있다고 가정) */
+        /* ====== 닉네임 텍스트 스타일 (h3 안에 <p> 태그가 있다고 가정) ====== */
         .chat-header h3 p {
-            position: absolute; /* 이미지 위에 겹쳐서 배치 */
+            position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* 정확한 중앙 정렬 */
+            transform: translate(-50%, -50%);
             color: white; /* 텍스트 색상 (이미지 위에 잘 보이도록) */
             font-size: 1.2em; /* 폰트 크기 조절 */
             font-weight: bold; /* 폰트 두께 */
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* 텍스트 가독성을 위한 그림자 */
             z-index: 1; /* 이미지보다 위에 오도록 */
-            margin: 0; /* p 태그의 기본 마진 제거 */
+            margin: 0;
             white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 */
         }
 
-        /* 프로필 이미지 대신 사용될 플레이스홀더 스타일 */
+        /* ====== 더 이상 필요 없는 플레이스홀더 숨기기 ====== */
         .chat-header .header-placeholder {
-            display: none; /* 이미지가 꽉 채울 것이므로 플레이스홀더는 숨깁니다. */
+            display: none;
+        }  /* ====== 닉네임 텍스트 스타일 (h3 안에 <p> 태그가 있다고 가정) ====== */
+        .chat-header h3 p {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white; /* 텍스트 색상 (이미지 위에 잘 보이도록) */
+            font-size: 1.2em; /* 폰트 크기 조절 */
+            font-weight: bold; /* 폰트 두께 */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* 텍스트 가독성을 위한 그림자 */
+            z-index: 1; /* 이미지보다 위에 오도록 */
+            margin: 0;
+            white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 */
+        }
+
+        /* ====== 더 이상 필요 없는 플레이스홀더 숨기기 ====== */
+        .chat-header .header-placeholder {
+            display: none;
         }
         /* =================================================== */
         /* 채팅 메시지 영역 스타일 */
