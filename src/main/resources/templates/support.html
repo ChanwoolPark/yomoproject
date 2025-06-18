@@ -13,7 +13,7 @@
 
         .support-wrapper {
             max-width: 800px;
-            margin: 60px auto;
+            margin: 125px auto 125px;
             background: white;
             padding: 40px;
             border-radius: 16px;
@@ -129,6 +129,8 @@
             color: #7c4dff;
         }
     </style>
+    <link rel="stylesheet" href="/css/header.css">
+    <div th:replace="fragments/header :: header"></div>
 </head>
 <body>
 
@@ -182,6 +184,8 @@
     </div>
 
 </div>
+
+<div th:replace="fragments/footer :: footer"></div>
 
 <script>
     function showTab(id) {
