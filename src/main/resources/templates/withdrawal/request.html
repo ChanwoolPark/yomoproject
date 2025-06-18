@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>포인트 출금 신청</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #FAFAFC;
+            color: #000;
+        }
+
+        .withdraw-container {
+            max-width: 600px;
+            margin: 60px auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 14px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            color: #465BFF;
+            border-bottom: 2px solid #A3C9FF;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 1rem;
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0 1rem;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .fee-info {
+            background: #CEC8FE;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            margin-top: 2rem;
+        }
+
+        .fee-info ul {
+            padding-left: 1.2rem;
+            margin: 0.5rem 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            background-color: #465BFF;
+            color: white;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+
+        .notice {
+            font-size: 0.92rem;
+            color: #d48419;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="withdraw-container">
+    <h2>포인트 출금 신청</h2>
+    <form th:action="@{/withdrawal/request}" method="post">
+        <label>출금 금액 (포인트)</label>
+        <input type="number" name="amount" min="1000" step="1000" required placeholder="최소 1,000원" />
+
+        <label>은행명</label>
+        <input type="text" name="bankName" required placeholder="예: 카카오뱅크" />
+
+        <label>입금받을 계좌번호</label>
+        <input type="text" name="bankAccount" required />
+
+        <div class="notice">
+            출금 신청 후 1~3일 이내 관리자가 직접 입금 처리합니다.<br/>
+            출금 내역은 [마이페이지 > 출금내역]에서 확인하세요.
+        </div>
+
+        <div class="fee-info">
+            <b>등급별 출금 수수료 안내</b>
+            <ul>
+                <li><b>브론즈</b>: 10%</li>
+                <li><b>실버</b>: 5%</li>
+                <li><b>골드</b>: 4%</li>
+                <li><b>플래티넘</b>: 3%</li>
+                <li><b>다이아몬드</b>: 1%</li>
+            </ul>
+            <div>수수료는 출금 금액에서 자동 공제됩니다.</div>
+        </div>
+
+        <button type="submit">출금 신청</button>
+    </form>
+</div>
+</body>
+</html>

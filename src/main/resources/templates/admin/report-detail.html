@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>채팅 신고 상세</title>
+    <style>
+        :root {
+            --main-color: #465BFF;
+            --sub-blue: #A3C9FF;
+            --light-bg: #FAFAFC;
+            --soft-purple: #CEC8FE;
+            --text-color: #000;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .report-detail-container {
+            max-width: 900px;
+            margin: 60px auto;
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        h1, h3 {
+            color: var(--main-color);
+            border-bottom: 2px solid var(--sub-blue);
+            padding-bottom: 0.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f8f8;
+            width: 160px;
+        }
+
+        select, input[type="number"] {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            padding: 10px 18px;
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #334bcc;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="report-detail-container">
+    <h1>채팅 신고 상세</h1>
+    <table>
+        <tr><th>채팅방 번호</th><td th:text="${report.chatRoomId}"></td></tr>
+        <tr><th>신고자</th><td th:text="${buyer.nickname}"></td></tr>
+        <tr><th>피신고자</th><td th:text="${seller.nickname}"></td></tr>
+        <tr><th>신고 제목</th><td th:text="${report.title}"></td></tr>
+        <tr><th>신고 내용</th><td th:text="${report.content}"></td></tr>
+        <tr><th>상태</th><td th:text="${report.status}"></td></tr>
+    </table>
+
+    <div class="form-section">
+        <h3>신고 상태 처리</h3>
+        <form th:action="@{/admin/report/status}" method="post">
+            <input type="hidden" name="reportId" th:value="${report.reportId}" />
+            <label for="status">처리 상태</label>
+            <select name="status" id="status">
+                <option value="처리중" th:selected="${report.status=='처리중'}">처리중</option>
+                <option value="완료" th:selected="${report.status=='완료'}">완료</option>
+                <option value="거절" th:selected="${report.status=='거절'}">거절</option>
+            </select>
+            <button type="submit">상태 변경</button>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <h3>보증금 정산</h3>
+        <form th:action="@{/admin/report/deposit}" method="post">
+            <input type="hidden" name="reportId" th:value="${report.reportId}" />
+
+            <label>정산 대상자</label>
+            <select name="receiverId">
+                <option th:value="${seller.id}">판매자 ([[${seller.nickname}]])</option>
+                <option th:value="${buyer.id}">구매자 ([[${buyer.nickname}]])</option>
+            </select>
+
+            <label>지급 금액</label>
+            <input type="number" name="amount" value="0" min="0" th:max="${rental.product.deposit}" />
+            <small>(보증금: <span th:text="${rental.product.deposit}"></span> P)</small>
+
+            <label>렌탈 상태</label>
+            <select name="rentalStatus">
+                <option value="반납완료" th:selected="${rental.status=='반납완료'}">반납완료</option>
+                <option value="취소" th:selected="${rental.status=='취소'}">환불</option>
+            </select>
+
+            <button type="submit">정산 실행</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

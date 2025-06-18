@@ -6,7 +6,7 @@
   <link rel="stylesheet" type="text/css" href="/style.css" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>토스페이먼츠 샘플 프로젝트</title>
+  <title>포인트충전</title>
   <!-- 토스페이먼츠 SDK 추가 -->
   <script src="https://js.tosspayments.com/v2/standard"></script>
   <style>
@@ -254,7 +254,7 @@
     <div style="padding-left: 25px">
       <div class="checkable typography--p">
         <label for="coupon-box" class="checkable__label typography--regular"
-        ><input id="coupon-box" class="checkable__input" type="checkbox" aria-checked="true" /><span class="checkable__label-text">5,000원 쿠폰 적용</span></label
+        ><input id="coupon-box" class="checkable__input" type="checkbox" aria-checked="true" /><span class="checkable__label-text">[선택]맞춤형 광고 추천</span></label
         >
       </div>
     </div>
@@ -266,7 +266,7 @@
     </div>
   </div>
 </div>
-<script>
+<script th:inline="javascript">
   main();
 
   async function main() {
@@ -274,7 +274,7 @@
     const coupon = document.getElementById("coupon-box");
     const amount = {
       currency: "KRW",
-      value: 5001,
+      value: /*[[${chargeAmount}]]*/,
     };
     // ------  결제위젯 초기화 ------
     // TODO: clientKey는 개발자센터의 결제위젯 연동 키 > 클라이언트 키로 바꾸세요.
@@ -315,7 +315,7 @@
       if (coupon.checked) {
         await widgets.setAmount({
           currency: "KRW",
-          value: amount.value - 5000,
+          value: amount.value - 0,
         });
 
         return;
@@ -334,11 +334,11 @@
       // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
       await widgets.requestPayment({
         orderId: generateRandomString(),
-        orderName: "토스 티셔츠 외 2건",
+        orderName: "요모페이 포인트 충전",
         successUrl: window.location.origin + "/success",
         failUrl: window.location.origin + "/fail",
-        customerEmail: "customer123@gmail.com",
-        customerName: "김토스",
+        customerEmail: /*[[${userEmail}]]*/,
+        customerName: /*[[${userNickname}]]*/,
         customerMobilePhone: "01012341234",
       });
     });

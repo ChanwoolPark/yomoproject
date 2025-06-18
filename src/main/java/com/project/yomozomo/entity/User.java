@@ -10,7 +10,9 @@ import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonIgnore;//패스워드는 민감한 자료여서
 @Entity
 @Table(name = "USERS")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 public class User {
 
@@ -79,6 +81,38 @@ public class User {
     @Column(name = "review_count")
     private Integer reviewCount;
 
+    // 휴면 계정 관련
+    @Column(name = "is_dormant", length = 1)
+    private String isDormant = "N"; // 'Y' or 'N'
+
+    @Column(name = "dormant_date")
+    private LocalDate dormantDate;
+
+    // User.java
+    @Column(name = "last_login_date")
+    private LocalDate lastLoginDate; // or LocalDateTime
+
+
+    // === 탈퇴/삭제 관련: 추가 컬럼 추천 ===
+    // 1. 탈퇴 상태 표시 (soft delete)
+    @Column(name = "is_withdrawn", length = 1)
+    private String isWithdrawn = "N"; // 'Y' or 'N'
+
+    // 2. 탈퇴 요청일 (삭제 예정일 계산용)
+    @Column(name = "withdrawn_at")
+    private LocalDateTime withdrawnAt;
+
+    // 관리자 계정
+    @Column(nullable = false)
+    private String role;
+
     @Column(name = "coupon_count")
     private Integer couponCount = 0;
+
+    public String getRole() {
+        return role; // 예시: "ADMIN" 또는 "USER"
+    }
+
+    @Column(name = "highest_balance")
+    private int highestBalance;
 }

@@ -1,54 +1,154 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>요모페이 관리/충전</title>
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
+    <link rel="stylesheet" href="/css/header.css">
     <style>
-        .charge-container {
-            max-width: 430px;
-            margin: 50px auto;
-            padding: 2rem;
+        .yomopay-card {
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1.2px solid var(--card-border);
+            padding: 36px 38px 30px 38px;
+            margin-bottom: 32px;
+            font-family: "Pretendard", sans-serif;
+        }
+
+        .yomopay-card h2 {
+            font-size: 1.34em;
+            font-weight: 800;
+            color: #222;
+            margin-bottom: 20px;
+        }
+
+        .user-point {
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #222;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1.2px solid var(--card-border);
+            background: #fafafd;
+            margin-bottom: 14px;
+        }
+
+        button[type="submit"],
+        .withdraw-btn {
+            width: 100%;
+            padding: 12px 0;
+            font-size: 1.05em;
+            font-weight: 700;
+            border-radius: 11px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px #465bff16;
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            background: var(--active);
+            color: #fff;
+            border: none;
+        }
+
+        button[type="submit"]:hover {
+            background: #263ed4;
+        }
+
+        .withdraw-btn {
+            background: #222;
+            color: white;
+            border: none;
+        }
+
+        .withdraw-btn:hover {
+            background: #444;
+        }
+
+        .charge-history {
+            margin-top: 20px;
+        }
+
+        .charge-history h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .charge-history table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        .charge-history th,
+        .charge-history td {
+            padding: 12px;
             border: 1px solid #eee;
-            border-radius: 12px;
-            background: #fafbff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            text-align: center;
         }
-        .charge-container h2 { margin-bottom: 1.2rem; text-align: center; }
-        .user-point { margin-bottom: 1.6rem; text-align: right; font-size: 1.08rem; color: #222; font-weight: bold; }
-        .charge-container label { font-weight: bold; display: block; margin-bottom: 0.5rem; }
-        .charge-container input[type="number"] {
-            width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 1.2rem;
+
+        .charge-history th {
+            background: #f5f5f8;
+            font-weight: 700;
         }
-        .charge-container button {
-            width: 100%; padding: 0.8rem; background: #4477ee; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-bottom: 1rem;
+
+        .charge-history td {
+            background: #fff;
         }
-        .charge-history { margin-top: 2rem; }
-        .charge-history h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-        .charge-history table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-        .charge-history th, .charge-history td { border: 1px solid #ddd; padding: 0.5rem 0.4rem; text-align: center; }
-        .charge-history th { background: #f3f6fc; }
-        .alert { margin: 1rem 0; color: #e22; text-align: center; font-weight: bold;}
-        .success { color: #228822; }
+
+        .alert {
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .alert.success {
+            background: #f0fff2;
+            color: #2ca54d;
+        }
+
+        .alert.error {
+            background: #fff6f6;
+            color: #eb2d2d;
+        }
     </style>
+
 </head>
 <body>
-<div class="charge-container">
-    <h2>요모페이 관리/충전</h2>
+<div class="yomopay-card">
+    <h2>💰요모페이 관리/충전</h2>
 
-    <!-- 성공/실패 메시지 출력 -->
     <div th:if="${success}" class="alert success" th:text="${success}"></div>
-    <div th:if="${error}" class="alert" th:text="${error}"></div>
+    <div th:if="${error}" class="alert error" th:text="${error}"></div>
 
     <div class="user-point">
         내 포인트: <span th:text="${point}">12,000</span> P
     </div>
 
-    <!-- 충전 폼 -->
     <form action="/widget" method="post">
         <label for="chargeAmount">충전 금액</label>
         <input type="number" id="chargeAmount" name="chargeAmount" placeholder="충전할 금액 입력" min="1000" step="1000" required>
         <button type="submit">충전하기</button>
     </form>
+
+    <a href="http://localhost:8080/withdrawal/request" style="text-decoration:none;">
+        <button type="button" class="withdraw-btn">
+            출금하기
+        </button>
+    </a>
 
     <div class="charge-history">
         <h3>최근 충전 내역</h3>
@@ -64,9 +164,9 @@
             <tbody>
             <tr th:each="log : ${logs}">
                 <td th:text="${#dates.format(log.createdAt, 'yyyy-MM-dd')}"></td>
-                <td th:text="${log.amount} + 'P'"></td>
-                <td th:text="${log.method}"></td>
+                <td th:text="${log.amount}"></td>
                 <td th:text="${log.type}"></td>
+                <td>완료</td>
             </tr>
             <tr th:if="${#lists.isEmpty(logs)}">
                 <td colspan="4">충전 내역이 없습니다.</td>

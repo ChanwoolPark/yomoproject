@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 신고 상세</title>
+    <style>
+        :root {
+            --main-color: #465BFF;
+            --sub-blue: #A3C9FF;
+            --light-bg: #FAFAFC;
+            --soft-purple: #CEC8FE;
+            --text-color: #000;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .report-container {
+            max-width: 800px;
+            margin: 60px auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 14px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--main-color);
+            border-bottom: 2px solid var(--sub-blue);
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            width: 150px;
+            background-color: #f8f8f8;
+            color: #333;
+        }
+
+        select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        button:hover {
+            background-color: #334bcc;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--main-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn-back:hover {
+            background-color: #334bcc;
+        }
+    </style>
+</head>
+<body>
+<div class="report-container">
+    <h1>상품 신고 상세</h1>
+    <table>
+        <tr>
+            <th>신고번호</th>
+            <td th:text="${report.reportId}"></td>
+        </tr>
+        <tr>
+            <th>신고자</th>
+            <td th:text="${report.reporter.username}"></td>
+        </tr>
+        <tr>
+            <th>상품 ID</th>
+            <td th:text="${report.product.productId}"></td>
+        </tr>
+        <tr>
+            <th>상품명</th>
+            <td th:text="${report.product.title}"></td>
+        </tr>
+        <tr>
+            <th>제목</th>
+            <td th:text="${report.title}"></td>
+        </tr>
+        <tr>
+            <th>신고 내용</th>
+            <td th:text="${report.details}"></td>
+        </tr>
+        <tr>
+            <th>신고일시</th>
+            <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+        </tr>
+        <tr>
+            <th>상태</th>
+            <td>
+                <form th:action="@{'/admin/product-report/' + ${report.reportId} + '/status'}" method="post" style="display:inline;">
+                    <select name="status">
+                        <option value="접수" th:selected="${report.status == '접수'}">접수</option>
+                        <option value="처리중" th:selected="${report.status == '처리중'}">처리중</option>
+                        <option value="완료" th:selected="${report.status == '완료'}">완료</option>
+                    </select>
+                    <button type="submit">변경</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+
+    <a th:href="@{/admin/product-reports}" class="btn-back">← 목록으로</a>
+</div>
+</body>
+</html>

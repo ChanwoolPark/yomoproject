@@ -9,6 +9,8 @@ import java.util.List;
 public interface WalletLogMapper {
     void insertLog(WalletLog log);
     List<WalletLog> findLogsByUserWalletId(@Param("userWalletId") Long userWalletId);
+
+
 }
 
 

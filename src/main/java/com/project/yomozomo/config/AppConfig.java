@@ -13,9 +13,5 @@ public class AppConfig {
         return new BCryptPasswordEncoder();
     }
 
-/*    @Bean
-    public SpringSecurityDialect springSecurityDialect() {
-        return new SpringSecurityDialect();
-    }*/
 }
 

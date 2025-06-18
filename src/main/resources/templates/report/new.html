@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>채팅방 신고하기</title>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background: #f7f8fa; margin: 0; padding: 0;}
+        .report-container { max-width: 480px; margin: 60px auto; background: #fff; border-radius: 16px; box-shadow: 0 2px 8px #0001; padding: 32px 28px;}
+        h2 { margin-top: 0; color: #4477ee; }
+        label { font-weight: 500; margin-top: 16px; display: block; color: #333;}
+        input, textarea, select { width: 100%; padding: 8px 12px; border: 1px solid #d6dbe5; border-radius: 6px; margin-top: 4px; font-size: 1rem; }
+        textarea { min-height: 100px; resize: vertical; }
+        .form-actions { margin-top: 24px; display: flex; gap: 12px; }
+        button { background: #4477ee; color: #fff; border: none; padding: 10px 24px; border-radius: 6px; font-size: 1rem; cursor: pointer;}
+        button.cancel { background: #bbb; }
+    </style>
+</head>
+<body>
+<div class="report-container">
+    <h2>채팅방 신고하기</h2>
+    <form th:action="@{/report/new}" method="post">
+        <!-- 채팅방/신고자/피신고자/렌탈 번호 등 숨겨서 같이 보냄 -->
+        <input type="hidden" name="chatRoomId" th:value="${chatRoomId}">
+        <input type="hidden" name="reporterId" th:value="${reporterId}">
+        <input type="hidden" name="reportedId" th:value="${reportedId}">
+
+        <label for="title">신고 제목</label>
+        <input type="text" id="title" name="title" required maxlength="100" placeholder="예: 부적절한 언행">
+
+        <label for="content">신고 내용</label>
+        <textarea id="content" name="content" required maxlength="1000" placeholder="상세 내용을 입력해 주세요"></textarea>
+
+        <div class="form-actions">
+            <button type="submit">신고 제출</button>
+            <button type="button" class="cancel" onclick="window.close();">취소</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

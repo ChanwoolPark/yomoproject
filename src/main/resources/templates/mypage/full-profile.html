@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${user.nickname + '의 프로필'}">프로필</title>
+  <link rel="stylesheet" th:href="@{/css/mypage.css}">
+  <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div id="main" class="profile-page">
+  <div id="content">
+    <div th:replace="~{mypage/fragments/profile :: profile}"></div>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

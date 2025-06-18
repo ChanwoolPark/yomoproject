@@ -5,6 +5,7 @@ import com.project.yomozomo.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,7 +21,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_product")
     @SequenceGenerator(name = "seq_product", sequenceName = "seq_product", allocationSize = 1)
     @Column(name = "product_id")
-    private int productId;
+    private Long productId;
 
     // seller는 users 테이블과 연관관계 설정
     @ManyToOne
@@ -46,8 +47,9 @@ public class Product {
     @Column(nullable = false)
     private Integer count = 0;
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private Date createdAt;
 
     @Column(name = "is_deleted", columnDefinition = "CHAR(1) DEFAULT 'N'")
@@ -55,6 +57,7 @@ public class Product {
 
     @Column(length = 20)
     private String status = "판매중";
+
 
     public void delete() {
         this.isDeleted = "Y";

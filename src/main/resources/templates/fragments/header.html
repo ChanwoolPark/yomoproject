@@ -1,22 +1,45 @@
-<div th:fragment="header">
-    <header style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
+<div th:fragment="header" style="width: 100%;">
+    <header>
         <div style="display: flex; align-items: center; gap: 30px;">
-            <div class="logo" onclick="location.href='/'" style="cursor:pointer;">🐥요모</div>
-            <nav class="nav">
-                <ul th:if="${categories != null}" style="display: flex; gap: 20px; list-style: none; margin: 0; padding: 0;">
+            <div class="logo" onclick="location.href='/'" style="cursor:pointer;">💎요모</div>
+
+            <!-- 전체 네비게이션 감싸는 영역 -->
+            <nav class="nav-wrapper" style="position: relative;">
+                <!-- 대카테고리 리스트 -->
+                <ul th:if="${categories != null}" class="nav">
                     <li th:each="category : ${categories}">
-                        <a th:href="@{'/category/' + ${category.categoryId}}" th:text="${category.name}" style="text-decoration:none; color:black;"></a>
+                        <a th:href="@{'/category/' + ${category.categoryId}}"
+                           th:text="${category.name}"
+                           style="text-decoration: none; color: black;"></a>
                     </li>
                 </ul>
+
+                <!-- 모든 서브카테고리 한번에 표시 -->
+                <div class="all-sub-category-menu">
+                    <div th:each="category : ${categories}" class="sub-group" style="display: flex; flex-direction: column; gap: 5px;">
+                        <strong th:text="${category.name}" style="color: #555;"></strong>
+                        <a th:each="sub : ${category.subCategories}"
+                           th:href="@{'/subcategory/' + ${sub.subCategoryId}}"
+                           th:text="${sub.name}"
+                           style="text-decoration: none; color: #333; font-size: 14px;"></a>
+                    </div>
+                </div>
             </nav>
         </div>
+
         <div style="display: flex; gap: 15px; align-items: center;">
-            <a href="/login-page" id="loginBtn"
-               th:if="${not #authorization.expression('isAuthenticated()')}">로그인</a>
-            <a href="/logout" id="logoutBtn"
-               th:if="${#authorization.expression('isAuthenticated()')}">로그아웃</a>
-            <a href="/mypage" id="myInfoBtn"
-               th:if="${#authorization.expression('isAuthenticated()')}">마이페이지</a>
+            <a href="/login" id="loginBtn" th:if="${not #authorization.expression('isAuthenticated()')}">로그인</a>
+            <a href="/chatadmin/chatrooms" id="myChatAdminBtn" th:if="${#authorization.expression('isAuthenticated()')}">내 채팅창 관리</a>
+            <a href="/logout" id="logoutBtn" th:if="${#authorization.expression('isAuthenticated()')}">로그아웃</a>
+            <a href="/mypage" id="myInfoBtn" th:if="${#authorization.expression('isAuthenticated()')}">마이페이지</a>
+            <a href="/admin/dashboard" id="adminBtn"
+               th:if="${#authorization.expression('hasAuthority(''ADMIN'')')}"
+               style="background:#7c4dff;color:#fff;padding:7px 17px;border-radius:8px;margin-left:7px;font-weight:600;box-shadow:0 2px 7px #ede7ff;transition:background 0.13s;">
+                관리
+            </a>
         </div>
+
+
     </header>
+
 </div>

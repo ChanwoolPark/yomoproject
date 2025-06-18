@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 신고 리스트</title>
+    <style>
+        :root {
+            --main-color: #465BFF;
+            --sub-blue: #A3C9FF;
+            --light-bg: #FAFAFC;
+            --soft-purple: #CEC8FE;
+            --text-color: #000;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .list-container {
+            max-width: 1000px;
+            margin: 60px auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            color: var(--main-color);
+            border-bottom: 2px solid var(--sub-blue);
+            padding-bottom: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        thead {
+            background-color: var(--soft-purple);
+        }
+
+        .btn-detail {
+            padding: 6px 12px;
+            background-color: var(--main-color);
+            color: white;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-detail:hover {
+            background-color: #334bcc;
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 2rem;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+<div class="list-container">
+    <h1>상품 신고 내역</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>신고번호</th>
+            <th>신고자 ID</th>
+            <th>상품 ID</th>
+            <th>제목</th>
+            <th>신고일시</th>
+            <th>상태</th>
+            <th>상세</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="report : ${reportList}">
+            <td th:text="${report.reportId}"></td>
+            <td th:text="${report.reporter.username}"></td>
+            <td th:text="${report.product.productId}"></td>
+            <td th:text="${report.title}"></td>
+            <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            <td th:text="${report.status}"></td>
+            <td>
+                <a th:href="@{'/admin/product-report/' + ${report.reportId}}" class="btn-detail">상세</a>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(reportList)}">
+            <td colspan="7" class="empty-row">신고 내역이 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

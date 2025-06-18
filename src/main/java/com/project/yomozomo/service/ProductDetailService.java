@@ -4,6 +4,7 @@ import com.project.yomozomo.domain.Product;
 import com.project.yomozomo.domain.ProductImage;
 import com.project.yomozomo.domain.Rental;
 import com.project.yomozomo.domain.ViewedProduct;
+import com.project.yomozomo.entity.Review;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.repository.*;
 import org.springframework.stereotype.Service;
@@ -22,13 +23,15 @@ public class ProductDetailService {
     private final ChatRoomRepository chatRoomRepo;
     private final RentalRepository rentalRepo;
     private final ViewedProductRepository viewedProductRepo;
+    private final ReviewRepository reviewRepo;
 
     public ProductDetailService(ProductRepository productRepo,
                                 ProductImageRepository productImageRepo,
                                 UserRepository userRepo,
                                 WishlistRepository wishlistRepo,
                                 ChatRoomRepository chatRoomRepo, RentalRepository rentalRepo,
-                                ViewedProductRepository viewedProductRepo) {
+                                ViewedProductRepository viewedProductRepo,
+                                ReviewRepository reviewRepo) {
         this.productRepo = productRepo;
         this.productImageRepo = productImageRepo;
         this.userRepo = userRepo;
@@ -36,6 +39,7 @@ public class ProductDetailService {
         this.chatRoomRepo = chatRoomRepo;
         this.rentalRepo = rentalRepo;
         this.viewedProductRepo = viewedProductRepo;
+        this.reviewRepo = reviewRepo;
     }
 
     @Transactional(readOnly = true)
@@ -102,5 +106,22 @@ public class ProductDetailService {
             viewedProductRepo.deleteAll(toDelete);
         }
     }
+
+    // 상품 찜 개수
+    @Transactional(readOnly = true)
+    public int getWishlistCount(int productId) {
+        return wishlistRepo.countByProduct_ProductId(productId);
+    }
+
+    // 사용자의 다른 글 목록
+    @Transactional(readOnly = true)
+    public List<Product> getOtherProductsBySeller(Long sellerId, int excludeProductId) {
+        return productRepo.findBySeller_IdAndIsDeletedAndProductIdNot(sellerId, "N", excludeProductId);
+    }
+
+    public List<Review> findReviewsByProductId(Long productId) {
+        return reviewRepo.findByProductIdWithReviewer (productId); // writer까지 fetch join된 JPQL이면 더 좋아!
+    }
+
 
 }

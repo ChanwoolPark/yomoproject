@@ -3,38 +3,145 @@
 <head>
   <meta charset="utf-8" />
   <link rel="icon" href="https://static.toss.im/icons/png/4x/icon-toss-logo.png" />
-  <link rel="stylesheet" type="text/css" href="/style.css" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>토스페이먼츠 샘플 프로젝트</title>
+  <meta name="viewport" content="width=500, initial-scale=1.0" />
+  <title>요모조모 결제완료</title>
+  <link rel="stylesheet" href="/css/header.css">
+  <style>
+    :root {
+      --main-blue: #465BFF;
+      --light-bg: #FAFAFC;
+      --yellow: #FFED7B;
+      --sub-blue: #A3C9FF;
+      --soft-purple: #CEC8FE;
+      --font: 'Segoe UI', 'GmarketSans', 'sans-serif';
+    }
+    html, body {
+      background: var(--light-bg);
+      color: #222;
+      font-family: var(--font);
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      min-height: 100vh;
+    }
+    .pay-section {
+      max-width: 420px;
+      margin: 60px auto 40px auto;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 6px 24px rgba(70, 91, 255, 0.06);
+      padding: 38px 38px 30px 38px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .pay-section img {
+      width: 76px;
+      margin-bottom: 10px;
+    }
+    .pay-section h2 {
+      font-size: 1.65rem;
+      color: var(--main-blue);
+      font-weight: 700;
+      margin: 0 0 22px 0;
+      letter-spacing: -1px;
+    }
+    .pay-info-box {
+      width: 100%;
+      background: var(--soft-purple);
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 24px;
+      box-sizing: border-box;
+    }
+    .pay-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+    .pay-row:last-child { margin-bottom: 0; }
+    .pay-row b {
+      color: var(--main-blue);
+      font-size: 1.03em;
+      font-weight: 600;
+    }
+    .pay-key {
+      word-break: break-all;
+      font-size: 0.97em;
+      color: #767676;
+      width: 215px;
+      text-align: right;
+    }
+    .pay-section .button-row {
+      width: 100%;
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .button-main, .button-mypage {
+      flex: 1;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 0;
+      font-size: 1.07rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .button-main {
+      background: var(--main-blue);
+      color: #fff;
+      box-shadow: 0 1px 5px rgba(70, 91, 255, 0.06);
+    }
+    .button-main:hover {
+      background: #273FD3;
+    }
+    .button-mypage {
+      background: var(--yellow);
+      color: var(--main-blue);
+      border: 2px solid var(--main-blue);
+    }
+    .button-mypage:hover {
+      background: #fffbe5;
+    }
+    /* 반응형 약간 */
+    @media (max-width: 520px) {
+      .pay-section { padding: 18px 4vw 20px 4vw; }
+      .pay-info-box { padding: 12px 2vw; }
+      .pay-row b { font-size: 1em; }
+    }
+  </style>
 </head>
-
 <body>
-<div class="box_section" style="width: 600px">
-  <img width="100px" src="https://static.toss.im/illusts/check-blue-spot-ending-frame.png" />
-  <h2>결제를 완료했어요</h2>
+<!-- 헤더 -->
+<div th:replace="fragments/header :: header"></div>
 
-  <div class="p-grid typography--p" style="margin-top: 50px">
-    <div class="p-grid-col text--left"><b>결제금액</b></div>
-    <div class="p-grid-col text--right" id="amount"></div>
-  </div>
-  <div class="p-grid typography--p" style="margin-top: 10px">
-    <div class="p-grid-col text--left"><b>주문번호</b></div>
-    <div class="p-grid-col text--right" id="orderId"></div>
-  </div>
-  <div class="p-grid typography--p" style="margin-top: 10px">
-    <div class="p-grid-col text--left"><b>paymentKey</b></div>
-    <div class="p-grid-col text--right" id="paymentKey" style="white-space: initial; width: 250px"></div>
-  </div>
-  <div class="p-grid" style="margin-top: 30px">
-    <button class="button p-grid-col5" onclick="location.href='https://docs.tosspayments.com/guides/v2/payment-widget/integration';">연동 문서</button>
-    <button class="button p-grid-col5" onclick="location.href='https://discord.gg/A4fRFXQhRu';" style="background-color: #e8f3ff; color: #1b64da">실시간 문의</button>
-  </div>
-</div>
+<div class="pay-section">
+  <img src="https://static.toss.im/illusts/check-blue-spot-ending-frame.png" alt="완료" />
+  <h2>결제가 완료됐어요</h2>
 
-<div class="box_section" style="width: 600px; text-align: left">
-  <b>Response Data :</b>
-  <div id="response" style="white-space: initial"></div>
+  <div class="pay-info-box">
+    <div class="pay-row">
+      <b>결제금액</b>
+      <span id="amount"></span>
+    </div>
+    <div class="pay-row">
+      <b>주문번호</b>
+      <span id="orderId"></span>
+    </div>
+    <div class="pay-row">
+      <b>PaymentKey</b>
+      <span class="pay-key" id="paymentKey"></span>
+    </div>
+  </div>
+
+  <div class="button-row">
+    <button class="button-main" onclick="location.href='/'">메인 화면</button>
+    <button class="button-mypage" onclick="location.href='/mypage?menu=yomopay';">마이페이지</button>
+  </div>
 </div>
 
 <script>
@@ -61,26 +168,18 @@
     const json = await response.json();
 
     if (!response.ok) {
-      // TODO: 결제 실패 비즈니스 로직을 구현하세요.
-      console.log(json);
       window.location.href = `/fail?message=${json.message}&code=${json.code}`;
     }
 
-    // TODO: 결제 성공 비즈니스 로직을 구현하세요.
-    // console.log(json);
     return json;
   }
-  confirm().then(function (data) {
-    document.getElementById("response").innerHTML = `<pre>${JSON.stringify(data, null, 4)}</pre>`;
-  });
 
-  const paymentKeyElement = document.getElementById("paymentKey");
-  const orderIdElement = document.getElementById("orderId");
-  const amountElement = document.getElementById("amount");
-
-  orderIdElement.textContent = urlParams.get("orderId");
-  amountElement.textContent = urlParams.get("amount") + "원";
-  paymentKeyElement.textContent = urlParams.get("paymentKey");
+  // 결제 정보 표기
+  document.getElementById("orderId").textContent = urlParams.get("orderId");
+  document.getElementById("amount").textContent = urlParams.get("amount") + "원";
+  document.getElementById("paymentKey").textContent = urlParams.get("paymentKey");
 </script>
+<!-- 푸터 -->
+<div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>

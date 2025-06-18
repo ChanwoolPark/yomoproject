@@ -2,12 +2,17 @@ package com.project.yomozomo.service;
 
 import com.project.yomozomo.domain.UserWallet;
 import com.project.yomozomo.domain.WalletLog;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.mapper.WalletLogMapper;
+import com.project.yomozomo.repository.UserRepository;
 import com.project.yomozomo.repository.UserWalletRepository;
+import com.project.yomozomo.repository.WalletLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -18,29 +23,35 @@ public class WalletService {
     private WalletLogMapper walletLogMapper;
     @Autowired
     private UserWalletRepository userWalletRepository;
+    @Autowired
+    private WalletLogRepository walletLogRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    // (1) 충전 내역 저장
-    public void addChargeLog(Long userWalletId, int amount, String method) {
-        WalletLog log = new WalletLog();
-        log.setUserWalletId(userWalletId);
-        log.setAmount(amount);
-        log.setType("충전");
-        log.setMethod(method);
-        walletLogMapper.insertLog(log);
+
+    @Transactional
+    public void increaseBalance(Long userId, int amount) {
+        UserWallet wallet = userWalletRepository.findByUserId(userId);
+
+        wallet.setBalance(wallet.getBalance() + amount);
+        userWalletRepository.save(wallet);
     }
 
-    public boolean charge(Long walletId, int amount) {
-        // 1. 지갑 조회
-        UserWallet wallet = userWalletRepository
-                .findById(walletId).orElse(null);
-        if(wallet == null) return false;
 
-        // 2. 잔액 증가
+    @Transactional
+    public boolean charge(Long walletId, int amount) {
+        UserWallet wallet = userWalletRepository.findById(walletId).orElseThrow();
         wallet.setBalance(wallet.getBalance() + amount);
         userWalletRepository.save(wallet);
 
-        // 3. 로그 기록 등 추가 로직 가능
-        // walletLogRepository.save(new WalletLog(...))
+        WalletLog log = new WalletLog();
+        log.setUserWalletId(walletId);
+        log.setAmount(amount);
+        log.setType("충전");
+        log.setCreatedAt(new Date());
+        walletLogRepository.save(log);
+
+        updateGradeIfNeeded(wallet.getUserId(), wallet.getBalance());
 
         return true;
     }
@@ -49,4 +60,24 @@ public class WalletService {
     public List<WalletLog> getLogs(Long userWalletId) {
         return walletLogMapper.findLogsByUserWalletId(userWalletId);
     }
+
+    // 실제 등급 판별/업데이트 로직
+    public void updateGradeIfNeeded(Long userId, int nowBalance) {
+        User user = userRepository.findById(userId).orElseThrow();
+
+        String newGrade = calculateGrade(nowBalance);
+        if (!newGrade.equals(user.getGrade())) {
+            user.setGrade(newGrade);
+            userRepository.save(user);
+        }
+    }
+
+    private String calculateGrade(int balance) {
+        if (balance >= 200_000) return "DIAMOND";
+        if (balance >= 100_000) return "PLATINUM";
+        if (balance >= 50_000) return "GOLD";
+        if (balance >= 10_000) return "SILVER";
+        return "BRONZE";
+    }
+
 }

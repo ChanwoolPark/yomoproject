@@ -1,10 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>내 문의내역</title>
+    <style>
+        .inquiry-list {
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1.2px solid var(--card-border);
+            padding: 36px 38px 30px 38px;
+            margin-bottom: 32px;
+            font-family: "Pretendard", sans-serif;
+        }
+
+        .inquiry-list h2 {
+            font-size: 1.34em;
+            font-weight: 800;
+            color: #222;
+            margin-bottom: 20px;
+        }
+
+        .inquiry-header,
+        .inquiry-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .inquiry-header {
+            font-weight: 700;
+            font-size: 1.02rem;
+            color: #444;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .inquiry-title {
+            flex: 1;
+        }
+
+        .inquiry-action {
+            text-align: right;
+            min-width: 90px;
+        }
+
+        .status-btn {
+            padding: 5px 12px;
+            font-size: 0.92rem;
+            background-color: #e0f2ff;
+            border: 1px solid #a8d9ff;
+            color: #0066cc;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .status-text {
+            font-size: 0.92rem;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .answer-box {
+            background: #f7faff;
+            padding: 16px 20px;
+            margin: 12px 0 20px 0;
+            border-left: 4px solid #a8d9ff;
+            border-radius: 1rem;
+            display: none;
+        }
+
+        .answer-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+        }
+    </style>
 </head>
 <body>
-<h1>문의 내역 창입니다.</h1>
+
+<div class="inquiry-list">
+    <h2>📨 내 문의내역</h2>
+
+    <div class="inquiry-header">
+        <div class="inquiry-title">제목</div>
+        <div class="inquiry-action">답변상태</div>
+    </div>
+
+    <div th:each="inquiry, iterStat : ${inquiries}">
+        <div class="inquiry-item">
+            <div class="inquiry-title" th:text="${inquiry.title}">문의제목</div>
+            <div class="inquiry-action">
+                <span th:if="${inquiry.isAnswered != null and inquiry.isAnswered}"
+                      class="status-btn"
+                      th:onclick="'toggleAnswer(' + ${iterStat.index} + ')'">답변완료</span>
+                <span th:if="${inquiry.isAnswered == null or !inquiry.isAnswered}"
+                      class="status-text">답변대기</span>
+            </div>
+        </div>
+
+        <div class="answer-box"
+             th:id="'answerBox' + ${iterStat.index}"
+             th:if="${inquiry.isAnswered != null and inquiry.isAnswered}">
+            <strong>답변:</strong>
+            <p th:text="${inquiry.answer}">답변 내용</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAnswer(idx) {
+        const box = document.getElementById("answerBox" + idx);
+        if (box) {
+            box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+        }
+    }
+</script>
+
 </body>
 </html>

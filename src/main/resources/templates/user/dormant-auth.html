@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>이메일 인증</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h2>이메일 인증</h2>
+<form th:action="@{/dormant/verify-auth}" method="post">
+    <input type="hidden" name="email" th:value="${email}">
+    <input type="text" name="code" placeholder="인증코드 입력">
+    <button type="submit">확인</button>
+</form>
+</body>
+</html>

@@ -1,0 +1,235 @@
+package com.project.yomozomo.controller.chat;
+
+import com.project.yomozomo.entity.ChatRoom;
+import com.project.yomozomo.entity.ChatMessage;
+import com.project.yomozomo.entity.User;
+import com.project.yomozomo.domain.Rental;
+import com.project.yomozomo.domain.Product; // Product 엔티티 import
+import com.project.yomozomo.dto.ChatMessageDTO;
+import com.project.yomozomo.service.ChatService;
+import com.project.yomozomo.service.RentalService;
+import com.project.yomozomo.service.UserService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Controller
+@RequestMapping("/chat")
+@RequiredArgsConstructor
+@Slf4j
+public class ChatController {
+
+    private final ChatService chatService;
+    private final UserService userService;
+    private final RentalService rentalService;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    // ========== [1] 파일 업로드 (이미지 전송) ==========
+    @PostMapping("/uploadFile")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("roomId") Long roomId,
+            @RequestParam("senderId") Long senderId) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "업로드할 파일이 없습니다."));
+        }
+        try {
+            String baseUploadDir = "C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files";
+            String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString();
+            File uploadPath = new File(specificUploadPathStr);
+            if (!uploadPath.exists()) {
+                Files.createDirectories(uploadPath.toPath());
+            }
+            String originalFileName = file.getOriginalFilename();
+            String fileExtension = "";
+            int dotIndex = originalFileName.lastIndexOf('.');
+            if (dotIndex > 0 && dotIndex < originalFileName.length() - 1) {
+                fileExtension = originalFileName.substring(dotIndex);
+            }
+            String storedFileName = UUID.randomUUID().toString() + fileExtension;
+            File dest = new File(uploadPath, storedFileName);
+            Files.copy(file.getInputStream(), dest.toPath());
+            String fileUrl = "/uploaded-chat-images/" + storedFileName;
+            Map<String, String> response = new HashMap<>();
+            response.put("imgUrl", fileUrl);
+            response.put("messageType", "IMAGE");
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "파일 저장 중 오류가 발생했습니다."));
+        }
+    }
+
+    // ========== [2] 웹소켓 채팅 메시지 송수신 ==========
+    @MessageMapping("/pub/chat.sendMessage/{chatRoomId}")
+    public void sendMessage(@Payload ChatMessageDTO chatMessageDto, @DestinationVariable Long chatRoomId) {
+        if (chatMessageDto.getRoomId() == null || !chatMessageDto.getRoomId().equals(chatRoomId)) {
+            chatMessageDto.setRoomId(chatRoomId);
+        }
+        try {
+            User senderUser = userService.getUserById(chatMessageDto.getSenderId());
+            chatMessageDto.setSenderName(senderUser != null ? senderUser.getNickname() : "알 수 없는 사용자");
+            chatService.saveChatMessage(
+                    chatMessageDto.getRoomId(),
+                    chatMessageDto.getSenderId(),
+                    chatMessageDto.getMessage(),
+                    chatMessageDto.getImgUrl(),
+                    chatMessageDto.getMessageType() != null ? chatMessageDto.getMessageType().name() : ChatMessageDTO.MessageType.TALK.name()
+            );
+        } catch (Exception e) { return; }
+        String destination = "/sub/chat/room/" + chatRoomId;
+        messagingTemplate.convertAndSend(destination, chatMessageDto);
+    }
+
+    @MessageMapping("/pub/chat.addUser/{chatRoomId}")
+    public void addUser(@Payload ChatMessageDTO chatMessageDto, @DestinationVariable Long chatRoomId) {
+        if (chatMessageDto.getRoomId() == null || !chatMessageDto.getRoomId().equals(chatRoomId)) {
+            chatMessageDto.setRoomId(chatRoomId);
+        }
+        User senderUser = userService.getUserById(chatMessageDto.getSenderId());
+        String senderNickname = senderUser != null ? senderUser.getNickname() : "알 수 없는 사용자";
+        chatMessageDto.setSenderName(senderNickname);
+        String joinMessage = chatMessageDto.getMessage();
+        if (joinMessage == null || joinMessage.trim().isEmpty()) {
+            joinMessage = senderNickname + "님이 입장하셨습니다.";
+        }
+        chatMessageDto.setMessage(joinMessage);
+        chatMessageDto.setMessageType(ChatMessageDTO.MessageType.JOIN);
+        chatMessageDto.setSendTime(LocalDateTime.now());
+        try {
+            chatService.saveChatMessage(
+                    chatMessageDto.getRoomId(),
+                    chatMessageDto.getSenderId(),
+                    chatMessageDto.getMessage(),
+                    "",
+                    chatMessageDto.getMessageType().name()
+            );
+        } catch (Exception e) {}
+        String destination = "/sub/chat/room/" + chatRoomId;
+        messagingTemplate.convertAndSend(destination, chatMessageDto);
+    }
+
+    // ========== [3] 채팅방 진입(렌탈상품 채팅 시작) ==========
+    @GetMapping("/start/{rentalId}")
+    public String startChatWithRental(@PathVariable Long rentalId, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "채팅을 시작하려면 로그인이 필요합니다.");
+            return "redirect:/login";
+        }
+        Rental rental = rentalService.getRentalById(rentalId);
+        if (rental == null || rental.getProduct() == null || rental.getProduct().getSeller() == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "렌탈 상품 또는 판매자 정보를 찾을 수 없습니다.");
+            return "redirect:/errorPage";
+        }
+        User buyer = userService.getUserByUsername(principal.getName());
+        User sellerUser = rental.getProduct().getSeller();
+        Long chatRoomId = chatService.findOrCreateChatRoomForRental(buyer, sellerUser, rental.getRentalId());
+        return "redirect:/chat/" + chatRoomId;
+    }
+
+    // ========== [4] 채팅방 웹화면 ==========
+    @GetMapping("/{roomId}")
+    public String chatRoom(@PathVariable Long roomId,
+                           Principal principal,
+                           Model model,
+                           RedirectAttributes redirectAttributes) {
+        if (principal == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "채팅방에 접근하려면 로그인이 필요합니다.");
+            return "redirect:/login";
+        }
+        String currentUsername = principal.getName();
+        User currentUser = userService.getUserByUsername(currentUsername);
+        if (currentUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "사용자 정보를 찾을 수 없습니다.");
+            return "redirect:/errorPage";
+        }
+        Optional<ChatRoom> optionalChatRoom = chatService.getChatRoomById(roomId);
+        if (optionalChatRoom.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "채팅방을 찾을 수 없습니다. ID: " + roomId);
+            return "redirect:/errorPage";
+        }
+        ChatRoom chatRoom = optionalChatRoom.get();
+
+        boolean isParticipant = (currentUser.getId().equals(chatRoom.getBuyer().getId()) ||
+                currentUser.getId().equals(chatRoom.getSeller().getId()));
+        if (!isParticipant) {
+            redirectAttributes.addFlashAttribute("errorMessage", "이 채팅방에 접근할 권한이 없습니다.");
+            return "redirect:/access-denied";
+        }
+
+        User chatPartnerUser = currentUser.getId().equals(chatRoom.getBuyer().getId()) ? chatRoom.getSeller() : chatRoom.getBuyer();
+        model.addAttribute("currentUserId", currentUser.getId());
+        model.addAttribute("currentUserName", currentUser.getNickname());
+        model.addAttribute("chatPartnerId", chatPartnerUser.getId());
+        model.addAttribute("chatPartnerNickname", chatPartnerUser.getNickname());
+        model.addAttribute("chatRoomId", roomId);
+
+        // ===== 이 부분을 수정합니다. =====
+        String productImageUrl = null;
+        if (chatRoom.getRental() != null && chatRoom.getRental().getProduct() != null) {
+            Product product = chatRoom.getRental().getProduct();
+            model.addAttribute("currentRentalId", chatRoom.getRental().getRentalId());
+            model.addAttribute("productTitle", product.getTitle());
+            // Product 엔티티의 getThumbnailUrl() 메소드를 호출하여 이미지 URL을 가져옵니다.
+            // 이 메소드는 productImages 리스트의 첫 번째 이미지 URL을 반환하거나,
+            // 이미지가 없을 경우 /img/default.png를 반환합니다.
+            productImageUrl = product.getThumbnailUrl();
+        } else {
+            // 렌탈 정보나 상품 정보가 없는 경우
+            model.addAttribute("currentRentalId", null);
+            model.addAttribute("productTitle", "일반 채팅");
+            // 상품 이미지가 없으므로 기본 이미지 사용
+            productImageUrl = "/img/default.png"; // Product 엔티티의 기본값과 일치시킵니다.
+        }
+
+        // 최종적으로 productImageUrl을 모델에 추가합니다.
+        model.addAttribute("productImageUrl", productImageUrl);
+        // 기존 채팅 메시지
+        try {
+            List<ChatMessage> chatHistoryEntities = chatService.getChatMessagesByRoomId(roomId);
+            List<ChatMessageDTO> chatHistoryDtos = chatHistoryEntities.stream().map(entity -> {
+                ChatMessageDTO dto = new ChatMessageDTO();
+                dto.setRoomId(entity.getRoomId());
+                dto.setSenderId(entity.getSenderId());
+                User senderOfPastMessage = userService.getUserById(entity.getSenderId());
+                dto.setSenderName(senderOfPastMessage != null ? senderOfPastMessage.getNickname() : "알 수 없는 사용자");
+                dto.setMessage(entity.getMessage());
+                dto.setImgUrl(entity.getImgUrl());
+                try {
+                    dto.setMessageType(ChatMessageDTO.MessageType.valueOf(entity.getMessageType()));
+                } catch (Exception e) {
+                    dto.setMessageType(ChatMessageDTO.MessageType.TALK);
+                }
+                dto.setSendTime(entity.getSendTime());
+                return dto;
+            }).toList();
+            model.addAttribute("chatHistory", chatHistoryDtos);
+        } catch (Exception e) {
+            model.addAttribute("chatHistory", new ArrayList<>());
+        }
+
+        // isSeller 등 기타 Thymeleaf 변수
+        model.addAttribute("isSeller", currentUser.getId().equals(chatRoom.getSeller().getId()));
+        model.addAttribute("rental", chatRoom.getRental());
+
+        return "chat";
+    }
+}

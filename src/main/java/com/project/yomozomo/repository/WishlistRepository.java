@@ -14,4 +14,7 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Integer> {
     // 찜 삭제
     void deleteByUser_IdAndProduct_ProductId(Long userId, int productId);
 
+    // 상품 찜 개수
+    int countByProduct_ProductId(int productId);
+
 }

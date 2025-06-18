@@ -1,121 +1,184 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
     <title>마이페이지</title>
     <meta charset="UTF-8">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            font-family: 'Noto Sans KR', sans-serif;
-            min-height: 100vh;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-
-        header {
-            background-color: #fff;
-            padding: 16px 32px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        #main {
-            display: flex;
-            flex: 1;
-            padding: 24px;
-            gap: 24px;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        #sidebar {
-            width: 240px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        }
-
-        #sidebar ul {
-            list-style: none;
-        }
-
-        #sidebar li.main {
-            font-weight: bold;
-            margin: 16px 0 8px;
-            color: #444;
-            font-size: 15px;
-        }
-
-        #sidebar li.sub {
-            padding: 6px 0 6px 12px;
-            cursor: pointer;
-            color: #666;
-            transition: all 0.2s ease;
-            border-radius: 6px;
-        }
-
-        #sidebar li.sub:hover {
-            background-color: #f0f0f0;
-            color: #000;
-        }
-
-        #content {
-            flex: 1;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-            border: 1px solid #ddd;
-        }
-
-        footer {
-            background-color: #f1f1f1;
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #777;
-        }
-
-    </style>
-
-
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/mypage.css">
+    <!-- Lucide 아이콘 CDN (outline 스타일) -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
 <div th:replace="fragments/header :: header"></div>
 
 <div id="main">
-    <div id="sidebar">
+    <nav id="sidebar">
         <ul>
             <li class="main">내 정보</li>
-            <li class="sub" onclick="loadContent('profile')">프로필 상세보기</li>
-            <li class="sub" onclick="loadContent('edit-info')">개인정보 확인/수정</li>
-            <li class="sub" onclick="loadContent('yomopay')">요모페이 관리/충전</li>
+            <li class="sub" onclick="setActive(this); loadContent('profile')" id="profile-menu">
+                <span class="sidebar-icon" data-lucide="user"></span> 프로필 상세보기
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('edit-info')">
+                <span class="sidebar-icon" data-lucide="pencil"></span> 개인정보 확인/수정
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('yomopay')">
+                <span class="sidebar-icon" data-lucide="credit-card"></span> 요모페이 관리/충전
+                <span class="sidebar-check" data-lucide="check" ></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('history')">
+                <span class="sidebar-icon" data-lucide="trending-up"></span> 출금내역
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
 
+            <hr>
             <li class="main">대여 관리</li>
-            <li class="sub" onclick="loadContent('rent-list')">대여 목록</li>
-            <li class="sub" onclick="loadContent('sale-list')">판매 목록</li>
-            <li class="sub" onclick="loadContent('cancel-list')">취소/환불/반품 내역</li>
+            <li class="sub" onclick="setActive(this); loadContent('rent-list')">
+                <span class="sidebar-icon" data-lucide="archive"></span> 대여 목록
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('sale-list')">
+                <span class="sidebar-icon" data-lucide="shopping-bag"></span> 판매 목록
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('cancel-list')">
+                <span class="sidebar-icon" data-lucide="refresh-cw"></span> 취소/환불/반품 내역
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
 
+            <hr>
             <li class="main">내 활동</li>
-            <li class="sub" onclick="loadContent('wishlist')">위시리스트</li>
-            <li class="sub" onclick="loadContent('recent')">최근 본 게시글</li>
-            <li class="sub" onclick="loadContent('reviews')">내가 쓴 리뷰</li>
-            <li class="sub" onclick="loadContent('inquiries')">문의내역 확인</li>
+            <li class="sub" onclick="setActive(this); loadContent('wishlist')">
+                <span class="sidebar-icon" data-lucide="heart"></span> 위시리스트
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('recent')">
+                <span class="sidebar-icon" data-lucide="clock"></span> 최근 본 게시글
+                <span class="sidebar-check" data-lucide="check" ></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('reviews')">
+                <span class="sidebar-icon" data-lucide="star"></span> 내가 쓴 리뷰
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
+            <li class="sub" onclick="setActive(this); loadContent('inquiries')">
+                <span class="sidebar-icon" data-lucide="help-circle"></span> 문의내역 확인
+                <span class="sidebar-check" data-lucide="check"></span>
+            </li>
         </ul>
-    </div>
+    </nav>
     <div id="content"></div>
 </div>
 
+<!-- 모달 (숨김 기본) -->
+<div id="reviewModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:32px 24px; border-radius:16px; min-width:350px; max-width:90vw;">
+        <h2 style="font-size:1.3em; margin-bottom:1em;">리뷰 작성</h2>
+        <div id="modalProductTitle" style="margin-bottom:8px; color:#3849c7; font-weight:600;"></div>
+        <div style="margin-bottom:12px;">
+            <span>평점:</span>
+            <span id="reviewStars">
+        <span class="star" data-value="1">&#9734;</span>
+        <span class="star" data-value="2">&#9734;</span>
+        <span class="star" data-value="3">&#9734;</span>
+        <span class="star" data-value="4">&#9734;</span>
+        <span class="star" data-value="5">&#9734;</span>
+    </span>
+        </div>
+        <form id="reviewForm">
+            <input type="hidden" name="rentalId" id="modalRentalId">
+            <input type="hidden" name="rating" id="modalRating">
+            <input type="hidden" id="modalProductId" name="productId">
+            <input type="hidden" id="modalTargetId" name="targetId">
+
+            <textarea name="reviewText" id="reviewContent" rows="5" style="width:100%; border-radius:6px;" placeholder="리뷰를 입력하세요"></textarea>
+            <br>
+            <button type="submit" ...>작성 완료</button>
+            <button type="button" ...>닫기</button>
+        </form>
+    </div>
+</div>
+
+
 <div th:replace="fragments/footer :: footer"></div>
+
+<script>
+
+    // Lucide 아이콘 적용
+    window.addEventListener("DOMContentLoaded", () => {
+        lucide.createIcons();
+        setActiveByMenu();
+    });
+
+    function setActive(element) {
+        document.querySelectorAll('#sidebar li.sub').forEach(li => li.classList.remove('active'));
+        element.classList.add('active');
+        lucide.createIcons();
+    }
+
+    function setActiveByMenu() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const menu = urlParams.get("menu") || "profile";
+        let matched = false;
+        document.querySelectorAll('#sidebar li.sub').forEach(li => {
+            if (li.onclick && li.onclick.toString().includes(menu)) {
+                li.classList.add('active');
+                matched = true;
+            } else {
+                li.classList.remove('active');
+            }
+        });
+        if (!matched) document.querySelectorAll('#sidebar li.sub')[0].classList.add('active');
+
+        if (menu && menu !== "home-summary") {
+            document.querySelectorAll('#sidebar li.sub').forEach(li => {
+                if (li.onclick && li.onclick.toString().includes(menu)) {
+                    li.classList.add('active');
+                    matched = true;
+                } else {
+                    li.classList.remove('active');
+                }
+            });
+        } else {
+            document.querySelectorAll('#sidebar li.sub').forEach(li => li.classList.remove('active'));
+        }
+    }
+
+    // ⭐⭐ loadContent 함수가 사라지면 동적 로딩이 아예 안 됨!
+    function loadContent(menuName) {
+        history.pushState({ menu: menuName }, '', `/mypage?menu=${menuName}`);
+        fetch(`/mypage/${menuName}`)
+            .then(response => response.text())
+            .then(html => {
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = html;
+
+                // 새로 삽입된 script 실행!
+                contentDiv.querySelectorAll("script").forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    if (oldScript.src) {
+                        newScript.src = oldScript.src;
+                    } else {
+                        newScript.textContent = oldScript.textContent;
+                    }
+                    document.body.appendChild(newScript);
+                    document.body.removeChild(newScript);
+                });
+            });
+    }
+
+    // 뒤로가기 동작도 복구!
+    window.onpopstate = function (event) {
+        const menu = event.state?.menu || 'profile';
+        fetch(`/mypage/${menu}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('content').innerHTML = html;
+            });
+    };
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // ✨ URL 파라미터에서 menu 추출
@@ -129,23 +192,294 @@
         history.pushState({ menu: menuName }, '', `/mypage?menu=${menuName}`);
 
         fetch(`/mypage/${menuName}`)
-            .then(response => response.text())
+    .then(response => response.text())
             .then(html => {
-                document.getElementById('content').innerHTML = html;
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = html;
+
+                // ★★★ 새로 삽입된 script 태그 직접 실행!
+                contentDiv.querySelectorAll("script").forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    if (oldScript.src) {
+                        newScript.src = oldScript.src;
+                    } else {
+                        newScript.textContent = oldScript.textContent;
+                    }
+                    // script 태그는 body에 붙여야 즉시 실행됨!
+                    document.body.appendChild(newScript);
+                    document.body.removeChild(newScript); // 메모리 누수 방지
+                });
             });
+
+
     }
+
 
 
     // ✅ 뒤로가기 동작
     window.onpopstate = function(event) {
         const menu = event.state?.menu || 'home-summary';
         fetch(`/mypage/${menu}`)
-            .then(response => response.text())
+    .then(response => response.text())
             .then(html => {
                 document.getElementById('content').innerHTML = html;
             });
     };
+
+
+    let nicknameValid = true; // 본인 정보 그대로면 true!
+    let emailValid = true;
+    let phoneValid = true;
+
+    window.checkNickname = function() {
+        const nicknameInput = document.getElementById('nickname');
+        const nickname = nicknameInput.value.trim();
+        const original = nicknameInput.getAttribute('data-original-nickname');
+        const msg = document.getElementById('nickname-check-msg');
+
+        // 본인 닉네임 그대로면 PASS
+        if (nickname === original) {
+            msg.textContent = "현재 사용중인 닉네임입니다.";
+            msg.className = "input-msg ok";
+            nicknameValid = true;
+            return;
+        }
+
+        // 이하는 기존과 동일
+        fetch('/mypage/check-nickname?nickname=' + encodeURIComponent(nickname))
+            .then(response => response.json())
+            .then(isDuplicate => {
+                if (isDuplicate) {
+                    msg.textContent = "이미 사용중인 닉네임입니다!";
+                    msg.className = "input-msg";
+                    nicknameValid = false;
+                } else {
+                    msg.textContent = "사용 가능한 닉네임입니다!";
+                    msg.className = "input-msg ok";
+                    nicknameValid = true;
+                }
+            }).catch(() => {
+            msg.textContent = "서버 오류!";
+            msg.className = "input-msg";
+            nicknameValid = false;
+        });
+    }
+
+    window.checkEmail = function() {
+        const emailInput = document.getElementById('email');
+        const email = emailInput.value.trim();
+        const original = emailInput.getAttribute('data-original-email');
+        const msg = document.getElementById('email-check-msg');
+
+        if (email === original) {
+            msg.textContent = "현재 사용중인 이메일입니다.";
+            msg.className = "input-msg ok";
+            emailValid = true;
+            return;
+        }
+
+        fetch('/mypage/check-email?email=' + encodeURIComponent(email))
+            .then(response => response.json())
+            .then(isDuplicate => {
+                if (isDuplicate) {
+                    msg.textContent = "이미 등록된 이메일입니다!";
+                    msg.className = "input-msg";
+                    emailValid = false;
+                } else {
+                    msg.textContent = "사용 가능한 이메일입니다!";
+                    msg.className = "input-msg ok";
+                    emailValid = true;
+                }
+            }).catch(() => {
+            msg.textContent = "서버 오류!";
+            msg.className = "input-msg";
+            emailValid = false;
+        });
+    }
+
+    function bindEditInfoEvents() {
+        // 휴대폰 실시간 중복
+        const phoneInput = document.getElementById('phone');
+        if(phoneInput) {
+            phoneInput.addEventListener('input', function () {
+                const phone = this.value.trim();
+                const original = phoneInput.getAttribute('data-original-phone');
+                const msg = document.getElementById('phone-check-msg');
+
+                // 본인 폰 그대로면 PASS
+                if(phone === original) {
+                    msg.textContent = "현재 사용중인 번호입니다.";
+                    msg.className = "input-msg ok";
+                    phoneValid = true;
+                    return;
+                }
+
+                phoneValid = false;
+                msg.textContent = "";
+                if (!phone) return;
+                fetch('/mypage/check-phone?phone=' + encodeURIComponent(콜))
+                    .then(response => response.json())
+                    .then(isDuplicate => {
+                        if (isDuplicate) {
+                            msg.textContent = "이미 등록된 휴대폰 번호입니다!";
+                            msg.className = "input-msg";
+                            phoneValid = false;
+                        } else {
+                            msg.textContent = "사용 가능한 번호입니다!";
+                            msg.className = "input-msg ok";
+                            phoneValid = true;
+                        }
+                    }).catch(() => {
+                    msg.textContent = "서버 오류!";
+                    msg.className = "input-msg";
+                    phoneValid = false;
+                });
+            });
+        }
+
+        // 폼 제출 시
+        const form = document.getElementById('edit-info-form');
+        if(form) {
+            form.onsubmit = function(e) {
+                if (!nicknameValid) {
+                    alert("닉네임 중복확인을 해주세요!");
+                    document.getElementById('nickname').focus();
+                    e.preventDefault();
+                    return false;
+                }
+                if (!emailValid) {
+                    alert("이메일 중복확인을 해주세요!");
+                    document.getElementById('email').focus();
+                    e.preventDefault();
+                    return false;
+                }
+                if (!phoneValid) {
+                    alert("휴대폰 번호를 다시 확인해주세요!");
+                    document.getElementById('phone').focus();
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        }
+    }
+
+
+
+    // ---- 카카오 주소 검색 ----
+    function execDaumPostcode() {
+        if (typeof daum === "undefined") {
+            alert("카카오 우편번호 라이브러리가 아직 로드되지 않았어요. 잠시 후 다시 시도해주세요!");
+            return;
+        }
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById('zipNo').value = data.zonecode;
+                document.getElementById('address').value = data.roadAddress || data.jibunAddress;
+                document.getElementById('addressDetail').focus();
+            }
+        }).open();
+    }
+
+    function openReviewModalByAttr(btn) {
+        const rentalId = btn.getAttribute('data-rental-id');
+        const productId = btn.getAttribute('data-product-id');
+        const targetId = btn.getAttribute('data-target-id');
+        const productTitle = btn.getAttribute('data-product-title');
+        document.getElementById('modalRentalId').value = rentalId;
+        document.getElementById('modalProductId').value = productId;
+        document.getElementById('modalTargetId').value = targetId;
+        document.getElementById('modalProductTitle').innerText = "상품명: " + productTitle;
+        document.getElementById('reviewModal').style.display = 'flex';
+    }
+
+
+    // 모달 닫기
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+        document.getElementById('reviewContent').value = '';
+    }
+
+    // 폼 제출 이벤트 (ajax로 할 거면 여기서 처리)
+    document.getElementById('reviewForm').onsubmit = function(e) {
+        e.preventDefault();
+        // 여기서 ajax로 리뷰 등록 처리하면 됨!
+        // rentalId: document.getElementById('modalRentalId').value
+        // content: document.getElementById('reviewContent').value
+        alert('리뷰 등록 기능은 곧 추가됩니다! (이제 서버 연동하면 돼)');
+        closeReviewModal();
+    };
+
+    // 평점 입력 기능
+    document.querySelectorAll('#reviewStars .star').forEach(star => {
+        star.addEventListener('click', function() {
+            let rating = this.getAttribute('data-value');
+            document.getElementById('modalRating').value = rating;
+            document.querySelectorAll('#reviewStars .star').forEach((s, idx) => {
+                s.classList.toggle('selected', idx < rating);
+                s.innerHTML = idx < rating ? '★' : '☆';
+            });
+        });
+    });
+
+    document.getElementById('reviewForm').onsubmit = function(e) {
+        e.preventDefault();
+        let rentalId = document.getElementById('modalRentalId').value;
+        let content = document.getElementById('reviewContent').value.trim();
+        let rating = document.getElementById('modalRating').value;
+
+        if (!content || !rating) {
+            alert('리뷰 내용과 평점을 모두 입력하세요!');
+            return;
+        }
+
+        fetch('/reviews/write', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                rentalId: rentalId,
+                productId: document.getElementById('modalProductId').value,
+                targetId: document.getElementById('modalTargetId').value,
+                reviewText: content,
+                rating: rating
+            })
+        })
+            .then(res => res.json())
+            .then(result => {
+                if(result.success) {
+                    alert('리뷰가 등록되었습니다!');
+                    closeReviewModal();
+                    // 평점 갱신 콜백 실행(알잘딱: 그냥 새로고침도 O, 아래 참고!)
+                    location.reload();
+                } else {
+                    alert('리뷰 등록 실패: ' + result.message);
+                }
+            });
+    };
+
+
+    function toggleAnswer(idx) {
+        const box = document.getElementById("answerBox" + idx);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+
 </script>
 
+<script>
+    function withdrawUser() {
+        if (confirm('정말 탈퇴하시겠어요? 30일 이내 재로그인하면 복구 가능하고, 30일 이후 완전 삭제됩니다!')) {
+            fetch('/mypage/withdraw', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('탈퇴 처리되었습니다. 30일 이내 재로그인하면 복구됩니다!');
+                        window.location.href = '/logout'; // 자동 로그아웃
+                    } else {
+                        alert(data.message || '오류가 발생했습니다.');
+                    }
+                });
+        }
+    }
+</script>
 </body>
 </html>

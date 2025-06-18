@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 성공</title>
+    <link rel="stylesheet" href="/css/header.css">
+    <style>
+        :root {
+            --main-color: #465BFF;
+            --sub-blue: #A3C9FF;
+            --yellow: #FFED7B;
+            --light-bg: #FAFAFC;
+            --soft-purple: #CEC8FE;
+            --text-color: #000;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+        }
+
+        .success-container {
+            max-width: 600px;
+            margin: 100px auto;
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--main-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .info {
+            font-size: 1.05rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .warning {
+            font-size: 0.95rem;
+            color: #cc0000;
+            background-color: var(--yellow);
+            padding: 0.8rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 0.9rem 1.6rem;
+            background-color: var(--main-color);
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #334bcc;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<div class="success-container">
+    <h2>🎉 결제가 정상적으로 완료되었습니다!</h2>
+
+    <div class="info">
+        반납일까지 물품을 반납해 주세요.
+    </div>
+
+    <div class="warning">
+        ⏰ 반납일 이후 반납이 지연될 경우<br>
+        <strong>보증금 환급이 제한</strong>될 수 있습니다.
+    </div>
+
+    <div class="btn-group">
+        <a th:href="@{/chatadmin/chatrooms}" class="btn">채팅방으로 돌아가기</a>
+        <a href="http://localhost:8080/" class="btn">메인 화면</a>
+    </div>
+</div>
+</body>
+</html>

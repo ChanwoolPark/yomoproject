@@ -1,10 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>신고/환불 내역</title>
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
+    <style>
+        .rental-history-card {
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1.2px solid var(--card-border);
+            padding: 36px 38px 30px 38px;
+            margin-bottom: 32px;
+        }
+
+        .rental-history-card h3 {
+            font-size: 1.34em;
+            font-weight: 800;
+            color: #222;
+            margin-bottom: 20px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .report-table th,
+        .report-table td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px dashed #eee;
+            font-size: 0.96rem;
+        }
+
+        .report-table th {
+            font-weight: 700;
+            color: #444;
+            background: #f9fafc;
+        }
+
+        .report-table td {
+            color: #555;
+        }
+
+        .empty-msg {
+            padding: 24px;
+            text-align: center;
+            background: #fafbfd;
+            border-radius: 1.4rem;
+            border: 1px solid #f0eefb;
+            box-shadow: 0 1px 6px #a3c9ff12;
+            font-size: 0.98rem;
+            color: #999;
+        }
+    </style>
 </head>
 <body>
-<h1>개인정보 수정 창입니다.</h1>
+
+<div class="rental-history-card">
+    <h3>📄 신고/환불 내역</h3>
+
+    <div th:if="${#lists.isEmpty(myReports)}" class="empty-msg">
+        신고 내역이 없습니다.
+    </div>
+
+    <table class="report-table" th:if="${!#lists.isEmpty(myReports)}">
+        <thead>
+        <tr>
+            <th>신고번호</th>
+            <th>제목</th>
+            <th>신고대상</th>
+            <th>신고일</th>
+            <th>처리상태</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="report : ${myReports}">
+            <td th:text="${report.reportId}"></td>
+            <td th:text="${report.title}"></td>
+            <td th:text="${report.reportedId}"></td> <!-- 닉네임 표시용이면 서버 로직 필요 -->
+            <td th:text="${#dates.format(report.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            <td th:text="${report.status}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
 </body>
 </html>
