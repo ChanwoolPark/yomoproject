@@ -40,84 +40,71 @@
             position: relative; /* 자식 요소 (expanded-panel)의 absolute 위치 기준 */
             z-index: 10; /* 모달보다는 아래, body 콘텐츠보다는 위에 */
         }
-        /* ====== 채팅 헤더 전체 컨테이너 ====== */
+
+        /* =================================================== */
+        /* 채팅 헤더 스타일 */
+        /* =================================================== */
         .chat-header {
             display: flex;
-            align-items: center; /* 수직 중앙 정렬 */
-            justify-content: center; /* h3를 수평 중앙에 배치 */
-            background-color: #f5f5f5; /* 헤더 배경색 */
-            padding: 0;
-            overflow: hidden; /* 중요: 이미지가 헤더 영역을 넘어가면 이 부분에서 잘립니다. */
-            height: 100px; /* 중요: 헤더의 고정 높이 설정 (원하는 높이로 조절) */
-            /* 600px은 너무 클 수 있으므로 예시로 100px로 줄였습니다. 적절한 값으로 변경하세요. */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-radius: 10px 10px 0 0;
-            width: 100%;
-            box-sizing: border-box;
-            flex-shrink: 0;
-            position: relative; /* h3 내부 absolute 요소의 기준으로 사용 */
-        }
-
-        /* ====== h3 (상품 이미지 + 닉네임 텍스트 컨테이너) 스타일 ====== */
-        .chat-header h3 {
-            display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0;
-            padding: 0;
-            width: 100%; /* h3가 헤더 너비를 채우도록 */
-            height: 100%; /* h3가 헤더 높이를 채우도록 */
-            position: relative; /* 닉네임 텍스트를 absolute로 배치하기 위한 기준 */
+            justify-content: space-between;
+            background: linear-gradient(to right, #4477ee, #2b5cdb); /* 그라데이션 추가 */
+            color: white;
+            padding: 15px 20px; /* 좌우 패딩 증가 */
+            font-size: 1.2rem; /* 폰트 크기 약간 조절 */
+            font-weight: 600;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            position: relative;
+            z-index: 20;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08); /* 헤더 그림자 추가 */
         }
 
-        /* ====== 상품 이미지 스타일 ====== */
-        .chat-header .product-image-header {
-            width: 100%; /* 부모(h3) 너비에 맞게 */
-            height: 100%; /* 부모(h3) 높이에 맞게 */
-            object-fit: cover; /* 중요: 이미지가 컨테이너를 꽉 채우도록 크기 조정 (일부 잘릴 수 있음) */
-            border-radius: 0;
+        .chat-header h3 {
             margin: 0;
-            box-shadow: none;
+            flex-grow: 1;
+            text-align: center;
+            order: 2;
+        }
+        .chat-header h3 p {
+            margin: 0; /* p 태그 기본 마진 제거 */
+        }
+
+        /* 프로필 이미지 스타일 (공통) */
+        .profile-image-header {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.8); /* 투명도 있는 흰색 테두리 */
+            flex-shrink: 0;
+        }
+        .profile-image-header.left {
+            margin-right: 10px;
+            order: 1;
+        }
+        .profile-image-header.right {
+            margin-left: 10px;
+            order: 3;
+        }
+
+        /* 프로필 이미지 로드 실패 시 또는 src가 없을 때 */
+        .profile-image-header:not([src]):before {
+            content: "👤"; /* 사용자 아이콘 */
             display: block;
+            width: 100%;
+            height: 100%;
+            background-color: #ccc;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-size: 24px;
+            color: #666;
+        }
+        .profile-image-header[src]:before {
+            content: none;
         }
 
-        /* ====== 닉네임 텍스트 스타일 (h3 안에 <p> 태그가 있다고 가정) ====== */
-        .chat-header h3 p {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white; /* 텍스트 색상 (이미지 위에 잘 보이도록) */
-            font-size: 1.2em; /* 폰트 크기 조절 */
-            font-weight: bold; /* 폰트 두께 */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* 텍스트 가독성을 위한 그림자 */
-            z-index: 1; /* 이미지보다 위에 오도록 */
-            margin: 0;
-            white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 */
-        }
-
-        /* ====== 더 이상 필요 없는 플레이스홀더 숨기기 ====== */
-        .chat-header .header-placeholder {
-            display: none;
-        }  /* ====== 닉네임 텍스트 스타일 (h3 안에 <p> 태그가 있다고 가정) ====== */
-        .chat-header h3 p {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white; /* 텍스트 색상 (이미지 위에 잘 보이도록) */
-            font-size: 1.2em; /* 폰트 크기 조절 */
-            font-weight: bold; /* 폰트 두께 */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* 텍스트 가독성을 위한 그림자 */
-            z-index: 1; /* 이미지보다 위에 오도록 */
-            margin: 0;
-            white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 */
-        }
-
-        /* ====== 더 이상 필요 없는 플레이스홀더 숨기기 ====== */
-        .chat-header .header-placeholder {
-            display: none;
-        }
         /* =================================================== */
         /* 채팅 메시지 영역 스타일 */
         /* =================================================== */
@@ -215,7 +202,6 @@
             right: -7px; /* 메시지 버블 오른쪽 밖으로 */
             bottom: 5px; /* 아래쪽으로 이동 */
         }
-
         /* 발신자 이름 (상대방 메시지에만 표시) */
         .sender-name {
             font-weight: bold;
@@ -411,7 +397,7 @@
         /* 개별 버튼 색상 */
         #paymentGoBtn { background-color: #28a745; } /* 초록색 */
         #paymentGoBtn:hover { background-color: #218838; }
-        #innerButton2 { background-color: #ffc107; color: #333; } /* 노란t색, 글자색 어둡게 */
+        #innerButton2 { background-color: #ffc107; color: #333; } /* 노란색, 글자색 어둡게 */
         #innerButton2:hover { background-color: #e0a800; }
         #tradeCompleteBtn { background-color: #dc3545; } /* 빨간색 */
         #tradeCompleteBtn:hover { background-color: #c82333; }
@@ -684,7 +670,7 @@
         /* 이미지 팝업 모달 스타일 (새로 추가) */
         /* =================================================== */
         .image-modal-overlay {
-            display: none;
+            display: none; /* ⭐ 이 부분을 추가하거나 수정합니다. ⭐ */
             position: fixed;
             top: 0;
             left: 0;
@@ -741,13 +727,10 @@
 <body>
 <div class="chat-container">
     <div class="chat-header">
-        <div class="header-placeholder left-placeholder"></div>
-
+        <img id="chatPartnerProfileImage" class="profile-image-header left" th:src="${chatPartnerProfileImage}" alt="상대방 프로필">
         <h3 id="chatHeader">
-            <img id="productImageHeader" class="product-image-header" th:src="${productImageUrl}" alt="상품 이미지">
-        </h3>
-
-        <div class="header-placeholder right-placeholder"></div>
+            <p th:text="${chatPartnerNickname + '님과의 채팅'}">[상대방 닉네임]</p> </h3>
+        <img id="myUserProfileImage" class="profile-image-header right" th:src="${currentUserProfileImage}" alt="내 프로필">
     </div>
 
     <div class="chat-messages" id="chatMessages">
@@ -900,9 +883,10 @@
     const chatPartnerId = /*[[${chatPartnerId}]]*/ 0;
     const currentUserName = /*[[${currentUserName}]]*/ '나';
     const chatPartnerNickname = /*[[${chatPartnerNickname}]]*/ '상대방';
-    const productImages = /*[[${productImages}]]*/ "/img/default.png";;
+    const currentUserProfileImage = /*[[${currentUserProfileImage}]]*/ '/images/default_profile.png';
+    const chatPartnerProfileImage = /*[[${chatPartnerProfileImage}]]*/ '/images/default_profile.png';
 
-    // 모달 관련 요소 초기화 (확장 패널과 별개로 작동)productImages
+    // 모달 관련 요소 초기화 (확장 패널과 별개로 작동)
     let priceAdjustmentModal = null; // DOMContentLoaded에서 초기화
     let modalCloseBtn = null;
     let newPriceInput = null;
@@ -1107,14 +1091,17 @@
             const chatMessage = {
                 roomId: chatRoomId,
                 senderId: currentUserId,
-                message: messageToSend,
+                message: messageToSend, // 이전에 messageContent가 직접 message 필드로 들어갔었죠.
                 messageType: type,
                 sendTime: new Date().toISOString()
             };
 
             if (type === 'IMAGE') {
-                chatMessage.imgUrl = messageToSend;
-                chatMessage.message = "이미지를 보냈습니다.";
+                chatMessage.imgUrl = messageToSend; // imgUrl에는 이미지 경로가 들어갑니다.
+                // chatMessage.message = "이미지를 보냈습니다."; // <-- 이 줄을 제거하거나 주석 처리합니다.
+                // 이미지를 보낼 때 message 필드에 특정 텍스트를 넣지 않으려면
+                // message 필드를 빈 문자열로 설정하거나, 아예 설정하지 않을 수 있습니다.
+                chatMessage.message = ""; // 또는 null
             }
 
             console.log("전송할 메시지:", chatMessage);
