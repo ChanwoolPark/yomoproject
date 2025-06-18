@@ -1,47 +1,42 @@
 package com.project.yomozomo.controller.chat;
 
+import com.project.yomozomo.dto.ChatbotResponse; // ChatbotResponse DTO 경로 확인
 import com.project.yomozomo.service.ChatbotService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import java.util.Map;
 
-@Controller // @RestController 대신 @Controller를 사용합니다.
+@Controller
 public class ChatbotController {
 
     private final ChatbotService chatbotService;
 
-    @Autowired
     public ChatbotController(ChatbotService chatbotService) {
         this.chatbotService = chatbotService;
     }
 
-    // 챗봇 HTML 페이지를 보여주는 메서드
-    @GetMapping("/chatbot") // 이 매핑을 추가합니다.
-    public String showChatbotPageAlternative() {
-        return "chatbot"; // 동일하게 chatbot.html을 렌더링합니다.
+    @GetMapping("/chatbot")
+    public String chatbotPage(Model model) {
+        // Thymeleaf 템플릿 반환
+        return "chatbot"; // src/main/resources/templates/chatbot.html
     }
 
-    // Map으로 반환 - API 엔드포인트
-    @GetMapping("/chatbot/send")
-    @ResponseBody // 이 메서드는 HTML이 아닌 데이터를 반환함을 명시합니다.
-    public Map<String, Object> sendMessage(@RequestParam("message") String userMessage) {
-        return chatbotService.processUserText(userMessage);
-    }
-
-    // Map으로 반환 - API 엔드포인트
     @GetMapping("/chatbot/init")
-    @ResponseBody // 이 메서드는 HTML이 아닌 데이터를 반환함을 명시합니다.
-    public Map<String, Object> getInitialMessage() {
-        return chatbotService.getInitialMessage();
+    @ResponseBody // JSON 응답을 위한 어노테이션
+    public ResponseEntity<ChatbotResponse> initChatbot() {
+        ChatbotResponse response = chatbotService.getInitialMessage();
+        return ResponseEntity.ok(response);
     }
 
-    // Map으로 반환 - API 엔드포인트
-    @GetMapping("/chatbot/option")
-    @ResponseBody // 이 메서드는 HTML이 아닌 데이터를 반환함을 명시합니다.
-    public Map<String, Object> processOption(@RequestParam("optionId") Long optionId) {
-        return chatbotService.processOptionSelection(optionId);
+    @GetMapping("/chatbot/send")
+    @ResponseBody // JSON 응답을 위한 어노테이션
+    public ResponseEntity<ChatbotResponse> sendMessage(@RequestParam("message") String userMessage) {
+        // userMessage를 ChatbotService의 processMessage 메서드로 전달
+        // 오류 발생 부분: processUserText -> processMessage
+        ChatbotResponse response = chatbotService.processMessage(userMessage); // <-- 이 부분을 수정했습니다.
+        return ResponseEntity.ok(response);
     }
 }

@@ -71,8 +71,8 @@ public class ProductWriteController {
         String username = principal.getName(); // 로그인 사용자 확인
         User user = userService.findByUsername(username);
 
-        if (!product.getSeller().getId().equals(user.getId())) {
-            return "redirect:/"; // 권한 없는 사용자는 리다이렉트
+        if (!product.getSeller().getId().equals(user.getId()) && !"ADMIN".equalsIgnoreCase(user.getRole())) {
+            return "redirect:/";
         }
 
         model.addAttribute("product", product);
@@ -105,13 +105,22 @@ public class ProductWriteController {
     public String deleteProduct(@PathVariable("id") int productId,
                                 Principal principal,
                                 RedirectAttributes redirectAttributes) {
+
         String username = principal.getName();
-        User seller = userService.findByUsername(username);
+        User user = userService.findByUsername(username);
 
-        productWriteService.deleteProduct(productId, seller);
+        // 상품 정보 조회 (카테고리 ID 추출용)
+        Product product = productWriteService.getProductById(productId);
+        int categoryId = product.getSubCategory().getCategory().getCategoryId();
 
+        // 실제 삭제 로직
+        productWriteService.deleteProduct(productId, user);
+
+        // 메시지 전달
         redirectAttributes.addFlashAttribute("message", "상품이 삭제되었습니다.");
-        return "redirect:/";
+
+        // 삭제 후 해당 카테고리 리스트로 이동
+        return "redirect:/category/" + categoryId;
     }
 
 

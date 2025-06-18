@@ -127,7 +127,10 @@ public class ProductWriteService {
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
 
-        if (!product.getSeller().getId().equals(currentUser.getId())) {
+        boolean isSeller = product.getSeller().getId().equals(currentUser.getId());
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(currentUser.getRole());
+
+        if (!isSeller && !isAdmin) {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
