@@ -1,14 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>공지사항 등록</title>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #f8f8ff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 580px;
+            margin: 62px auto 0 auto;
+            background: #fff;
+            padding: 40px 40px 32px 40px;
+            border-radius: 22px;
+            box-shadow: 0 4px 16px rgba(124,77,255,0.06), 0 1.5px 8px #eee;
+        }
+        .form-title {
+            font-size: 23px;
+            font-weight: bold;
+            color: #7c4dff;
+            margin-bottom: 22px;
+            text-align: left;
+        }
+        .form-row {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-row label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #6a3dc3;
+            margin-bottom: 6px;
+        }
+        .form-row input[type="text"] {
+            padding: 13px 12px;
+            border-radius: 10px;
+            border: 1.3px solid #ded6ff;
+            font-size: 16px;
+            background: #faf9ff;
+            margin-bottom: 3px;
+            outline: none;
+            transition: border 0.13s;
+            box-shadow: 0 1px 5px #ede5ff2a;
+        }
+        .form-row input[type="text"]:focus {
+            border: 1.3px solid #7c4dff;
+            background: #f5f1ff;
+        }
+        .form-row textarea {
+            min-height: 140px;
+            padding: 13px 12px;
+            border-radius: 10px;
+            border: 1.3px solid #ded6ff;
+            font-size: 15px;
+            background: #faf9ff;
+            resize: vertical;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.13s;
+            box-shadow: 0 1px 5px #ede5ff2a;
+        }
+        .form-row textarea:focus {
+            border: 1.3px solid #7c4dff;
+            background: #f5f1ff;
+        }
+        .submit-btn {
+            background: #7c4dff;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 13px 0;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 2px 8px #f0e6ff;
+            transition: background 0.15s;
+            margin-top: 9px;
+        }
+        .submit-btn:hover {
+            background: #4b1db7;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 12px; }
+            .form-title { font-size: 18px; }
+            .form-row input, .form-row textarea { font-size: 13px; }
+        }
+    </style>
 </head>
 <body>
-<form method="post" action="/admin/notices/new">
-  <input type="text" name="title" placeholder="공지 제목" required>
-  <textarea name="content" placeholder="공지 내용" required></textarea>
-  <button type="submit">등록</button>
-</form>
+<div class="container">
+    <div class="form-title">공지사항 등록</div>
+    <form method="post" action="/admin/notices/new">
+        <div class="form-row">
+            <label for="title">공지 제목</label>
+            <input type="text" id="title" name="title" placeholder="공지 제목을 입력하세요" required>
+        </div>
+        <div class="form-row">
+            <label for="content">공지 내용</label>
+            <textarea id="content" name="content" placeholder="공지 내용을 입력하세요" required></textarea>
+        </div>
+        <button type="submit" class="submit-btn">등록</button>
+    </form>
+</div>
 </body>
 </html>
