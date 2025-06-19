@@ -52,7 +52,7 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", "업로드할 파일이 없습니다."));
         }
         try {
-            String baseUploadDir = "C:/Users/dbseh/OneDrive/문서/GitHub/yomoProject/uploaded-files";
+            String baseUploadDir = "C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files";
             String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString();
             File uploadPath = new File(specificUploadPathStr);
             if (!uploadPath.exists()) {
@@ -182,27 +182,39 @@ public class ChatController {
         model.addAttribute("chatPartnerNickname", chatPartnerUser.getNickname());
         model.addAttribute("chatRoomId", roomId);
 
-        // ===== 이 부분을 수정합니다. =====
-        String productImageUrl = null;
-        if (chatRoom.getRental() != null && chatRoom.getRental().getProduct() != null) {
-            Product product = chatRoom.getRental().getProduct();
+        String chatPartnerNickname = chatPartnerUser.getNickname();
+        Long chatPartnerId = chatPartnerUser.getId();
+
+        model.addAttribute("currentUserId", currentUser.getId());
+        model.addAttribute("currentUserName", currentUser.getNickname());
+        model.addAttribute("chatPartnerId", chatPartnerId);
+        model.addAttribute("chatPartnerNickname", chatPartnerNickname);
+        model.addAttribute("chatRoomId", roomId);
+
+        if (chatRoom.getRental() != null) {
             model.addAttribute("currentRentalId", chatRoom.getRental().getRentalId());
-            model.addAttribute("productTitle", product.getTitle());
-            // Product 엔티티의 getThumbnailUrl() 메소드를 호출하여 이미지 URL을 가져옵니다.
-            // 이 메소드는 productImages 리스트의 첫 번째 이미지 URL을 반환하거나,
-            // 이미지가 없을 경우 /img/default.png를 반환합니다.
-            productImageUrl = product.getThumbnailUrl();
+            if (chatRoom.getRental().getProduct() != null) {
+                model.addAttribute("productTitle", chatRoom.getRental().getProduct().getTitle());
+            } else {
+                model.addAttribute("productTitle", "상품 정보 없음");
+            }
         } else {
-            // 렌탈 정보나 상품 정보가 없는 경우
             model.addAttribute("currentRentalId", null);
             model.addAttribute("productTitle", "일반 채팅");
-            // 상품 이미지가 없으므로 기본 이미지 사용
-            productImageUrl = "/img/default.png"; // Product 엔티티의 기본값과 일치시킵니다.
         }
 
-        // 최종적으로 productImageUrl을 모델에 추가합니다.
-        model.addAttribute("productImageUrl", productImageUrl);
-        // 기존 채팅 메시지
+        String currentUserProfileImageUrl = currentUser.getProfileImageUrl();
+        if (currentUserProfileImageUrl == null || currentUserProfileImageUrl.isEmpty()) {
+            currentUserProfileImageUrl = "/images/default-profile.png";
+        }
+        model.addAttribute("currentUserProfileImage", currentUserProfileImageUrl);
+
+        String chatPartnerProfileImageUrl = chatPartnerUser.getProfileImageUrl();
+        if (chatPartnerProfileImageUrl == null || chatPartnerProfileImageUrl.isEmpty()) {
+            chatPartnerProfileImageUrl = "/images/default-profile.png";
+        }
+        model.addAttribute("chatPartnerProfileImage", chatPartnerProfileImageUrl);
+        //채팅 메시지
         try {
             List<ChatMessage> chatHistoryEntities = chatService.getChatMessagesByRoomId(roomId);
             List<ChatMessageDTO> chatHistoryDtos = chatHistoryEntities.stream().map(entity -> {

@@ -2,17 +2,109 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>문의 상세</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #f8f8ff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 620px;
+            margin: 54px auto 0 auto;
+            background: #fff;
+            padding: 40px 44px 36px 44px;
+            border-radius: 22px;
+            box-shadow: 0 4px 16px rgba(124,77,255,0.06), 0 1.5px 8px #eee;
+        }
+        .detail-title {
+            font-size: 25px;
+            font-weight: bold;
+            color: #7c4dff;
+            margin-bottom: 18px;
+            word-break: break-all;
+        }
+        .info-row {
+            margin-bottom: 14px;
+            font-size: 15.5px;
+            color: #362c67;
+        }
+        .content-box {
+            background: #faf9ff;
+            border-radius: 13px;
+            box-shadow: 0 1.5px 7px #f3ecff;
+            padding: 22px 20px 18px 22px;
+            color: #312661;
+            margin-bottom: 22px;
+            font-size: 16px;
+            line-height: 1.7;
+            word-break: break-all;
+        }
+        .reply-label {
+            font-weight: 600;
+            color: #6a3dc3;
+            font-size: 16px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            font-size: 15px;
+            border-radius: 12px;
+            border: 1.4px solid #ded6ff;
+            background: #faf9ff;
+            margin-top: 9px;
+            margin-bottom: 15px;
+            padding: 13px;
+            resize: vertical;
+            font-family: inherit;
+            transition: border 0.14s;
+            box-shadow: 0 1px 5px #ede5ff33;
+        }
+        textarea:focus {
+            border: 1.4px solid #7c4dff;
+            outline: none;
+            background: #f5f1ff;
+        }
+        .reply-btn {
+            background: #7c4dff;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 11px 30px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #f0e6ff;
+            transition: background 0.15s;
+            float: right;
+        }
+        .reply-btn:hover {
+            background: #4b1db7;
+        }
+        @media (max-width: 650px) {
+            .container { padding: 12px; }
+            .detail-title { font-size: 18px; }
+            .content-box { font-size: 13px; padding: 13px 9px; }
+            textarea { font-size: 13px; }
+            .reply-btn { font-size: 14px; padding: 9px 18px; }
+        }
+    </style>
 </head>
 <body>
-<h2 th:text="'문의 제목: ' + ${inquiry.title}"></h2>
-<p><strong>이메일:</strong> <span th:text="${inquiry.email}"></span></p>
-<p><strong>내용:</strong></p>
-<p th:text="${inquiry.content}"></p>
+<div class="container">
+    <div class="detail-title" th:text="${inquiry.title}">문의 제목</div>
+    <div class="info-row"><strong>이메일:</strong> <span th:text="${inquiry.email}"></span></div>
+    <div class="info-row"><strong>문의일:</strong>
+        <span th:text="${#temporals.format(inquiry.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+    </div>
+    <div class="content-box" th:text="${inquiry.content}">문의 내용</div>
 
-<form th:action="@{'/admin/inquiries/' + ${inquiry.id} + '/reply'}" method="post">
-    <label for="answer">답변 작성</label><br>
-    <textarea name="answer" rows="5" style="width: 100%;" th:text="${inquiry.answer}"></textarea><br>
-    <button type="submit">답변 등록</button>
-</form>
+    <form th:action="@{'/admin/inquiries/' + ${inquiry.id} + '/reply'}" method="post">
+        <div class="reply-label">답변 작성</div>
+        <textarea name="answer" th:text="${inquiry.answer}" placeholder="답변을 입력하세요"></textarea>
+        <button type="submit" class="reply-btn">답변 등록</button>
+    </form>
+</div>
 </body>
 </html>

@@ -98,16 +98,24 @@
     .view-btn {
       background-color: var(--main-color);
       color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.95rem;
+      padding: 10px 36px;        /* 좌우 패딩 넉넉하게 */
+      border-radius: 8px;
+      font-size: 1.05rem;
+      min-width: 110px;          /* 최소 너비를 충분히 넓게 */
+      width: 110px;              /* 또는 고정 width (원하면 더 넓게 120~130px까지 가능) */
+      text-align: center;
       text-decoration: none;
       font-weight: bold;
+      display: inline-block;
+      box-sizing: border-box;
+      letter-spacing: 1px;
+      white-space: nowrap;       /* 줄바꿈 방지 */
+      transition: background 0.18s;
     }
-
     .view-btn:hover {
       background-color: #334bcc;
     }
+
   </style>
   <link rel="stylesheet" href="/css/header.css">
 </head>
@@ -150,7 +158,7 @@
       <td th:text="${room.seller.username}">seller</td>
       <td th:text="${room.rental.rentalId}">21</td>
       <td th:text="${#temporals.format(room.createdAt, 'yyyy-MM-dd HH:mm')}">2025-06-13 10:00</td>
-      <td><a th:href="@{/chat/{roomId}(roomId=${room.roomId})}" class="view-btn">채팅방</a></td>
+      <td><a th:href="@{/chat/{roomId}(roomId=${room.roomId})}" class="view-btn" >채팅방</a></td>
     </tr>
     <tr th:if="${chatRooms.empty}">
       <td colspan="7" class="no-data">채팅방이 없습니다.</td>
