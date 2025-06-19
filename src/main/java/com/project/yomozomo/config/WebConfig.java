@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         // 2. 채팅 이미지 (ex: /uploaded-chat-images/** → 실제 경로로 매핑)
         registry.addResourceHandler("/uploaded-chat-images/**")
-                .addResourceLocations("file:/C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files/image-chatimage/")
+                .addResourceLocations("file:/C:/Users/dbseh/OneDrive/문서/GitHub/yomoProject/uploaded-files/image-chatimage/")
                 .setCachePeriod(3600)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver());

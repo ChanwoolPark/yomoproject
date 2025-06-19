@@ -150,7 +150,7 @@
       <td th:text="${room.seller.username}">seller</td>
       <td th:text="${room.rental.rentalId}">21</td>
       <td th:text="${#temporals.format(room.createdAt, 'yyyy-MM-dd HH:mm')}">2025-06-13 10:00</td>
-      <td><a th:href="@{/chat/{roomId}(roomId=${room.roomId})}" class="view-btn">채팅 보기</a></td>
+      <td><a th:href="@{/chat/{roomId}(roomId=${room.roomId})}" class="view-btn">채팅방</a></td>
     </tr>
     <tr th:if="${chatRooms.empty}">
       <td colspan="7" class="no-data">채팅방이 없습니다.</td>

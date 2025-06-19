@@ -52,7 +52,7 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", "업로드할 파일이 없습니다."));
         }
         try {
-            String baseUploadDir = "C:/Users/soldesk/IdeaProjects/yomoproject/uploaded-files";
+            String baseUploadDir = "C:/Users/dbseh/OneDrive/문서/GitHub/yomoProject/uploaded-files";
             String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString();
             File uploadPath = new File(specificUploadPathStr);
             if (!uploadPath.exists()) {
