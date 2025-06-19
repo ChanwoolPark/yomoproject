@@ -45,15 +45,30 @@ public class ProductWriteController {
                                @RequestParam("deposit") int deposit,
                                @RequestParam("subCategoryId") int subCategoryId,
                                @RequestParam(value = "images", required = false) List<MultipartFile> images,
-                               RedirectAttributes redirectAttributes) {
+                               RedirectAttributes redirectAttributes,
+                               Model model) {
+
+        // 1. 제목 길이 제한 검사
+        if (title.length() > 20) {
+            model.addAttribute("errorMessage", "상품 제목이 너무 깁니다. 20자 이하로 입력해주세요.");
+            model.addAttribute("subCategories", productFormService.getAllSubCategories(subCategoryId));
+            model.addAttribute("categoryId", subCategoryId); // 뒤로가기 버튼용
+            return "product/write";
+        }
+
+        // 2. 이미지 첨부 여부 검사
+        if (images == null || images.isEmpty() || images.get(0).isEmpty()) {
+            model.addAttribute("errorMessage", "상품 이미지는 필수입니다.");
+            model.addAttribute("subCategories", productFormService.getAllSubCategories(subCategoryId));
+            model.addAttribute("categoryId", subCategoryId); // 뒤로가기 버튼용
+            return "product/write";
+        }
 
         // 로그인 사용자 정보 가져오기
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-
-        // username → user_id로 변환
-        User seller = userService.findByUsername(username);  // 여기서 user_id 포함된 User 객체 획득
-        Long userId = seller.getId(); // 나중에 user_id가 필요할 경우를 대비
+        User seller = userService.findByUsername(username);
+        Long userId = seller.getId();
 
         // 상품 등록
         SubCategory subCategory = productWriteService.getSubCategory(subCategoryId);
@@ -63,7 +78,6 @@ public class ProductWriteController {
 
         return "redirect:/category/" + subCategory.getCategory().getCategoryId();
     }
-    
     // 수정시 데이터 불러오기
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable("id") int productId, Model model, Principal principal) {

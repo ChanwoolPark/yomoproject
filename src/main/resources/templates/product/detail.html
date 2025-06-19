@@ -280,7 +280,6 @@
 
     /* 사용자의 다른 상품글 */
     .seller-other-products-full {
-      margin-top: 40px;
       width: 100%;
       max-width: 1400px;
       margin-left: auto;
@@ -547,38 +546,53 @@
 
 
 <!-- 신고하기 모달 부분(뷰) -->
-<div id="reportModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
-  <h3>신고하기</h3>
+<div id="reportModal"
+     style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); width:500px;
+            background:#fff; border-radius:12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); padding:20px;
+            z-index:1000; font-family: 'GmarketSans', sans-serif;">
+  <h3 style="text-align:center; margin-bottom: 20px; color: #465BFF;">신고하기</h3>
+
   <form id="reportForm">
     <input type="hidden" name="productId" th:value="${product.productId}" />
 
-    <div>
-      <label>작성자:</label>
-      <input type="text" th:value="${#authentication.name}" readonly />
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight:bold;">작성자</label>
+      <input type="text" th:value="${#authentication.name}" readonly
+             style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px; background: #f2f2f2;">
     </div>
 
-    <div>
-      <label>신고 대상자:</label>
-      <input type="text" th:value="${product.seller.username}" readonly />
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight:bold;">신고 대상자</label>
+      <input type="text" th:value="${product.seller.username}" readonly
+             style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px; background: #f2f2f2;">
     </div>
 
-    <div>
-      <label>신고 상품:</label>
-      <input type="text" th:value="${product.title}" readonly />
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight:bold;">신고 상품</label>
+      <input type="text" th:value="${product.title}" readonly
+             style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px; background: #f2f2f2;">
     </div>
 
-    <div>
-      <label for="title">신고 제목:</label>
-      <input type="text" id="title" name="title" required />
+    <div class="form-group" style="margin-bottom: 15px;">
+      <label for="title" style="font-weight: bold;">신고 제목</label>
+      <input type="text" id="title" name="title" required
+             style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px;">
     </div>
 
-    <div>
-      <label for="details">신고 내용:</label>
-      <textarea id="details" name="details" rows="5" required></textarea>
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label for="details" style="font-weight: bold;">신고 내용</label>
+      <textarea id="details" name="details" rows="5" required
+                style="width: 100%; padding: 8px; border: 1px solid #bbb; border-radius: 5px;"></textarea>
     </div>
 
-    <button type="submit">신고 제출</button>
-    <button type="button" onclick="closeReportModal()">닫기</button>
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button type="submit"
+              style="padding: 10px 16px; background-color: #465BFF; color: white; border: none;
+                     border-radius: 5px; cursor: pointer;">신고 제출</button>
+      <button type="button" onclick="closeReportModal()"
+              style="padding: 10px 16px; background-color: #bbb; color: white; border: none;
+                     border-radius: 5px; cursor: pointer;">닫기</button>
+    </div>
   </form>
 </div>
 

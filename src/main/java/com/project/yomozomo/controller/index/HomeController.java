@@ -43,8 +43,8 @@ public class HomeController {
                 "" +
                 "" +
                 "", "url", "https://pages.coupang.com/p/148093"));
-        imageList.add(Map.of("file", "banner2.png", "url", "https://www.youtube.com/watch?v=x9mLLDcBmU0"));
-        imageList.add(Map.of("file", "banner3.png", "url", "https://www.youtube.com/watch?v=RudIRwJwdAg"));
+        imageList.add(Map.of("file", "banner2.png", "url", "/category/1?sort=views"));
+        imageList.add(Map.of("file", "banner3.png", "url", "/category/1?sort=views"));
         model.addAttribute("imageList", imageList);
 
         return "index";

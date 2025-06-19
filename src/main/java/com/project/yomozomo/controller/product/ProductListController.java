@@ -23,6 +23,7 @@ public class ProductListController {
     private final ProductListService productListService;
     private final UserService userService;
     private final CategoryService categoryService;
+    private static final int BLOCK_SIZE = 10; // 🔹 여기 추가
 
     public ProductListController(ProductListService productListService, UserService userService, CategoryService categoryService) {
         this.productListService = productListService;
@@ -50,14 +51,15 @@ public class ProductListController {
         model.addAttribute("categories", categories);
         model.addAttribute("subCategories", productListService.getSubCategories(categoryId));
         model.addAttribute("category", category);
-        model.addAttribute("subCategoryId", null); // 뷰에서 구분용
+        model.addAttribute("subCategoryId", null);
 
         ProductPageDto pageResult = (minPrice != null || maxPrice != null)
                 ? productListService.getCategoryPriceFilteredPage(categoryId, minPrice, maxPrice, page)
                 : productListService.getCategorySortedPage(categoryId, sort, page);
 
+        setPagingModel(model, page, pageResult.totalPages());
+
         model.addAttribute("products", pageResult.products());
-        model.addAttribute("totalPages", pageResult.totalPages());
         model.addAttribute("currentSort", sort);
         model.addAttribute("currentPage", page);
 
@@ -68,7 +70,6 @@ public class ProductListController {
         return "product/list";
     }
 
-    // ✅ 서브카테고리별 상품 목록
     @GetMapping("/{categoryId}/subcategory/{subCategoryId}")
     public String productListBySubCategory(@PathVariable int categoryId,
                                            @PathVariable int subCategoryId,
@@ -96,8 +97,9 @@ public class ProductListController {
                 ? productListService.getSubCategoryPriceFilteredPage(subCategoryId, minPrice, maxPrice, page)
                 : productListService.getSubCategorySortedPage(subCategoryId, sort, page);
 
+        setPagingModel(model, page, pageResult.totalPages());
+
         model.addAttribute("products", pageResult.products());
-        model.addAttribute("totalPages", pageResult.totalPages());
         model.addAttribute("currentSort", sort);
         model.addAttribute("currentPage", page);
 
@@ -107,6 +109,7 @@ public class ProductListController {
         addUserRelatedAttributes(model, principal);
         return "product/list";
     }
+
 
     // ✅ 유저 관련 정보 (찜, 최근 본 상품)
     private void addUserRelatedAttributes(Model model, Principal principal) {
@@ -121,5 +124,16 @@ public class ProductListController {
             model.addAttribute("wishlist", List.of());
             model.addAttribute("recentlyViewed", List.of());
         }
+    }
+
+    private void setPagingModel(Model model, int currentPage, int totalPages) {
+        int startPage = (currentPage / BLOCK_SIZE) * BLOCK_SIZE;
+        int endPage = Math.min(startPage + BLOCK_SIZE, totalPages);
+
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("hasPrevBlock", startPage > 0);
+        model.addAttribute("hasNextBlock", endPage < totalPages);
     }
 }
