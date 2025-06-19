@@ -4,6 +4,126 @@
     <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
     <title>마이페이지</title>
     <meta charset="UTF-8">
+    <style>
+        /* 리뷰 모달 카드 */
+        .review-modal-card {
+            background: #fff;
+            border-radius: 1.8rem;
+            box-shadow: 0 8px 32px #2222a325, 0 1px 4px #465bff11;
+            min-width: 360px;
+            max-width: 96vw;
+            width: 410px;
+            padding: 38px 36px 30px 36px;
+            position: relative;
+            animation: modalPop 0.23s cubic-bezier(.8,-0.13,.39,1.18);
+        }
+
+        @keyframes modalPop {
+            from { transform: translateY(60px) scale(0.95); opacity:0;}
+            to   { transform: none; opacity:1;}
+        }
+
+        /* 상단 X 버튼 */
+        .modal-close-btn {
+            position: absolute;
+            right: 21px; top: 17px;
+            font-size: 1.45em;
+            color: #aaa;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 10px;
+            transition: color 0.17s;
+        }
+        .modal-close-btn:hover { color: #465bff; }
+
+        /* 타이틀 & 상품명 */
+        .review-modal-card h2 {
+            font-size: 1.18em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: #222;
+            text-align: left;
+        }
+        .modal-product-title {
+            margin-bottom: 9px;
+            color: #3849c7;
+            font-weight: 700;
+            font-size: 1.01em;
+        }
+
+        .modal-star-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 17px;
+            font-size: 1.1em;
+        }
+        #reviewStars .star {
+            font-size: 1.21em;
+            cursor: pointer;
+            color: #adb6de;
+            transition: color 0.17s;
+            margin-right: 3px;
+            user-select: none;
+        }
+        #reviewStars .star.selected,
+        #reviewStars .star:hover { color: #ffd600; }
+
+        /* 폼 스타일 */
+        #reviewForm textarea {
+            width: 100%;
+            border-radius: 9px;
+            border: 1.2px solid #eee;
+            font-size: 1em;
+            min-height: 92px;
+            padding: 13px;
+            resize: none;
+            margin-bottom: 19px;
+            background: #fafafd;
+            transition: border 0.15s;
+        }
+        #reviewForm textarea:focus {
+            border: 1.2px solid #A3C9FF;
+            background: #f0f7ff;
+        }
+
+        /* 버튼 row */
+        .modal-btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-submit-btn {
+            background: #465BFF;
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: 9px 23px;
+            font-size: 1em;
+            font-weight: 700;
+            box-shadow: 0 2px 8px #465bff15;
+            cursor: pointer;
+            transition: background 0.14s;
+        }
+        .modal-submit-btn:hover { background: #263ed4; }
+
+        .modal-cancel-btn {
+            background: #e3e7fa;
+            color: #465BFF;
+            border: none;
+            border-radius: 9px;
+            padding: 9px 20px;
+            font-size: 1em;
+            font-weight: 700;
+            box-shadow: 0 2px 6px #465bff0c;
+            cursor: pointer;
+            transition: background 0.13s, color 0.13s;
+        }
+        .modal-cancel-btn:hover { background: #eef0fa; color: #222; }
+
+    </style>
     <link rel="stylesheet" href="/css/header.css">
     <link rel="stylesheet" href="/css/mypage.css">
     <!-- Lucide 아이콘 CDN (outline 스타일) -->
@@ -72,33 +192,36 @@
 </div>
 
 <!-- 모달 (숨김 기본) -->
-<div id="reviewModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; justify-content:center; align-items:center;">
-    <div style="background:#fff; padding:32px 24px; border-radius:16px; min-width:350px; max-width:90vw;">
-        <h2 style="font-size:1.3em; margin-bottom:1em;">리뷰 작성</h2>
-        <div id="modalProductTitle" style="margin-bottom:8px; color:#3849c7; font-weight:600;"></div>
-        <div style="margin-bottom:12px;">
-            <span>평점:</span>
+<div id="reviewModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.38); z-index:9999; justify-content:center; align-items:center;">
+    <div class="review-modal-card">
+        <!-- 오른쪽 상단 X 버튼 -->
+        <button class="modal-close-btn" onclick="closeReviewModal()" type="button" title="닫기">&times;</button>
+        <h2>리뷰 작성</h2>
+        <div id="modalProductTitle" class="modal-product-title"></div>
+        <div class="modal-star-row">
+            <span style="font-weight:600;">평점</span>
             <span id="reviewStars">
         <span class="star" data-value="1">&#9734;</span>
         <span class="star" data-value="2">&#9734;</span>
         <span class="star" data-value="3">&#9734;</span>
         <span class="star" data-value="4">&#9734;</span>
         <span class="star" data-value="5">&#9734;</span>
-    </span>
+      </span>
         </div>
-        <form id="reviewForm">
+        <form id="reviewForm" autocomplete="off">
             <input type="hidden" name="rentalId" id="modalRentalId">
             <input type="hidden" name="rating" id="modalRating">
             <input type="hidden" id="modalProductId" name="productId">
             <input type="hidden" id="modalTargetId" name="targetId">
-
-            <textarea name="reviewText" id="reviewContent" rows="5" style="width:100%; border-radius:6px;" placeholder="리뷰를 입력하세요"></textarea>
-            <br>
-            <button type="submit" ...>작성 완료</button>
-            <button type="button" ...>닫기</button>
+            <textarea name="reviewText" id="reviewContent" rows="5" placeholder="리뷰를 입력하세요"></textarea>
+            <div class="modal-btn-row">
+                <button type="submit" class="modal-submit-btn">작성 완료</button>
+                <button type="button" class="modal-cancel-btn" onclick="closeReviewModal()">닫기</button>
+            </div>
         </form>
     </div>
 </div>
+
 
 
 <div th:replace="fragments/footer :: footer"></div>
