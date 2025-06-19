@@ -1,11 +1,9 @@
+// src/main/java/com/project/yomozomo/config/SecurityConfig.java
 package com.project.yomozomo.config;
 
-import com.project.yomozomo.entity.User;
-import com.project.yomozomo.security.CustomAuthenticationEntryPoint;
+import com.project.yomozomo.repository.UserRepository;
 import com.project.yomozomo.security.OAuth2LoginSuccessHandler;
 import com.project.yomozomo.service.CustomUserDetailsService;
-import com.project.yomozomo.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,14 +15,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-
 
 @Configuration
 @EnableWebSecurity
@@ -33,80 +34,30 @@ public class SecurityConfig {
 
 
     private final OAuth2LoginSuccessHandler successHandler;
-    private final CustomAuthenticationEntryPoint customEntryPoint;
-    private final CustomUserDetailsService userDetailsService;
-    private final UserService userService;
 
-    public SecurityConfig(OAuth2LoginSuccessHandler successHandler,
-                          CustomAuthenticationEntryPoint customEntryPoint,
-                          CustomUserDetailsService userDetailsService,
-                          UserService userService) {
+    public SecurityConfig(OAuth2LoginSuccessHandler successHandler) {
         this.successHandler = successHandler;
-        this.customEntryPoint = customEntryPoint;
-        this.userDetailsService = userDetailsService;
-        this.userService = userService;
-
     }
-
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         System.out.println("★ SecurityConfig 로드됨");
         http
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(customEntryPoint)  // 👈 이 줄 추가
-                )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers(
                                 "/", "/index.html", "/login", "/login/form", "/login/**",
-                                "/login-page",
-                                "/css/**", "/js/**", "/images/**", "/oauth2/**",
-                                "/signup", "/category",
+                                "/css/**", "/js/**", "/images/**",
+                                "/charge", "/oauth2/**", "/signup", "/category",
                                 "/category/**","/api/**", "/find-id.html", "/find-password",
                                 "/find-id","/find-password.html",
-                                "/test-login", "/uploads/**", "/login-required", "/subcategory/**",
-                                "/product/**","/mypage/profile/{username}", "/search/**", "/search"
+                                "/test-login"
                         ).permitAll()
                         .anyRequest().authenticated()
-
-
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login/form")
-                        .successHandler((request, response, authentication) -> {
-                            // 로그인 성공한 유저 정보 꺼내기
-                            String username = authentication.getName(); // username (DB 컬럼 값)
-
-                            // 빈 주입 방법에 따라 UserService 접근
-                            // 예: 만약 UserService를 @Autowired로 필드에 올려둔다면
-                            // userService.updateLastLoginDate(userService.getUserByUsername(username));
-
-                            // ↓ 람다 안이라 this.userService가 바로 접근 안됨 → SecurityConfig의 필드로 UserService 추가 필요!
-                            // 만약 UserService userService; 를 필드로 추가했다면 아래처럼!
-                            User user = userService.getUserByUsername(username);
-                            userService.updateLastLoginDate(user);
-
-                            // ⬇️ 이거 추가!
-                            if ("Y".equals(user.getIsWithdrawn())) {
-                                userService.recoverWithdrawn(user);
-                            }
-
-                            if ("Y".equals(user.getIsDormant())) {
-                                response.sendRedirect("/dormant-info"); // 휴면 안내 페이지로 보냄
-                                return;
-                            }
-
-
-                            String redirectUrl = request.getParameter("redirect");
-
-                            if (redirectUrl != null && redirectUrl.startsWith("/")) {
-                                response.sendRedirect(redirectUrl);
-                            } else {
-                                response.sendRedirect("/");
-                            }
-                        })
+                        .loginPage("/login")  // ★★★ 로그인 진입 선택화면 ("/login")으로 지정
+                        .loginProcessingUrl("/login/form") // 실제 로그인 submit POST action
+                        .defaultSuccessUrl("/", true)
                         .failureUrl("/login/form?error=true")
                         .permitAll()
                 )
@@ -132,13 +83,6 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")
                         .permitAll()
                 )
-                .rememberMe(remember -> remember
-                        .key("yomozomo-remember-me-key")
-                        .tokenValiditySeconds(60 * 60 * 24 * 14)
-                        .rememberMeParameter("remember-me")
-                        .userDetailsService(userDetailsService)
-                )
-
 
                 .csrf(csrf -> csrf.disable());
 
@@ -194,6 +138,5 @@ public class SecurityConfig {
             );
         };
     }
-
 
 }
