@@ -1,0 +1,110 @@
+.yomo-footer {
+    width: 100%;
+    background: #f9fafc;
+    border-top: 1.5px solid #e3e6ef;
+    font-size: 15px;
+    color: #222;
+    letter-spacing: 0.01em;
+    padding: 32px 0 18px 0;
+    margin-top: 42px;
+    box-sizing: border-box;
+}
+.footer-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0;
+    /* 가운데 여백 없음 */
+}
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-width: 190px;
+    font-size: 15px;
+}
+.footer-col-left {
+    align-items: flex-start;
+    text-align: left;
+    padding-left: 28px;
+    flex: 0 0 320px;
+}
+.footer-col-center {
+    align-items: center;
+    text-align: center;
+    flex: 1 1 0;
+    gap: 6px;
+    min-width: 120px;
+}
+.footer-col-right {
+    align-items: flex-end;
+    text-align: right;
+    padding-right: 28px;
+    flex: 0 0 340px;
+}
+.footer-title {
+    font-size: 1.11em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #465BFF;
+    letter-spacing: 0.03em;
+}
+.footer-col a {
+    color: #4458d1;
+    text-decoration: none;
+    margin-right: 5px;
+    font-weight: 500;
+    transition: color 0.14s;
+}
+.footer-col a:hover {
+    text-decoration: underline;
+    color: #263ed4;
+}
+.footer-links {
+    margin-bottom: 3px;
+}
+.footer-social {
+    margin-top: 6px;
+    display: flex;
+    gap: 12px;
+}
+.footer-social img {
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 5px;
+    background: #fff;
+    box-shadow: 0 1px 4px #2221;
+    transition: transform 0.14s;
+}
+.footer-social img:hover {
+    transform: scale(1.13) rotate(-6deg);
+    background: #eef3fd;
+}
+.footer-desc {
+    margin-top: 10px;
+    color: #8789a2;
+    font-size: 0.96em;
+    font-weight: 400;
+    max-width: 270px;
+    text-align: right;
+}
+@media (max-width: 900px) {
+    .footer-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .footer-col-left, .footer-col-right, .footer-col-center {
+        align-items: flex-start !important;
+        text-align: left !important;
+        padding-left: 16px !important;
+        padding-right: 0 !important;
+        flex: 1 1 0;
+    }
+    .footer-desc { text-align: left; }
+}
+@media (max-width: 500px) {
+    .yomo-footer { padding: 16px 0 6px 0; font-size: 13px; }
+    .footer-col { font-size: 13.5px; min-width: 0; }
+    .footer-desc { font-size: 12.5px; }
+}

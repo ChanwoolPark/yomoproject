@@ -6,6 +6,8 @@
 
     <!-- Swiper CSS CDN 추가 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <!-- 이미 header.css 있다면, footer.css도 추가! -->
+    <link rel="stylesheet" href="/css/footer.css">
     <link rel="stylesheet" href="/css/header.css">
     <style>
         .container {
@@ -169,6 +171,7 @@
 
 <!-- 헤더 삽입 -->
 <div th:replace="fragments/header :: header"></div>
+
 
 <form id="searchForm" action="/search" method="get" class="search-bar">
     <!-- 카테고리 선택 -->
