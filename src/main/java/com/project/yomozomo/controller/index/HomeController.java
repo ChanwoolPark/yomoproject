@@ -43,8 +43,8 @@ public class HomeController {
                 "" +
                 "" +
                 "", "url", "https://pages.coupang.com/p/148093"));
-        imageList.add(Map.of("file", "banner2.png", "url", "https://www.youtube.com/watch?v=x9mLLDcBmU0"));
-        imageList.add(Map.of("file", "banner3.png", "url", "https://pages.coupang.com/p/148093"));
+        imageList.add(Map.of("file", "banner2.png", "url", "/category/1?sort=views"));
+        imageList.add(Map.of("file", "banner3.png", "url", "/category/1?sort=views"));
         model.addAttribute("imageList", imageList);
 
         return "index";
@@ -75,6 +75,8 @@ public class HomeController {
     public String supportPage(Model model) {
         List<Notice> notices = noticeService.findAll(); // 최신순 정렬 원하면 정렬 쿼리 추가!
         model.addAttribute("notices", notices);
+        List<Category> categories = categoryService.getAllCategoriesWithSubCategories();
+        model.addAttribute("categories", categories);
         return "support"; // 고객센터 메인 템플릿
     }
 

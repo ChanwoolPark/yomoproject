@@ -4,6 +4,7 @@ import com.project.yomozomo.entity.ChatRoom;
 import com.project.yomozomo.entity.ChatMessage;
 import com.project.yomozomo.entity.User;
 import com.project.yomozomo.domain.Rental;
+import com.project.yomozomo.domain.Product; // Product 엔티티 import
 import com.project.yomozomo.dto.ChatMessageDTO;
 import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.RentalService;
@@ -181,31 +182,26 @@ public class ChatController {
         model.addAttribute("chatPartnerNickname", chatPartnerUser.getNickname());
         model.addAttribute("chatRoomId", roomId);
 
-        if (chatRoom.getRental() != null) {
+        // ===== 이 부분을 수정합니다. =====
+        String productImageUrl = null;
+        if (chatRoom.getRental() != null && chatRoom.getRental().getProduct() != null) {
+            Product product = chatRoom.getRental().getProduct();
             model.addAttribute("currentRentalId", chatRoom.getRental().getRentalId());
-            if (chatRoom.getRental().getProduct() != null) {
-                model.addAttribute("productTitle", chatRoom.getRental().getProduct().getTitle());
-            } else {
-                model.addAttribute("productTitle", "상품 정보 없음");
-            }
+            model.addAttribute("productTitle", product.getTitle());
+            // Product 엔티티의 getThumbnailUrl() 메소드를 호출하여 이미지 URL을 가져옵니다.
+            // 이 메소드는 productImages 리스트의 첫 번째 이미지 URL을 반환하거나,
+            // 이미지가 없을 경우 /img/default.png를 반환합니다.
+            productImageUrl = product.getThumbnailUrl();
         } else {
+            // 렌탈 정보나 상품 정보가 없는 경우
             model.addAttribute("currentRentalId", null);
             model.addAttribute("productTitle", "일반 채팅");
+            // 상품 이미지가 없으므로 기본 이미지 사용
+            productImageUrl = "/img/default.png"; // Product 엔티티의 기본값과 일치시킵니다.
         }
 
-        // 프로필 이미지 URL(기본값 처리)
-        String currentUserProfileImageUrl = currentUser.getProfileImageUrl();
-        if (currentUserProfileImageUrl == null || currentUserProfileImageUrl.isEmpty()) {
-            currentUserProfileImageUrl = "/images/default-profile.png";
-        }
-        model.addAttribute("currentUserProfileImage", currentUserProfileImageUrl);
-
-        String chatPartnerProfileImageUrl = chatPartnerUser.getProfileImageUrl();
-        if (chatPartnerProfileImageUrl == null || chatPartnerProfileImageUrl.isEmpty()) {
-            chatPartnerProfileImageUrl = "/images/default-profile.png";
-        }
-        model.addAttribute("chatPartnerProfileImage", chatPartnerProfileImageUrl);
-
+        // 최종적으로 productImageUrl을 모델에 추가합니다.
+        model.addAttribute("productImageUrl", productImageUrl);
         // 기존 채팅 메시지
         try {
             List<ChatMessage> chatHistoryEntities = chatService.getChatMessagesByRoomId(roomId);

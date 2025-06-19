@@ -102,6 +102,8 @@
             font-size: 14px;
         }
     </style>
+    <link rel="stylesheet" href="/css/header.css">
+    <div th:replace="fragments/header :: header"></div>
 </head>
 <body>
 
@@ -131,6 +133,8 @@
         </div>
     </form>
 </div>
+
+<div th:replace="fragments/footer :: footer"></div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
