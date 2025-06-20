@@ -71,10 +71,32 @@
       padding: 2rem;
       color: gray;
     }
+    .close-btn {
+      position: absolute;
+      top: 25px;
+      right: 28px;
+      background: #eef3ff;
+      border: none;
+      color: #465BFF;
+      font-size: 1.6rem;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(70,91,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.18s;
+    }
+    .close-btn:hover {
+      background: #dbe6ff;
+    }
   </style>
 </head>
 <body>
 <div class="list-container">
+  <button class="close-btn" onclick="location.href='/'" title="메인으로 이동">✕</button>
   <h1>채팅 신고 내역</h1>
   <table>
     <thead>
