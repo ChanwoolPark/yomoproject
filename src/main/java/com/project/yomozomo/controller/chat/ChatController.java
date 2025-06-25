@@ -1,11 +1,10 @@
 package com.project.yomozomo.controller.chat;
 
-import com.project.yomozomo.entity.ChatRoom;
-import com.project.yomozomo.entity.ChatMessage;
-import com.project.yomozomo.entity.User;
 import com.project.yomozomo.domain.Rental;
-import com.project.yomozomo.domain.Product; // Product 엔티티 import
 import com.project.yomozomo.dto.ChatMessageDTO;
+import com.project.yomozomo.entity.ChatMessage;
+import com.project.yomozomo.entity.ChatRoom;
+import com.project.yomozomo.entity.User;
 import com.project.yomozomo.service.ChatService;
 import com.project.yomozomo.service.RentalService;
 import com.project.yomozomo.service.UserService;
@@ -52,7 +51,7 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", "업로드할 파일이 없습니다."));
         }
         try {
-            String baseUploadDir = "C:/Users/dbseh/OneDrive/문서/GitHub/yomoProject/uploaded-files";
+            String baseUploadDir = "C:/YomoProject/yomoProject/uploaded-files";
             String specificUploadPathStr = Paths.get(baseUploadDir, "image-chatimage").toString();
             File uploadPath = new File(specificUploadPathStr);
             if (!uploadPath.exists()) {

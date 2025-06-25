@@ -80,13 +80,96 @@
 <link rel="stylesheet" href="/css/footer.css">
 <div th:replace="fragments/header :: header"></div>
 <div class="find-id-box">
-<h2>아이디 찾기</h2>
-<form method="post" action="/api/user/find-id" id="findIdForm">
-    <label>이름: <input type="text" name="name" required></label><br>
-    <label>이메일: <input type="email" name="email" required></label><br>
-    <button type="submit">찾기</button>
-</form>
-<div id="idResult"></div>
+<style>
+    .find-id-box {
+        max-width: 400px;
+        margin: 80px auto;
+        background: #fff;
+        border-radius: 1.7rem;
+        box-shadow: 0 2px 8px #2d365214;
+        border: 1.2px solid #ebebeb;
+        padding: 38px 32px 32px 32px;
+    }
+
+    .find-id-box h2 {
+        font-size: 1.28em;
+        font-weight: 800;
+        margin-bottom: 30px;
+        color: #222;
+        text-align: left;
+    }
+
+    .find-id-box form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .find-id-box label {
+        display: flex;
+        flex-direction: column;
+        font-weight: 600;
+        font-size: 1.04em;
+        color: #222;
+        margin-bottom: 4px;
+        gap: 6px;
+    }
+
+    .find-id-box input[type="text"],
+    .find-id-box input[type="email"] {
+        padding: 9px 13px;
+        border-radius: 10px;
+        border: 1.2px solid #ebebeb;
+        background: #fafafd;
+        font-size: 1em;
+        outline: none;
+        margin-top: 3px;
+        transition: border 0.16s;
+    }
+    .find-id-box input:focus {
+        border: 1.2px solid #A3C9FF;
+        background: #f0f7ff;
+    }
+
+    .find-id-box button[type="submit"] {
+        margin-top: 10px;
+        background: #465BFF;
+        color: #fff;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 0;
+        font-size: 1.05em;
+        box-shadow: 0 2px 8px #465bff16;
+        cursor: pointer;
+        transition: background 0.14s;
+    }
+    .find-id-box button[type="submit"]:hover {
+        background: #263ed4;
+    }
+
+    #idResult {
+        margin-top: 20px;
+        font-size: 1.08em;
+        color: #465BFF;
+        min-height: 24px;
+        text-align: left;
+        font-weight: 600;
+    }
+
+</style>
+<link rel="stylesheet" href="/css/header.css">
+<div th:replace="fragments/header :: header"></div>
+<div class="find-id-box">
+    <h2>아이디 찾기</h2>
+    <form method="post" action="/api/user/find-id" id="findIdForm">
+        <label>이름: <input type="text" name="name" required></label><br>
+        <label>이메일: <input type="email" name="email" required></label><br>
+        <button type="submit">찾기</button>
+    </form>
+    <div id="idResult"></div>
+</div>
+<div th:replace="fragments/footer :: footer"></div>
 </div>
 <div th:replace="fragments/footer :: footer"></div>
 <script>
